@@ -1,0 +1,26 @@
+# Python
+.venv/
+__pycache__/
+*.pyc
+
+# Django
+db.sqlite3
+media/
+
+# Node (only used to fetch vendored assets; vendored files live in static/vendor/)
+node_modules/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Raw datasets (downloaded, not committed)
+data/raw/*
+!data/raw/.gitkeep
+
+# Secrets
+.env
+
+# Claude Code: local settings + third-party project skills (reinstall from skills-lock.json)
+.claude/settings.local.json
+.claude/skills/
+.agents/
