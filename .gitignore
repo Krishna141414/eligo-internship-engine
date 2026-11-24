@@ -17,6 +17,9 @@ node_modules/
 data/raw/*
 !data/raw/.gitkeep
 
+# Saved sentence model (~90 MB): recreate with the notebook or scripts/setup_sentence_model.py (D-020)
+artifacts/models/sentence_model/
+
 # Secrets
 .env
 

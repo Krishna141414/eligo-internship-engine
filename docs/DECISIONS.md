@@ -24,6 +24,8 @@ Criteria, in priority order (from `CLAUDE.md`): **spec compliance > correctness 
 | D-017 | 2026-11-24 | 2 | Qualification hierarchy map (Any Graduate / Any Postgraduate / specific degree / Diploma) |
 | D-018 | 2026-11-24 | 2 | Tests use pytest + pytest-django with hand-written fixtures (no factory-boy) |
 | D-019 | 2026-11-24 | 2 | Exam: one question per view in a single page, palette navigation, no-JS fallback = list |
+| D-020 | 2026-11-24 | 2 | Sentence model kept out of git; one-command pinned-revision setup script verified against the manifest |
+| D-021 | 2026-11-24 | 2 | Job-role prediction shows confidence; scope status confident / low_confidence / out_of_scope |
 
 ---
 
@@ -146,3 +148,21 @@ Criteria, in priority order (from `CLAUDE.md`): **spec compliance > correctness 
 | D-017 | Documented qualification hierarchy map; profile choices come from it | Free-text qualification | Gate correctness: inputs and rules share one vocabulary |
 | D-018 | pytest + pytest-django + hand-written fixtures; `unittest.mock` for Ollama/HTTP | factory-boy + pytest-mock | Locked stack: no new dependencies for little gain |
 | D-019 | One question per view inside one page, palette jumps, autosave per answer, no-JS fallback = full list | Server page per question; scroll-only list | Fits the palette design, fewer requests, graceful degradation |
+
+## D-020 — Sentence model: out of git, one-command setup
+- **Date:** 2026-11-24 · **Phase:** 2 (Krishna's instruction: no Git LFS)
+- **Options:** (1) commit the ~90 MB model with Git LFS: rejected by Krishna (LFS bandwidth quotas, an extra tool for anyone cloning); (2) commit it as a normal blob: under GitHub's 100 MB hard limit but bloats every clone and the history; (3) **git-ignore `artifacts/models/sentence_model/`** and provide a setup step.
+- **Chosen:** option 3 with two ways to get the model: run the notebook (it saves the model), or run `.\.venv\Scripts\python.exe scripts\setup_sentence_model.py`. The script downloads `sentence-transformers/all-MiniLM-L6-v2` at a **pinned Hugging Face revision** (commit hash in `ml_core/config.py`), saves it with `create_model_card=False`, and verifies every file against the SHA-256 hashes in `artifacts/manifest.json`. Internet is needed once; after that everything runs offline.
+- **Safety:** rule 14 still holds. Django loads the model only from `artifacts/`, and only if the manifest check passes. If the folder is missing, the banner names the setup command instead of crashing. If a fresh download isn't byte-identical to the notebook's save (checked in Phase 3), the manifest hashes only the weight and config files and this note gets updated.
+- **README:** setup step added (PLAN Task 23).
+
+## D-021 — Job-role confidence and model scope
+- **Date:** 2026-11-24 · **Phase:** 2 (Krishna's instruction)
+- **Why:** the model only knows 6 CS career fields and the skills in its training vocabulary. A marketing student would otherwise get a confident-looking but meaningless "Development".
+- **Rule** (`ml_core.job_role.scope_status`, thresholds stored in `feature_schema.json` → `scope`):
+  - `out_of_scope`: fewer than `min_known_skills` (default 2) of the student's skills are in the model's vocabulary, **or** less than `min_coverage` (default 50%) of their skills are. With zero known skills the model isn't called at all.
+  - `low_confidence`: in scope, but the max class probability is below `min_confidence` (default 0.50; chance level for 6 classes is about 0.17).
+  - `confident`: otherwise.
+- **UI:** the confidence % is always shown. Only `confident` gets the "Predicted job role" hero. The other two states say plainly: "Your profile is mostly outside what this model covers (6 computer-science career fields)…" or "Low confidence…", list the known vs unknown skills, and show the closest field labelled tentative.
+- **Defaults vs data:** the defaults above are placeholders. In Phase 3 the notebook prints the real test-set accuracy per confidence bucket and per known-skill count. The final thresholds are set from that table and recorded here with the numbers.
+- **Tests:** `test_scope_status_rules` (parametrised boundaries), `test_scope_status_no_known_skills_no_model_call`, `test_scope_status_mostly_unknown_is_out_of_scope`, `test_scope_status_thresholds_read_from_schema`, `test_explain_job_role_low_confidence_has_scope_message`, `test_prediction_view_out_of_scope_message`, `test_low_confidence_not_shown_as_confident`, `test_confident_prediction_shows_confidence_percentage`.
