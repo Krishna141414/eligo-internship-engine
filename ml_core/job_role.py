@@ -5,10 +5,11 @@ fields; predictions for profiles mostly outside that scope are flagged, never sh
 """
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import asdict, dataclass
 from typing import Literal
 
 ScopeStatus = Literal["confident", "low_confidence", "out_of_scope"]
+FEATURE_SCHEMA_VERSION = "1"
 
 
 @dataclass(frozen=True)
@@ -16,6 +17,18 @@ class ScopeThresholds:
     min_known_skills: int = 2
     min_coverage: float = 0.5
     min_confidence: float = 0.5
+
+
+def build_feature_schema(binarizer, classes: list[str], scope: ScopeThresholds) -> dict:
+    """feature_schema.json: the exact model input (canonical skills vocabulary), the classes, and
+    the scope thresholds. Django's profile form and inference both read this file."""
+    return {
+        "version": FEATURE_SCHEMA_VERSION,
+        "input": {"skills": {"type": "list[str]", "vocabulary": [str(s) for s in binarizer.vocabulary_]}},
+        "classes": [str(c) for c in classes],
+        "scope": asdict(scope),
+        "note": "Model input is skills only (canonical names). No academic or assessment features (D-008).",
+    }
 
 
 @dataclass
