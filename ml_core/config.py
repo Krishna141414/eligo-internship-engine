@@ -20,8 +20,8 @@ PASS_THRESHOLD: Decimal = Decimal("60")
 REFERENCE_DATE: date = date(2025, 9, 28)
 
 SENTENCE_MODEL_NAME: str = "sentence-transformers/all-MiniLM-L6-v2"
-#: Hugging Face commit hash, pinned on first download (PLAN Task 10, D-020).
-SENTENCE_MODEL_REVISION: str = ""
+#: Hugging Face commit hash of sentence-transformers/all-MiniLM-L6-v2 (Apache 2.0), pinned 2026-11-24 (D-020).
+SENTENCE_MODEL_REVISION: str = "1110a243fdf4706b3f48f1d95db1a4f5529b4d41"
 SENTENCE_MODEL_DIR: Path = ARTIFACTS_DIR / "models" / "sentence_model"
 
 RANDOM_STATE: int = 42

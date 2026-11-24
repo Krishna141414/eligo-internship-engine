@@ -186,6 +186,15 @@ def test_clean_internships_bad_duration_flagged(raw_sample, vocab):
     assert row.duration_text == "" and "duration" in row.derived_fields
 
 
+def test_clean_internships_text_rebuildable_from_stored_fields(raw_sample, vocab):
+    # Django stores title, job_role, required_skills and description (no perks/education columns);
+    # it must be able to rebuild exactly the text the notebook embedded (D-014 text-hash check).
+    for _, row in clean_internships(raw_sample, vocab).iterrows():
+        assert row.text == build_internship_text(row.internship_title, row.job_role, row.required_skills,
+                                                 "", "", row.description)
+        assert "Perks:" in row.description or "Certificate" not in row.text
+
+
 def test_clean_internships_parsed_fields(raw_sample, vocab):
     out = clean_internships(raw_sample, vocab).set_index("source_id")
     assert out.loc["2025TEST0001", "application_deadline"] == date(2025, 10, 15)

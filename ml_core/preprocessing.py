@@ -254,7 +254,8 @@ def clean_internships(raw: pd.DataFrame, vocab: SkillVocab) -> pd.DataFrame:
             "application_deadline": parse_deadline(r["Apply by Date"]),
             "eligibility_criteria": criteria,
             "derived_fields": derived,
-            "text": build_internship_text(title, title, skills, rule.note, perks),
+            # Built only from fields Django stores, so the web app can rebuild the identical text (D-014).
+            "text": build_internship_text(title, title, skills, "", "", description),
         })
     return pd.DataFrame.from_records(records)
 
