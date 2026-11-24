@@ -1,0 +1,10 @@
+{
+  "weights": {
+    "content": 0.35,
+    "semantic": 0.4,
+    "skill": 0.25
+  },
+  "top_n": 10,
+  "version": "1",
+  "reference_date": "2025-09-28"
+}

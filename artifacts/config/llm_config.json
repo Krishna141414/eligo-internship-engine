@@ -1,0 +1,29 @@
+{
+  "base_url": "http://localhost:11434",
+  "model": "qwen3:4b",
+  "alternative_model": "qwen2.5:3b",
+  "timeout_s": 20.0,
+  "temperature": 0.0,
+  "prompt_version": "1",
+  "num_predict": 256,
+  "schema": {
+    "properties": {
+      "skills": {
+        "items": {
+          "maxLength": 60,
+          "minLength": 1,
+          "type": "string"
+        },
+        "maxItems": 40,
+        "title": "Skills",
+        "type": "array"
+      }
+    },
+    "required": [
+      "skills"
+    ],
+    "title": "SkillList",
+    "type": "object"
+  },
+  "system_prompt": "You extract skills from text. Return only JSON matching the schema: {\"skills\": [...]}. List concrete technical and professional skills, tools and languages that the text explicitly mentions. Do not add skills that are not in the text."
+}

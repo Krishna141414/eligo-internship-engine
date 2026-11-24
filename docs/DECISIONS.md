@@ -97,6 +97,7 @@ Criteria, in priority order (from `CLAUDE.md`): **spec compliance > correctness 
   - `required_qualification` / `specialization`: parsed from `Education` with a documented keyword → qualification map in `ml_core/preprocessing.py` (e.g. "B.Tech", "B.E." → B.Tech/B.E.; "Computer Science" → specialization CSE). Empty or unparseable values → "Any Graduate" / no specialization. Every record stores `derived_fields` listing which values came from a rule or a default.
   - `minimum_academic_percentage`: not in the source → **0% default** (gate always passes), listed in `derived_fields`, editable by admins.
   - Deadline gate: deadlines are a 2025 snapshot, so the gate compares against `REFERENCE_DATE` in `ml_core/config.py` (default **2025-09-28**, the last scrape day confirmed from `Date Time`; shown in the UI). Admin-added internships use real dates against today. Without this, every imported internship would fail the deadline gate on day one.
+- **Final distribution after cleaning (notebook run, 8,207 internships):** Any Graduate 7,966 · MBA 71 · Diploma 55 · Any Postgraduate 49 · B.Tech 32 · LLB 10 · BBA 9 · M.Tech 4 · B.Sc 3 · B.Des 2 · B.Com 2 · M.Sc 2 · MCA 2; specialisation CSE on 107. The rule table lives in `ml_core/preprocessing.py` (`_DEGREE_PATTERNS`, `_OPEN_TO_ALL`, `_CSE`), and each rule has a test built from a real row.
 - **Confirmed on load (2026-11-24):** `Education` is "Not Specified" on 6,539 of 8,483 rows (77%) → "Any Graduate". Of the 1,944 specified values, 1,139 mention a degree or qualification keyword (rule-parsed) and 805 hold other text such as location limits or duties (→ "Any Graduate", text kept as an eligibility note). The final keyword → qualification table is written in Phase 3 from these real values.
 
 ## D-008 — Assessment score: eligibility gate only
@@ -155,6 +156,7 @@ Criteria, in priority order (from `CLAUDE.md`): **spec compliance > correctness 
 - **Chosen:** option 3 with two ways to get the model: run the notebook (it saves the model), or run `.\.venv\Scripts\python.exe scripts\setup_sentence_model.py`. The script downloads `sentence-transformers/all-MiniLM-L6-v2` at a **pinned Hugging Face revision** (commit hash in `ml_core/config.py`), saves it with `create_model_card=False`, and verifies every file against the SHA-256 hashes in `artifacts/manifest.json`. Internet is needed once; after that everything runs offline.
 - **Safety:** rule 14 still holds. Django loads the model only from `artifacts/`, and only if the manifest check passes. If the folder is missing, the banner names the setup command instead of crashing. If a fresh download isn't byte-identical to the notebook's save (checked in Phase 3), the manifest hashes only the weight and config files and this note gets updated.
 - **README:** setup step added (PLAN Task 23).
+- **Phase 3 finding (2026-11-24):** the first check failed only on `tokenizer.json`. `SentenceTransformer.encode()` writes runtime padding/truncation state into the tokenizer, so a model saved *after* encoding isn't byte-identical to a fresh download (weights and every other file were identical). Fix: the notebook saves the pristine pinned model first, then reloads it from disk and encodes with that copy. Embeddings now come from exactly the files Django loads, and `setup_sentence_model.py` reproduces the folder byte-for-byte (verified: "Sentence model verified against manifest.json").
 
 ## D-021 — Job-role confidence and model scope
 - **Date:** 2026-11-24 · **Phase:** 2 (Krishna's instruction)
@@ -164,5 +166,21 @@ Criteria, in priority order (from `CLAUDE.md`): **spec compliance > correctness 
   - `low_confidence`: in scope, but the max class probability is below `min_confidence` (default 0.50; chance level for 6 classes is about 0.17).
   - `confident`: otherwise.
 - **UI:** the confidence % is always shown. Only `confident` gets the "Predicted job role" hero. The other two states say plainly: "Your profile is mostly outside what this model covers (6 computer-science career fields)…" or "Low confidence…", list the known vs unknown skills, and show the closest field labelled tentative.
-- **Defaults vs data:** the defaults above are placeholders. In Phase 3 the notebook prints the real test-set accuracy per confidence bucket and per known-skill count. The final thresholds are set from that table and recorded here with the numbers.
+- **Defaults vs data:** the defaults above were placeholders until Phase 3. The notebook then printed the real test-set accuracy of the best model (Random Forest, test n = 374):
+
+  | Max class probability | Rows | Accuracy |
+  |---|---|---|
+  | < 0.4 | 27 | 0.519 |
+  | 0.4–0.5 | 33 | 0.667 |
+  | 0.5–0.6 | 65 | 0.846 |
+  | 0.6–0.8 | 167 | 0.964 |
+  | ≥ 0.8 | 82 | 0.988 |
+
+  | Skills the model knows | Rows | Accuracy |
+  |---|---|---|
+  | 1 | 10 | 0.700 |
+  | 2 | 33 | 0.818 |
+  | 3+ | 331 | 0.903 |
+
+- **Final thresholds (Phase 3, 2026-11-24): keep `min_confidence = 0.5`, `min_known_skills = 2`, `min_coverage = 0.5`.** Below 0.5 confidence, accuracy falls to 0.600 (60 rows), against 0.946 at or above it (314 rows). That's a clear break, so "low confidence" means something real. One known skill gives 0.700 over just 10 rows; two or more give 0.82+. `min_coverage` can't be checked against the test set, because test rows only contain skills from the training data. It stays a product rule: if most of a student's skills are unknown to the model, the profile is mostly outside its scope.
 - **Tests:** `test_scope_status_rules` (parametrised boundaries), `test_scope_status_no_known_skills_no_model_call`, `test_scope_status_mostly_unknown_is_out_of_scope`, `test_scope_status_thresholds_read_from_schema`, `test_explain_job_role_low_confidence_has_scope_message`, `test_prediction_view_out_of_scope_message`, `test_low_confidence_not_shown_as_confident`, `test_confident_prediction_shows_confidence_percentage`.

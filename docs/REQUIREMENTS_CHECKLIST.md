@@ -5,7 +5,7 @@ Every bullet of `docs/PROJECT_SPEC.md` sections 1–19 (plus the final goal) map
 
 **Status legend:** ⬜ not started · 🟨 in progress / partial · ✅ done (verified) · ❌ not done (reason given)
 
-Last updated: 2026-11-24 (Phase 1)
+Last updated: 2026-11-24 (Phase 3)
 
 ---
 
@@ -14,105 +14,105 @@ Last updated: 2026-11-24 (Phase 1)
 ### 1. Dataset requirements
 | ID | Requirement | Where implemented | Status |
 |---|---|---|---|
-| 1.1 | Free public dataset: student qualifications, academic details, skills | `docs/DATASETS.md` A, `data/raw/mendeley_student_career/` | 🟨 Student Career (real, CC BY 4.0) gives skills. No real dataset with signal also had academic details (D-005); academic fields are collected by the profile and used by eligibility gates |
+| 1.1 | Free public dataset: student qualifications, academic details, skills | `docs/DATASETS.md` A, notebook §3.1 | ✅ Student Career (real survey, CC BY 4.0): skills → career. No real dataset with signal had academic details too (D-005); academic fields are collected by the profile and used by the gates |
 | 1.2 | Free public dataset: job roles and career-related attributes | `docs/DATASETS.md` A | ✅ Student Career `Career` label, 6 classes (downloaded, SHA-256 verified) |
 | 1.3 | Free public dataset: internship opportunities, descriptions, qualifications, required skills | `docs/DATASETS.md` B, `data/raw/kaggle_internships_2025/` | ✅ Internship Opportunities in India (2025), 8,483 real postings with skills + education (D-006). No description column → composed from the posting's own fields + flagged (D-007) |
 | 1.4 | Assessment-related features where supported by the dataset | `docs/DECISIONS.md` D-008 | ✅ Decided: not supported by the training data → assessment is an eligibility gate only (stated on the prediction page) |
 | 1.5 | Provide dataset download URLs and column descriptions | `docs/DATASETS.md`, README | 🟨 DATASETS.md done; Kaggle column contents confirmed at load (Phase 3); README in Phase 7 |
-| 1.6 | Do not fabricate training data, labels or evaluation results | Whole project | 🟨 Three synthetic / no-signal candidates rejected on real checks (DATASETS.md); labels kept as published |
+| 1.6 | Do not fabricate training data, labels or evaluation results | Whole project; DATASETS.md rejected list | ✅ for Part A: 3 synthetic/no-signal candidates rejected on real checks; labels kept as published; every metric printed by the notebook run |
 
 ### 2. Data preprocessing
 | ID | Requirement | Where implemented | Status |
 |---|---|---|---|
-| 2.1 | Load and analyse datasets | notebook §3.1 | ⬜ |
-| 2.2 | Handle missing values and duplicates | `ml_core/preprocessing.py`, notebook §3.2 | ⬜ |
-| 2.3 | Encode categorical variables | `ml_core/preprocessing.py` (ColumnTransformer) | ⬜ |
-| 2.4 | Process academic and skill-related features | `ml_core/preprocessing.py`, `ml_core/skills.py` | ⬜ |
-| 2.5 | Clean internship descriptions | `ml_core/preprocessing.py` | ⬜ |
-| 2.6 | Prepare training and testing datasets | notebook §3.2 (stratified split) | ⬜ |
-| 2.7 | Prevent data leakage | Dedup before split; Pipeline fitted on train only | ⬜ |
+| 2.1 | Load and analyse datasets | `notebooks/eligo_engine.ipynb` §3.1 | ✅ shapes, dtypes, heads, nulls, duplicates, placeholders, class distribution |
+| 2.2 | Handle missing values and duplicates | `ml_core/preprocessing.py`, notebook §3.1–3.2 | ✅ 1,900 exact duplicates removed, then post-normalisation duplicates; placeholders → missing; tests `test_ml_core_preprocessing.py` |
+| 2.3 | Encode categorical variables | `ml_core/skills.py` `SkillBinarizer` (inside the Pipeline) | ✅ multi-hot canonical skills (D-012); the target is the categorical label |
+| 2.4 | Process academic and skill-related features | `ml_core/skills.py`, `ml_core/preprocessing.py` | ✅ canonical vocabulary 1,068 skills + synonym/compound map; academic fields → gates |
+| 2.5 | Clean internship descriptions | `ml_core/preprocessing.py` `clean_text`, `clean_internships` | ✅ HTML/whitespace/placeholders removed; composed description flagged `description_derived` |
+| 2.6 | Prepare training and testing datasets | `notebooks/eligo_engine.ipynb` §3.2 | ✅ stratified 80/20, random_state 42: train 1,494 / test 374 |
+| 2.7 | Prevent data leakage | dedup before split; `SkillBinarizer` vocabulary fitted on train folds only | ✅ test `test_binarizer_vocab_from_train_only`; notebook prints overlap check |
 
 ### 3. ML-based job role prediction
 | ID | Requirement | Where implemented | Status |
 |---|---|---|---|
-| 3.1 | Train Decision Tree Classifier | notebook §3.3, `artifacts/models/dt.joblib` | ⬜ |
-| 3.2 | Train Random Forest Classifier | notebook §3.3, `artifacts/models/rf.joblib` | ⬜ |
-| 3.3 | Predict job-role categories from academic info, skills, assessment features (where supported) | `ml_core/job_role.py` | ⬜ |
-| 3.4 | Evaluate: Accuracy | `artifacts/metrics/metrics.json` | ⬜ |
-| 3.5 | Evaluate: Precision | `artifacts/metrics/metrics.json` | ⬜ |
-| 3.6 | Evaluate: Recall | `artifacts/metrics/metrics.json` | ⬜ |
-| 3.7 | Evaluate: F1-score | `artifacts/metrics/metrics.json` | ⬜ |
-| 3.8 | Evaluate: Confusion matrix | `artifacts/figures/`, metrics | ⬜ |
-| 3.9 | Evaluate: Classification report | `artifacts/metrics/` | ⬜ |
-| 3.10 | Select and save best-performing model | `artifacts/models/best_model.joblib`, `manifest.json` | ⬜ |
+| 3.1 | Train Decision Tree Classifier | `artifacts/models/dt.joblib` | ✅ GridSearchCV (5-fold, macro-F1); test acc 0.8396, macro-F1 0.8604 |
+| 3.2 | Train Random Forest Classifier | `artifacts/models/rf.joblib` | ✅ GridSearchCV; test acc 0.8904, macro-F1 0.9107 |
+| 3.3 | Predict job-role categories from academic info, skills, assessment features (where supported) | `ml_core/job_role.py` `predict_job_role` | ✅ skills only (assessment not supported by the data, D-008); confidence + scope (D-021) |
+| 3.4 | Evaluate: Accuracy | `artifacts/metrics/metrics.json` | ✅ |
+| 3.5 | Evaluate: Precision | `artifacts/metrics/metrics.json` | ✅ macro + weighted |
+| 3.6 | Evaluate: Recall | `artifacts/metrics/metrics.json` | ✅ macro + weighted |
+| 3.7 | Evaluate: F1-score | `artifacts/metrics/metrics.json` | ✅ macro + weighted |
+| 3.8 | Evaluate: Confusion matrix | `artifacts/figures/confusion_matrix_{dt,rf}.png`, metrics.json | ✅ |
+| 3.9 | Evaluate: Classification report | `artifacts/metrics/classification_report_{dt,rf}.txt` | ✅ |
+| 3.10 | Select and save best-performing model | `artifacts/models/best_model.joblib`, manifest.json | ✅ Random Forest (highest test macro-F1) |
 
 ### 4. Hybrid AI internship recommendation engine
 | ID | Requirement | Where implemented | Status |
 |---|---|---|---|
-| 4.1 | Student profile and skill analysis | `ml_core/skills.py`, `ml_core/recommender.py` | ⬜ |
-| 4.2 | Assessment eligibility check (score strictly above 60%) | `ml_core/eligibility.py` | ⬜ |
-| 4.3 | Mandatory internship qualification check | `ml_core/eligibility.py` | ⬜ |
-| 4.4 | Content-based filtering: TF-IDF + cosine similarity | `ml_core/recommender.py`, `artifacts/vectorizers/tfidf.joblib` | ⬜ |
-| 4.5 | Semantic matching with Sentence Transformers | `ml_core/recommender.py`, `artifacts/models/sentence_model/` | ⬜ |
-| 4.6 | Hybrid recommendation score calculation | `ml_core/recommender.py`, `artifacts/config/hybrid_config.json` | ⬜ |
-| 4.7 | Ranking of eligible internships | `ml_core/recommender.py` | ⬜ |
-| 4.8 | Matched and missing skill identification | `ml_core/skills.py`, `ml_core/recommender.py` | ⬜ |
-| 4.9 | Use a lightweight Sentence Transformer (all-MiniLM-L6-v2) | `ml_core/config.py` | ⬜ |
-| 4.10 | Use actual internship records and reusable Python functions | `artifacts/data/internships_clean.csv`, `ml_core/` | ⬜ |
+| 4.1 | Student profile and skill analysis | `ml_core/skills.py`, `ml_core/preprocessing.py` `build_student_text` | ✅ |
+| 4.2 | Assessment eligibility check (score strictly above 60%) | `ml_core/eligibility.py` `check_assessment`/`is_qualified` | ✅ boundary tests: 60.00 → Not_Qualified, 60.01/60.004 → Qualified |
+| 4.3 | Mandatory internship qualification check | `ml_core/eligibility.py` `check_qualification` (D-017 hierarchy) | ✅ |
+| 4.4 | Content-based filtering: TF-IDF + cosine similarity | `ml_core/recommender.py` `content_similarity`, `artifacts/vectorizers/tfidf.joblib` | ✅ fitted on 8,207 internships in the notebook; transform-only afterwards (tested) |
+| 4.5 | Semantic matching with Sentence Transformers | `ml_core/recommender.py` `semantic_similarity`, `artifacts/embeddings/internships.npy` | ✅ all-MiniLM-L6-v2, pinned revision, cosine clipped to [0,1] |
+| 4.6 | Hybrid recommendation score calculation | `ml_core/recommender.py` `hybrid_score`, `artifacts/config/hybrid_config.json` | ✅ 0.35 / 0.40 / 0.25 + sensitivity table on DEMO profiles |
+| 4.7 | Ranking of eligible internships | `ml_core/recommender.py` `recommend` | ✅ gates first, ineligible never ranked (mutation-checked test) |
+| 4.8 | Matched and missing skill identification | `ml_core/skills.py` `compare_skills` | ✅ |
+| 4.9 | Use a lightweight Sentence Transformer (all-MiniLM-L6-v2) | `ml_core/config.py` `SENTENCE_MODEL_NAME/REVISION` | ✅ |
+| 4.10 | Use actual internship records and reusable Python functions | `artifacts/data/internships_clean.csv` (8,207 real postings), `ml_core/` | ✅ |
 
 ### 5. LLM-based skill analysis
 | ID | Requirement | Where implemented | Status |
 |---|---|---|---|
 | 5.1 | Optional local LLM via Ollama (small instruct model) | `ml_core/llm_extract.py` | ⬜ PENDING – Ollama (install + model pull); model decided in Phase 1 |
-| 5.2 | Extract student skills | `ml_core/llm_extract.py` | ⬜ |
-| 5.3 | Extract internship-required skills | `ml_core/llm_extract.py` | ⬜ |
-| 5.4 | Normalise skill names | `ml_core/skills.py`, `ml_core/llm_extract.py` | ⬜ |
-| 5.5 | Compare student and internship requirements | `ml_core/llm_extract.py` | ⬜ |
-| 5.6 | Identify skill gaps | `ml_core/llm_extract.py`, `ml_core/skills.py` | ⬜ |
-| 5.7 | Validate structured outputs | `ml_core/llm_extract.py` (pydantic) | ⬜ |
-| 5.8 | Rule-based fallback when LLM unavailable | `ml_core/skills.py`, `ml_core/llm_extract.py` | ⬜ |
-| 5.9 | No RAG, no vector database | Whole project (banned list in CLAUDE.md) | ⬜ |
+| 5.2 | Extract student skills | `ml_core/llm_extract.py` `extract_skills` | 🟨 code + tests done; live LLM run PENDING – Ollama (model pull in progress) |
+| 5.3 | Extract internship-required skills | `ml_core/llm_extract.py` `extract_skills` / `analyse_gap` | 🟨 code + tests done; live run PENDING – Ollama |
+| 5.4 | Normalise skill names | `ml_core/skills.py` + `normalise_skills` on LLM output | ✅ |
+| 5.5 | Compare student and internship requirements | `ml_core/llm_extract.py` `analyse_gap` | ✅ (rule-based path live; LLM path tested with a mocked Ollama response) |
+| 5.6 | Identify skill gaps | `ml_core/llm_extract.py` `analyse_gap` | ✅ |
+| 5.7 | Validate structured outputs | `ml_core/llm_extract.py` pydantic `SkillList` + JSON-schema `format` | ✅ retry once, then fallback (tested) |
+| 5.8 | Rule-based fallback when LLM unavailable | `ml_core/skills.py` `extract_skills_rule_based` | ✅ deterministic, always available; `method` field on every result |
+| 5.9 | No RAG, no vector database | whole project | ✅ no RAG / vector DB; one schema-constrained prompt |
 
 ### 6. Explainable AI
 | ID | Requirement | Where implemented | Status |
 |---|---|---|---|
-| 6.1 | Explain qualification eligibility | `ml_core/explain.py` | ⬜ |
-| 6.2 | Explain assessment eligibility | `ml_core/explain.py` | ⬜ |
-| 6.3 | Show matched skills | `ml_core/explain.py` | ⬜ |
-| 6.4 | Show missing skills | `ml_core/explain.py` | ⬜ |
-| 6.5 | Show content and semantic similarity contributions | `ml_core/explain.py` | ⬜ |
-| 6.6 | Show final internship match score | `ml_core/explain.py` | ⬜ |
-| 6.7 | Explain actual recommendation factors only (no unsupported reasons) | `ml_core/explain.py` (templated from computed values) | ⬜ |
-| 6.8 | Feature importance for job-role model | `ml_core/job_role.py`, `artifacts/figures/` | ⬜ |
+| 6.1 | Explain qualification eligibility | `ml_core/explain.py` (gates block) | ✅ |
+| 6.2 | Explain assessment eligibility | `ml_core/explain.py` (assessment block vs 60%) | ✅ |
+| 6.3 | Show matched skills | `ml_core/explain.py` | ✅ |
+| 6.4 | Show missing skills | `ml_core/explain.py` | ✅ |
+| 6.5 | Show content and semantic similarity contributions | `ml_core/explain.py` components (score × weight = contribution) | ✅ sums to the final score (tested) |
+| 6.6 | Show final internship match score | `ml_core/explain.py` | ✅ |
+| 6.7 | Explain actual recommendation factors only (no unsupported reasons) | `ml_core/explain.py` templates filled only with computed values | ✅ tests: no invented skills, largest contributor named |
+| 6.8 | Feature importance for job-role model | `artifacts/figures/feature_importance_rf.png`, `permutation_importance_best.png`, `shap_summary.png` | ✅ impurity + permutation (test set) + SHAP |
 
 ### 7. Visualisation and model evaluation
 | ID | Requirement | Where implemented | Status |
 |---|---|---|---|
-| 7.1 | Dataset distribution charts | `artifacts/figures/` | ⬜ |
-| 7.2 | Model accuracy and F1 comparison | `artifacts/figures/` | ⬜ |
-| 7.3 | Confusion matrices | `artifacts/figures/` | ⬜ |
-| 7.4 | Feature importance chart | `artifacts/figures/` | ⬜ |
-| 7.5 | Internship similarity ranking chart | `artifacts/figures/` | ⬜ |
-| 7.6 | Skill matching visualisation | `artifacts/figures/` | ⬜ |
+| 7.1 | Dataset distribution charts | `artifacts/figures/dist_job_role_classes.png`, `dist_internships.png` | ✅ |
+| 7.2 | Model accuracy and F1 comparison | `artifacts/figures/model_comparison.png` | ✅ |
+| 7.3 | Confusion matrices | `artifacts/figures/confusion_matrix_dt.png`, `confusion_matrix_rf.png` | ✅ |
+| 7.4 | Feature importance chart | `artifacts/figures/feature_importance_rf.png`, `permutation_importance_best.png` | ✅ |
+| 7.5 | Internship similarity ranking chart | `artifacts/figures/similarity_ranking_demo.png` | ✅ (DEMO profile) |
+| 7.6 | Skill matching visualisation | `artifacts/figures/skill_match_demo.png` | ✅ (DEMO profile) |
 
 ### 8. Save models and artifacts
 | ID | Requirement | Where implemented | Status |
 |---|---|---|---|
-| 8.1 | Decision Tree model | `artifacts/models/dt.joblib` | ⬜ |
-| 8.2 | Random Forest model | `artifacts/models/rf.joblib` | ⬜ |
-| 8.3 | Best job-role prediction model | `artifacts/models/best_model.joblib` | ⬜ |
-| 8.4 | Preprocessing pipeline and feature schema | `artifacts/models/preprocess.joblib`, `artifacts/config/feature_schema.json` | ⬜ |
-| 8.5 | TF-IDF vectorizer | `artifacts/vectorizers/tfidf.joblib` | ⬜ |
-| 8.6 | Sentence Transformer model or local reference | `artifacts/models/sentence_model/` | ⬜ |
-| 8.7 | Hybrid recommendation configuration | `artifacts/config/hybrid_config.json` | ⬜ |
-| 8.8 | Reusable recommendation functions | `ml_core/recommender.py` | ⬜ |
-| 8.9 | LLM extraction configuration and fallback functions | `artifacts/config/llm_config.json`, `ml_core/llm_extract.py` | ⬜ |
-| 8.10 | Model evaluation metrics | `artifacts/metrics/` | ⬜ |
-| 8.11 | Visualisation images | `artifacts/figures/` | ⬜ |
-| 8.12 | Cleaned internship dataset | `artifacts/data/internships_clean.csv` | ⬜ |
-| 8.13 | Required model metadata | `artifacts/manifest.json` | ⬜ |
-| 8.14 | Sample inference functions proving reload without retraining | notebook §3.7 reload test | ⬜ |
-| 8.15 | **Deliverable:** complete executable notebook with all of the above | `notebooks/eligo_engine.ipynb` | ⬜ |
+| 8.1 | Decision Tree model | `artifacts/models/dt.joblib` | ✅ |
+| 8.2 | Random Forest model | `artifacts/models/rf.joblib` | ✅ |
+| 8.3 | Best job-role prediction model | `artifacts/models/best_model.joblib` | ✅ |
+| 8.4 | Preprocessing pipeline and feature schema | `artifacts/models/preprocess.joblib`, `artifacts/config/feature_schema.json` | ✅ schema includes vocabulary, classes and scope thresholds |
+| 8.5 | TF-IDF vectorizer | `artifacts/vectorizers/tfidf.joblib` | ✅ |
+| 8.6 | Sentence Transformer model or local reference | `artifacts/models/sentence_model/` (git-ignored, D-020) + `scripts/setup_sentence_model.py` | ✅ setup script output verified byte-identical against manifest |
+| 8.7 | Hybrid recommendation configuration | `artifacts/config/hybrid_config.json` | ✅ |
+| 8.8 | Reusable recommendation functions | `ml_core/recommender.py` (+ eligibility, explain) | ✅ |
+| 8.9 | LLM extraction configuration and fallback functions | `artifacts/config/llm_config.json`, `ml_core/llm_extract.py` | ✅ |
+| 8.10 | Model evaluation metrics | `artifacts/metrics/` | ✅ |
+| 8.11 | Visualisation images | `artifacts/figures/` (12 PNGs) | ✅ |
+| 8.12 | Cleaned internship dataset | `artifacts/data/internships_clean.csv` | ✅ 8,207 rows |
+| 8.13 | Required model metadata | `artifacts/manifest.json` | ✅ SHA-256 per file, versions, best model, pinned revision |
+| 8.14 | Sample inference functions proving reload without retraining | `notebooks/eligo_engine.ipynb` §3.7 | ✅ restart-safe reload through `load_bundle()`; same top-5 ranking asserted |
+| 8.15 | **Deliverable:** complete executable notebook with all of the above | `notebooks/eligo_engine.ipynb` | ✅ executes top to bottom with nbconvert (exit 0) |
 
 ---
 
@@ -124,8 +124,8 @@ Last updated: 2026-11-24 (Phase 1)
 | 9.1 | Frontend: HTML5, CSS3, JavaScript, Bootstrap 5 | `templates/`, `static/`, `static/vendor/bootstrap/` | 🟨 Bootstrap 5.3.9 vendored |
 | 9.2 | Backend: Django 5.2 LTS | `config/` | 🟨 Django 5.2.19 installed |
 | 9.3 | Database: SQLite | `config/settings.py` | ⬜ |
-| 9.4 | ML: scikit-learn, Joblib | `ml_core/` | 🟨 installed |
-| 9.5 | AI recommendation: TF-IDF, Sentence Transformers, cosine similarity | `ml_core/recommender.py` | 🟨 libraries installed |
+| 9.4 | ML: scikit-learn, Joblib | `ml_core/` | ✅ used in notebook; Django in Phase 4 |
+| 9.5 | AI recommendation: TF-IDF, Sentence Transformers, cosine similarity | `ml_core/recommender.py` | ✅ engine built; Django integration in Phase 4 |
 | 9.6 | LLM: optional Ollama | `ml_core/llm_extract.py` | ⬜ PENDING – Ollama |
 | 9.7 | XAI: feature-based recommendation explanations | `ml_core/explain.py` | ⬜ |
 | 9.8 | Visualisation: Chart.js | `static/vendor/chartjs/`, `static/js/charts.js` | 🟨 Chart.js 4.6.1 vendored |
@@ -236,7 +236,7 @@ Last updated: 2026-11-24 (Phase 1)
 | 13.8 | Optional LLM skill extraction integrated | `recommendations/services.py` | ⬜ |
 | 13.9 | Explainable recommendations | `ml_core/explain.py` | ⬜ |
 | 13.10 | Save predictions and recommendations to SQLite | `recommendations/services.py` | ⬜ |
-| 13.11 | Do not retrain models inside Django | Code review + test | ⬜ |
+| 13.11 | Do not retrain models inside Django | `ml_core/artifacts.py` load-only; `content_similarity` never refits (tested) | 🟨 ml_core side done; Django side in Phase 4 |
 | 13.12 | Use same preprocessing and recommendation configs as notebook | shared `ml_core/` + `artifacts/config/` | ⬜ |
 
 ### 14. End-to-end processing rules
@@ -280,8 +280,8 @@ Last updated: 2026-11-24 (Phase 1)
 | 16.6 | Enforce assessment timing on the server | `assessments/services.py` (deadline) | ⬜ |
 | 16.7 | Don't expose correct answers during exams | exam view excludes `correct_option` | ⬜ |
 | 16.8 | Restrict students to their own results | ownership checks (404) | ⬜ |
-| 16.9 | Load ML models only from trusted local files | `ml_core/artifacts.py` + `manifest.json` SHA-256 | ⬜ |
-| 16.10 | Handle missing model artifacts gracefully | `ml_core/artifacts.py`, banner in UI | ⬜ |
+| 16.9 | Load ML models only from trusted local files | `ml_core/artifacts.py` SHA-256 manifest, path-traversal check | 🟨 ml_core side done (tested); Django wiring in Phase 4 |
+| 16.10 | Handle missing model artifacts gracefully | `ml_core/artifacts.py` `load_bundle` never raises | 🟨 ml_core side done (tested); banner in Phase 4 |
 | 16.11 | Preserve historical assessment scores | no delete/overwrite of attempts | ⬜ |
 
 ### 17. Software requirements
@@ -325,11 +325,11 @@ Last updated: 2026-11-24 (Phase 1)
 | 19.3 | Only freely available datasets and pretrained models | `docs/DATASETS.md` | ⬜ |
 | 19.4 | Two user roles: Admin and Student | `accounts/models.py` | ⬜ |
 | 19.5 | Every essential functional requirement implemented | this checklist | ⬜ |
-| 19.6 | Reusable Python functions for recommendations and inference | `ml_core/` | ⬜ |
+| 19.6 | Reusable Python functions for recommendations and inference | `ml_core/` | ✅ |
 | 19.7 | No retraining in Django | `ml_core/artifacts.py` (load only) | ⬜ |
 | 19.8 | No fabricated datasets, performance or predictions | whole project | ⬜ |
-| 19.9 | Consistent model input features between training and inference | `feature_schema.json` | ⬜ |
-| 19.10 | Deterministic fallback when LLM unavailable | `ml_core/llm_extract.py` | ⬜ |
+| 19.9 | Consistent model input features between training and inference | `artifacts/config/feature_schema.json` + Pipeline | ✅ |
+| 19.10 | Deterministic fallback when LLM unavailable | `ml_core/llm_extract.py` | ✅ |
 | 19.11 | Django migrations, requirements.txt, README | repo root | 🟨 requirements.txt done |
 | 19.12 | Windows-compatible local demonstration | README, offline vendored assets | 🟨 assets vendored, no CDN |
 | 19.13 | No integration with official government portal | scope | ⬜ |
@@ -368,6 +368,14 @@ Last updated: 2026-11-24 (Phase 1)
 - [x] writing-plans → `docs/PLAN.md`: 23 tasks for Phases 3–7, file list, data flow (notebook → artifacts → `ml_core.artifacts` → Django services → SQLite; `load_internships`; saved TF-IDF + sentence model for admin-added internships with the D-014 cache), typed `ml_core` public API, test plan mapped to every spec §18 scenario
 - [x] Self-review: spec coverage, type consistency, Review Focus tests placed in their owning tasks
 
+### Phase 3 — Notebook + ml_core
+- [x] `ml_core/` built test-first (9 modules): `pytest tests` → 172 passed, 1 skipped (the live-Ollama test, which skips until the model is installed)
+- [x] `jupyter nbconvert --to notebook --execute notebooks/eligo_engine.ipynb` → exit 0 (final run 2026-11-24)
+- [x] Every spec §8 artifact saved + `manifest.json` (SHA-256); restart-safe reload test passes (same ranking, nothing retrained)
+- [x] Real metrics (test n=374): Decision Tree acc 0.8396 / macro-F1 0.8604; **Random Forest acc 0.8904 / macro-F1 0.9107 (best)**
+- [x] `scripts/setup_sentence_model.py` re-creates the git-ignored sentence model and verifies it byte-for-byte against the manifest (D-020)
+- [ ] Live LLM output in notebook §3.5: PENDING – Ollama (model pull still running)
+
 ## PENDING – Ollama (tracker)
 Items that need a live Ollama. Everything else goes ahead without it, because the project never depends on Ollama and the rule-based fallback always works.
 
@@ -375,4 +383,4 @@ Items that need a live Ollama. Everything else goes ahead without it, because th
 |---|---|---|
 | Phase 0 step 8 | Install Ollama + `ollama --version` | ✅ 2026-11-24: Ollama 0.40.18 installed (signed installer, Krishna clicked Yes), server answers on :11434 |
 | Phase 1 step 6 | `ollama pull qwen3:4b` (~2.5 GB; DECIDED in D-009) | 🟨 Krishna approved 2026-11-24, pull running |
-| Phase 3.5 | Live LLM test of `ml_core/llm_extract.py` (the code + rule-based fallback get built in full in Phase 3; only the live run waits) | PENDING – Ollama |
+| Phase 3.5 | Live LLM test of `ml_core/llm_extract.py` (`tests/test_ml_core_llm_live.py`, auto-skips until the model exists) + live output in notebook §3.5 | PENDING – Ollama (code, mocked tests and fallback all done) |
