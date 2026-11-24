@@ -352,7 +352,7 @@ Last updated: 2026-11-24 (Phase 1)
 - [x] Skills listed (Hallmark, web-design-guidelines, Humanizer, Django skills, scikit-learn) + MCPs (Playwright, Context7) + plugins (Superpowers, Last30days, Diagram Design)
 - [x] Vendor files present in `static/vendor/`
 - [x] This checklist file created
-- [ ] **Step 8 (Ollama install): PENDING – Ollama.** The winget install was stopped on 2026-11-22. On 2026-11-24 a resumable `curl.exe -L -C -` download of `OllamaSetup.exe` to `%USERPROFILE%\Downloads\` was started in the background. When it finishes: run the installer (Krishna clicks Yes), then verify with `ollama --version`.
+- [x] **Step 8 (Ollama install): done 2026-11-24, Ollama 0.40.18.** History: The winget install was stopped on 2026-11-22. On 2026-11-24 a resumable `curl.exe -L -C -` download of `OllamaSetup.exe` to `%USERPROFILE%\Downloads\` was started in the background. When it finishes: run the installer (Krishna clicks Yes), then verify with `ollama --version`.
 - [x] Step 11: session restarted, new skills loaded (2026-11-24)
 
 ### Phase 1 — Research and decisions
@@ -373,6 +373,6 @@ Items that need a live Ollama. Everything else goes ahead without it, because th
 
 | Item | What waits | Status |
 |---|---|---|
-| Phase 0 step 8 | Install Ollama + `ollama --version` | PENDING – Ollama (installer downloading) |
-| Phase 1 step 6 | `ollama pull qwen3:4b` (~2.5 GB; DECIDED in D-009; pulled only after Krishna approves) | PENDING – Ollama |
+| Phase 0 step 8 | Install Ollama + `ollama --version` | ✅ 2026-11-24: Ollama 0.40.18 installed (signed installer, Krishna clicked Yes), server answers on :11434 |
+| Phase 1 step 6 | `ollama pull qwen3:4b` (~2.5 GB; DECIDED in D-009) | 🟨 Krishna approved 2026-11-24, pull running |
 | Phase 3.5 | Live LLM test of `ml_core/llm_extract.py` (the code + rule-based fallback get built in full in Phase 3; only the live run waits) | PENDING – Ollama |
