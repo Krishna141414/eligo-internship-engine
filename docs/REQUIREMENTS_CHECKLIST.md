@@ -16,7 +16,7 @@ Last updated: 2026-11-24 (Phase 1)
 |---|---|---|---|
 | 1.1 | Free public dataset: student qualifications, academic details, skills | `docs/DATASETS.md` A, `data/raw/mendeley_student_career/` | 🟨 Student Career (real, CC BY 4.0) gives skills. No real dataset with signal also had academic details (D-005); academic fields are collected by the profile and used by eligibility gates |
 | 1.2 | Free public dataset: job roles and career-related attributes | `docs/DATASETS.md` A | ✅ Student Career `Career` label, 6 classes (downloaded, SHA-256 verified) |
-| 1.3 | Free public dataset: internship opportunities, descriptions, qualifications, required skills | `docs/DATASETS.md` B | 🟨 Internship Opportunities in India (2025) chosen (D-006); waiting for Krishna's Kaggle download. No description column → composed + flagged (D-007) |
+| 1.3 | Free public dataset: internship opportunities, descriptions, qualifications, required skills | `docs/DATASETS.md` B, `data/raw/kaggle_internships_2025/` | ✅ Internship Opportunities in India (2025), 8,483 real postings with skills + education (D-006). No description column → composed from the posting's own fields + flagged (D-007) |
 | 1.4 | Assessment-related features where supported by the dataset | `docs/DECISIONS.md` D-008 | ✅ Decided: not supported by the training data → assessment is an eligibility gate only (stated on the prediction page) |
 | 1.5 | Provide dataset download URLs and column descriptions | `docs/DATASETS.md`, README | 🟨 DATASETS.md done; Kaggle column contents confirmed at load (Phase 3); README in Phase 7 |
 | 1.6 | Do not fabricate training data, labels or evaluation results | Whole project | 🟨 Three synthetic / no-signal candidates rejected on real checks (DATASETS.md); labels kept as published |
@@ -359,7 +359,7 @@ Last updated: 2026-11-24 (Phase 1)
 - [x] Last30days on all 4 topics + web supplements → `docs/RESEARCH.md` (2026-11-24; thin 30-day signal stated honestly)
 - [x] Context7 docs: Django 5.2, sentence-transformers, scikit-learn 1.9, Chart.js 4, Bootstrap 5.3, Ollama `/api/chat` → `docs/RESEARCH.md` §5
 - [x] DATASETS.md complete: name, URL, licence, rows/cols, column descriptions, synthetic yes/no, why chosen, rejected candidates
-- [ ] **Raw data present in `data/raw/`:** Student Career ✅ (SHA-256 verified). **Kaggle internship file: waiting for Krishna's download**
+- [x] Raw data present in `data/raw/`: Student Career (SHA-256 verified against Mendeley) + Kaggle `merged_internships_dataset.csv` (8,483 × 13, size matches Kaggle, profiled 2026-11-24)
 - [x] All decisions logged: D-005 datasets A, D-006 dataset B, D-007 qualification fields, D-008 assessment feature, D-009 Ollama model, D-010 UI kit, D-011 SQLite locking
 - [ ] Step 6 `ollama pull qwen3:4b`: PENDING – Ollama (needs install first, then Krishna's approval)
 

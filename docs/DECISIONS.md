@@ -86,8 +86,8 @@ Criteria, in priority order (from `CLAUDE.md`): **spec compliance > correctness 
 - **Chosen: (a) where the source has the information, (b) where it doesn't.** Never a silent guess.
   - `required_qualification` / `specialization`: parsed from `Education` with a documented keyword → qualification map in `ml_core/preprocessing.py` (e.g. "B.Tech", "B.E." → B.Tech/B.E.; "Computer Science" → specialization CSE). Empty or unparseable values → "Any Graduate" / no specialization. Every record stores `derived_fields` listing which values came from a rule or a default.
   - `minimum_academic_percentage`: not in the source → **0% default** (gate always passes), listed in `derived_fields`, editable by admins.
-  - Deadline gate: deadlines are a 2025 snapshot, so the gate compares against `REFERENCE_DATE` in `ml_core/config.py` (default: the end of the dataset's scrape date range, shown in the UI). Admin-added internships use real dates against today. Without this, every imported internship would fail the deadline gate on day one.
-- **Final rule table** is written in Phase 3 after EDA shows the real `Education` values.
+  - Deadline gate: deadlines are a 2025 snapshot, so the gate compares against `REFERENCE_DATE` in `ml_core/config.py` (default **2025-09-28**, the last scrape day confirmed from `Date Time`; shown in the UI). Admin-added internships use real dates against today. Without this, every imported internship would fail the deadline gate on day one.
+- **Confirmed on load (2026-11-24):** `Education` is "Not Specified" on 6,539 of 8,483 rows (77%) → "Any Graduate". Of the 1,944 specified values, 1,139 mention a degree or qualification keyword (rule-parsed) and 805 hold other text such as location limits or duties (→ "Any Graduate", text kept as an eligibility note). The final keyword → qualification table is written in Phase 3 from these real values.
 
 ## D-008 — Assessment score: eligibility gate only
 - **Date:** 2026-11-24 · **Phase:** 1, step 5

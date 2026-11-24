@@ -6,7 +6,7 @@ Selection details and the rejected candidates are in `docs/DECISIONS.md` (D-005,
 | Role | Dataset | Licence | Size | Synthetic? | Status |
 |---|---|---|---|---|---|
 | A. Job-role training | Student Career Dataset (Mendeley, v2) | CC BY 4.0 | 4,076 rows × 2 cols (2,176 after removing exact duplicates) | **No**, real student survey | ✅ downloaded to `data/raw/mendeley_student_career/`, SHA-256 verified |
-| B. Internship listings | Internship Opportunities in India (2025) (Kaggle) | MIT (as declared by uploader) | 8,485 postings × 13 cols | **No**, scraped real Internshala postings | ⏳ needs Kaggle login: Krishna downloads it to `data/raw/kaggle_internships_2025/` |
+| B. Internship listings | Internship Opportunities in India (2025) (Kaggle) | MIT (as declared by uploader) | 8,483 postings × 13 cols | **No**, scraped real Internshala postings | ✅ downloaded by Krishna (Kaggle login) to `data/raw/kaggle_internships_2025/`, profiled 2026-11-24 |
 
 ---
 
@@ -54,10 +54,12 @@ Selection details and the rejected candidates are in `docs/DECISIONS.md` (D-005,
 | Licence | MIT (declared on Kaggle) |
 | Source | Internshala internship postings, scraped by the uploader in 2025 |
 | Files | `merged_internships_dataset.csv` (2.62 MB, all postings + `internship_id`) plus 9 per-city files (Bangalore, Chennai, Delhi, Hyderabad, Jaipur, Kolkata, Mumbai, Pune, work-from-home) that are subsets of it |
-| Rows / columns | 8,485 postings × 13 columns (uploader's description; to be confirmed on load) |
+| Rows / columns | **8,483** postings × 13 columns (the uploader's description says 8,485; the file has 8,483) |
+| File used | `merged_internships_dataset.csv`, 2,622,937 bytes (matches Kaggle's listed size), SHA-256 `06a82ae6d264433c267b0821d1d53c34d7234d6814d356d3250c578ffec187a6` |
+| Scrape window | `Date Time` 2025-09-21 14:37 → 2025-09-28 10:11 |
 | Synthetic? | **No.** Real scraped postings. |
 
-**Columns** (names from Kaggle's Croissant metadata; types and content get confirmed in Phase 3 EDA)
+**Columns** (all stored as text, no null cells; placeholders such as "Not Available" / "Not Specified" / "Nothing" stand in for missing values)
 
 | Column | Expected content | Used as |
 |---|---|---|
@@ -75,10 +77,31 @@ Selection details and the rejected candidates are in `docs/DECISIONS.md` (D-005,
 | `Skills` | required skills list | `required_skills` (normalised via `ml_core.skills`) |
 | `Perks` | certificate, flexible hours, etc. | description text |
 
+**Confirmed on load (real counts, 2026-11-24). Every one of these gets a documented cleaning rule in Phase 3:**
+
+| Finding | Count | Planned handling |
+|---|---|---|
+| Exact duplicates / duplicates ignoring `internship_id` | 0 / 0 | none needed |
+| Same `profile` + `company` + `Location` | 956 | keep: different ids and skills or stipends, so these look like separate openings; reviewed in EDA |
+| `profile` = "Nothing" (no title; these 207 rows also have Location "Not Available") | 207 | drop: no title to match on |
+| Scraper column shift: `Start Date` holds long free text (e.g. a company bio) | 69 | drop or flag the row |
+| `Duration` isn't a duration (e.g. "1 week ago", posting age) | 60 | set duration to unknown, flag |
+| `Skills` = "Not Available" | 213 | keep, but no skill-match score (component = 0, explained) |
+| `Apply by Date` = "Not Available" | 1,260 | no deadline → deadline gate passes, flagged |
+| `Stipend` = "Not Available" / "Unpaid" | 336 / 180 | parsed to `None` / 0 |
+| `Offer` = "Nothing" on **every** row | 8,483 | column dropped (no information) |
+| `Education` = "Not Specified" | 6,539 (77%) | → "Any Graduate" default (D-007) |
+| `Education` specified | 1,944 | 1,139 mention a degree or qualification keyword → rule-parsed; 805 hold other text (221 are location limits such as "are from Mumbai only", others are duties) → "Any Graduate" + kept as eligibility note |
+| `Skills` vocabulary | 793 distinct tokens, median 4 per posting | normalised via `ml_core.skills` |
+| `Perks` vocabulary | 6 tokens (Certificate, Letter of Recommendation, Flexible, 5 Days A Week, Mentorship, Not Available) | description text |
+| Domain mix | 1,977 distinct titles; top are Business Development (650), Digital Marketing (329), HR (324); about 1,716 are tech-related | see note below |
+
+**Domain mismatch to handle:** the job-role model predicts 6 **CS career fields** (dataset A), but most internships are non-tech. "Related internships" on the prediction page therefore use a documented career-field → internship-title keyword map plus a semantic-similarity fallback, built in Phase 3. The main recommender isn't affected: it ranks by the student's own skills and profile against each posting.
+
 **Known limitations:**
 - **No full description column.** The text used for TF-IDF and semantic matching (`description`) is **composed** from `profile + Skills + Education + Perks + Offer`, cleaned (HTML, whitespace, boilerplate) and flagged with `description_derived = True`. Admin-added internships can have a real free-text description.
 - `minimum_academic_percentage` is not in the data. It is set to a neutral 0% default that admins can edit, and flagged as derived (D-007).
-- Postings are a 2025 snapshot. Deadlines will be in the past relative to the demo date, so the "deadline not passed" gate compares against a configurable reference date (D-007).
+- Postings are a 2025 snapshot (scraped 21–28 Sep 2025; deadlines mostly in Oct 2025). Deadlines are in the past relative to the demo date, so the "deadline not passed" gate compares against a configurable reference date (D-007; default 2025-09-28, the last scrape day).
 - Scraped from Internshala and re-shared by the uploader under MIT. Eligo uses it only for non-commercial academic demonstration and credits both the uploader and Internshala as the original source.
 
 **Why this one (summary of D-006):** it is the only free candidate found with **both required skills and required education** for thousands of real postings. The originally suggested "Internship Insights" (`aayush9119`) only has title, company, location, start date, duration, stipend, status and link, with no skills, education or description, so it can't support skill matching or the qualification gate.
