@@ -5,7 +5,7 @@ Every bullet of `docs/PROJECT_SPEC.md` sections 1–19 (plus the final goal) map
 
 **Status legend:** ⬜ not started · 🟨 in progress / partial · ✅ done (verified) · ❌ not done (reason given)
 
-Last updated: 2026-11-22 (Phase 0)
+Last updated: 2026-11-24 (Phase 1)
 
 ---
 
@@ -14,12 +14,12 @@ Last updated: 2026-11-22 (Phase 0)
 ### 1. Dataset requirements
 | ID | Requirement | Where implemented | Status |
 |---|---|---|---|
-| 1.1 | Free public dataset: student qualifications, academic details, skills | `docs/DATASETS.md`, `data/raw/` | ⬜ |
-| 1.2 | Free public dataset: job roles and career-related attributes | `docs/DATASETS.md`, `data/raw/` | ⬜ |
-| 1.3 | Free public dataset: internship opportunities, descriptions, qualifications, required skills | `docs/DATASETS.md`, `data/raw/` | ⬜ |
-| 1.4 | Assessment-related features where supported by the dataset | `docs/DATASETS.md`, `docs/DECISIONS.md` (Phase 1 step 5) | ⬜ |
-| 1.5 | Provide dataset download URLs and column descriptions | `docs/DATASETS.md`, README | 🟨 file created, filled in Phase 1 |
-| 1.6 | Do not fabricate training data, labels or evaluation results | Whole project; `ml_core/`, notebook, `artifacts/metrics/` | ⬜ |
+| 1.1 | Free public dataset: student qualifications, academic details, skills | `docs/DATASETS.md` A, `data/raw/mendeley_student_career/` | 🟨 Student Career (real, CC BY 4.0) gives skills. No real dataset with signal also had academic details (D-005); academic fields are collected by the profile and used by eligibility gates |
+| 1.2 | Free public dataset: job roles and career-related attributes | `docs/DATASETS.md` A | ✅ Student Career `Career` label, 6 classes (downloaded, SHA-256 verified) |
+| 1.3 | Free public dataset: internship opportunities, descriptions, qualifications, required skills | `docs/DATASETS.md` B | 🟨 Internship Opportunities in India (2025) chosen (D-006); waiting for Krishna's Kaggle download. No description column → composed + flagged (D-007) |
+| 1.4 | Assessment-related features where supported by the dataset | `docs/DECISIONS.md` D-008 | ✅ Decided: not supported by the training data → assessment is an eligibility gate only (stated on the prediction page) |
+| 1.5 | Provide dataset download URLs and column descriptions | `docs/DATASETS.md`, README | 🟨 DATASETS.md done; Kaggle column contents confirmed at load (Phase 3); README in Phase 7 |
+| 1.6 | Do not fabricate training data, labels or evaluation results | Whole project | 🟨 Three synthetic / no-signal candidates rejected on real checks (DATASETS.md); labels kept as published |
 
 ### 2. Data preprocessing
 | ID | Requirement | Where implemented | Status |
@@ -63,7 +63,7 @@ Last updated: 2026-11-22 (Phase 0)
 ### 5. LLM-based skill analysis
 | ID | Requirement | Where implemented | Status |
 |---|---|---|---|
-| 5.1 | Optional local LLM via Ollama (small instruct model) | `ml_core/llm_extract.py` | ⬜ Ollama install pending (Phase 0 step 8 stopped by Krishna); model picked in Phase 1 |
+| 5.1 | Optional local LLM via Ollama (small instruct model) | `ml_core/llm_extract.py` | ⬜ PENDING – Ollama (install + model pull); model decided in Phase 1 |
 | 5.2 | Extract student skills | `ml_core/llm_extract.py` | ⬜ |
 | 5.3 | Extract internship-required skills | `ml_core/llm_extract.py` | ⬜ |
 | 5.4 | Normalise skill names | `ml_core/skills.py`, `ml_core/llm_extract.py` | ⬜ |
@@ -126,7 +126,7 @@ Last updated: 2026-11-22 (Phase 0)
 | 9.3 | Database: SQLite | `config/settings.py` | ⬜ |
 | 9.4 | ML: scikit-learn, Joblib | `ml_core/` | 🟨 installed |
 | 9.5 | AI recommendation: TF-IDF, Sentence Transformers, cosine similarity | `ml_core/recommender.py` | 🟨 libraries installed |
-| 9.6 | LLM: optional Ollama | `ml_core/llm_extract.py` | ⬜ install pending |
+| 9.6 | LLM: optional Ollama | `ml_core/llm_extract.py` | ⬜ PENDING – Ollama |
 | 9.7 | XAI: feature-based recommendation explanations | `ml_core/explain.py` | ⬜ |
 | 9.8 | Visualisation: Chart.js | `static/vendor/chartjs/`, `static/js/charts.js` | 🟨 Chart.js 4.6.1 vendored |
 
@@ -294,7 +294,7 @@ Last updated: 2026-11-22 (Phase 0)
 | 17.5 | SQLite | bundled with Python | ✅ |
 | 17.6 | Chrome / Edge | Krishna's machine; Playwright for tests | ✅ Edge ships with Windows 11 |
 | 17.7 | numpy, pandas, scikit-learn, scipy, joblib, matplotlib, seaborn, sentence-transformers, torch, django, openpyxl | `requirements.txt` | ✅ installed + pinned |
-| 17.8 | Optional: Ollama + small local LLM | system install | ⬜ Ollama install pending (step 8 stopped mid-download, nothing installed); model picked in Phase 1 |
+| 17.8 | Optional: Ollama + small local LLM | system install | ⬜ PENDING – Ollama (installer downloading); model decided in Phase 1 |
 | 17.9 | Optional: pydantic | `requirements.txt` | ✅ 2.14.4 |
 | 17.10 | Optional: shap | `requirements.txt` | ✅ 0.54.1 |
 | 17.11 | No RAG, LangChain, ChromaDB, FAISS, cloud deploy, paid APIs | `requirements.txt` has none | ✅ (re-checked each phase) |
@@ -352,5 +352,22 @@ Last updated: 2026-11-22 (Phase 0)
 - [x] Skills listed (Hallmark, web-design-guidelines, Humanizer, Django skills, scikit-learn) + MCPs (Playwright, Context7) + plugins (Superpowers, Last30days, Diagram Design)
 - [x] Vendor files present in `static/vendor/`
 - [x] This checklist file created
-- [ ] **Step 8 (Ollama install): PENDING.** Krishna stopped `winget install --id Ollama.Ollama -e` mid-download on 2026-11-22. Nothing was installed. To resume, re-run that command (admin popup → Yes), then restart the terminal so `ollama` is on PATH.
-- [ ] Step 11 (restart session for new skills) not done yet
+- [ ] **Step 8 (Ollama install): PENDING – Ollama.** The winget install was stopped on 2026-11-22. On 2026-11-24 a resumable `curl.exe -L -C -` download of `OllamaSetup.exe` to `%USERPROFILE%\Downloads\` was started in the background. When it finishes: run the installer (Krishna clicks Yes), then verify with `ollama --version`.
+- [x] Step 11: session restarted, new skills loaded (2026-11-24)
+
+### Phase 1 — Research and decisions
+- [x] Last30days on all 4 topics + web supplements → `docs/RESEARCH.md` (2026-11-24; thin 30-day signal stated honestly)
+- [x] Context7 docs: Django 5.2, sentence-transformers, scikit-learn 1.9, Chart.js 4, Bootstrap 5.3, Ollama `/api/chat` → `docs/RESEARCH.md` §5
+- [x] DATASETS.md complete: name, URL, licence, rows/cols, column descriptions, synthetic yes/no, why chosen, rejected candidates
+- [ ] **Raw data present in `data/raw/`:** Student Career ✅ (SHA-256 verified). **Kaggle internship file: waiting for Krishna's download**
+- [x] All decisions logged: D-005 datasets A, D-006 dataset B, D-007 qualification fields, D-008 assessment feature, D-009 Ollama model, D-010 UI kit, D-011 SQLite locking
+- [ ] Step 6 `ollama pull qwen3:4b`: PENDING – Ollama (needs install first, then Krishna's approval)
+
+## PENDING – Ollama (tracker)
+Items that need a live Ollama. Everything else goes ahead without it, because the project never depends on Ollama and the rule-based fallback always works.
+
+| Item | What waits | Status |
+|---|---|---|
+| Phase 0 step 8 | Install Ollama + `ollama --version` | PENDING – Ollama (installer downloading) |
+| Phase 1 step 6 | `ollama pull qwen3:4b` (~2.5 GB; DECIDED in D-009; pulled only after Krishna approves) | PENDING – Ollama |
+| Phase 3.5 | Live LLM test of `ml_core/llm_extract.py` (the code + rule-based fallback get built in full in Phase 3; only the live run waits) | PENDING – Ollama |
