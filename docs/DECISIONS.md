@@ -16,6 +16,14 @@ Criteria, in priority order (from `CLAUDE.md`): **spec compliance > correctness 
 | D-009 | 2026-11-24 | 1 | Ollama model: `qwen3:4b` with `think: false` (fallback option `qwen2.5:3b`) |
 | D-010 | 2026-11-24 | 1 | UI kit: plain Bootstrap 5 + custom `theme.css` (not Tabler) |
 | D-011 | 2026-11-24 | 1 | Duplicate-submission guard on SQLite: conditional UPDATE inside `atomic()` |
+| D-012 | 2026-11-24 | 2 | Job-role features: multi-hot canonical skills (`SkillBinarizer`, fitted on train only) |
+| D-013 | 2026-11-24 | 2 | One canonical skill vocabulary + synonym map for both datasets and the LLM output |
+| D-014 | 2026-11-24 | 2 | Embedding cache: `internships.npy` for imported rows, JSONField for admin-added/edited, text-hash check |
+| D-015 | 2026-11-24 | 2 | Recommendations saved per run (`run_id`), never overwritten |
+| D-016 | 2026-11-24 | 2 | Related internships for a career field: documented keyword map + semantic ranking |
+| D-017 | 2026-11-24 | 2 | Qualification hierarchy map (Any Graduate / Any Postgraduate / specific degree / Diploma) |
+| D-018 | 2026-11-24 | 2 | Tests use pytest + pytest-django with hand-written fixtures (no factory-boy) |
+| D-019 | 2026-11-24 | 2 | Exam: one question per view in a single page, palette navigation, no-JS fallback = list |
 
 ---
 
@@ -124,3 +132,17 @@ Criteria, in priority order (from `CLAUDE.md`): **spec compliance > correctness 
 - **Finding:** Django docs: "Using `select_for_update()` on backends which do not support `SELECT ... FOR UPDATE` (such as SQLite) will have no effect." Hard rule 10 asks for `select_for_update`, but on SQLite it is a silent no-op.
 - **Options:** (1) rely on `select_for_update` alone: not safe on SQLite; (2) keep `select_for_update()` (works if the DB is ever switched) **and** finalise with a conditional update inside `transaction.atomic()`: `Attempt.objects.filter(pk=…, status=IN_PROGRESS).update(status=…)`. The UPDATE is atomic in SQLite (database-level write lock), and a return value of 0 means someone else already submitted → reject as duplicate.
 - **Chosen:** option 2. Hard rule 10 is still met (atomic status check + `select_for_update`), and it's actually correct on SQLite. A concurrency test in Phase 6 proves it.
+
+## D-012 … D-019 — Phase 2 design decisions
+- **Date:** 2026-11-24 · **Phase:** 2. The full alternatives and reasoning for each are in `docs/superpowers/specs/2026-11-24-eligo-design.md` §4. Summary:
+
+| # | Chosen | Main alternative(s) rejected | Deciding criterion |
+|---|---|---|---|
+| D-012 | Multi-hot canonical skill vector via `SkillBinarizer` inside the Pipeline (vocabulary from train only) | TF-IDF over the raw skill string; sentence embeddings | Explainability (each feature = a skill) + leakage safety + train/inference consistency |
+| D-013 | One canonical vocabulary + synonym map shared by both datasets, the profile form and the LLM output | Separate per-dataset vocabularies | Correctness: matched/missing skills would silently miss on spelling variants |
+| D-014 | `internships.npy` for imported postings + `Internship.embedding` JSONField for admin-added/edited, keyed by text hash; TF-IDF on the fly | All embeddings in the DB (~30 MB JSON); re-encode at startup | Speed + correctness (stale embeddings detected by hash) |
+| D-015 | Each generation is a new run (`run_id`, `generated_date`, linked attempt) | Overwrite per student | History preserved, spec §14 "stored" |
+| D-016 | Career-field → title/skill keyword map, ranked semantically, filtered by gates | Similarity to the label text alone | Short labels ("Security") give unstable similarity |
+| D-017 | Documented qualification hierarchy map; profile choices come from it | Free-text qualification | Gate correctness: inputs and rules share one vocabulary |
+| D-018 | pytest + pytest-django + hand-written fixtures; `unittest.mock` for Ollama/HTTP | factory-boy + pytest-mock | Locked stack: no new dependencies for little gain |
+| D-019 | One question per view inside one page, palette jumps, autosave per answer, no-JS fallback = full list | Server page per question; scroll-only list | Fits the palette design, fewer requests, graceful degradation |

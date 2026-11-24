@@ -363,6 +363,11 @@ Last updated: 2026-11-24 (Phase 1)
 - [x] All decisions logged: D-005 datasets A, D-006 dataset B, D-007 qualification fields, D-008 assessment feature, D-009 Ollama model, D-010 UI kit, D-011 SQLite locking
 - [ ] Step 6 `ollama pull qwen3:4b`: PENDING – Ollama (needs install first, then Krishna's approval)
 
+### Phase 2 — Plan
+- [x] Brainstorming → design `docs/superpowers/specs/2026-11-24-eligo-design.md` (approaches + decisions D-012…D-019)
+- [x] writing-plans → `docs/PLAN.md`: 23 tasks for Phases 3–7, file list, data flow (notebook → artifacts → `ml_core.artifacts` → Django services → SQLite; `load_internships`; saved TF-IDF + sentence model for admin-added internships with the D-014 cache), typed `ml_core` public API, test plan mapped to every spec §18 scenario
+- [x] Self-review: spec coverage, type consistency, Review Focus tests placed in their owning tasks
+
 ## PENDING – Ollama (tracker)
 Items that need a live Ollama. Everything else goes ahead without it, because the project never depends on Ollama and the rule-based fallback always works.
 
