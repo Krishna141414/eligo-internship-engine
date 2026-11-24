@@ -1,0 +1,8 @@
+# ML artifacts are binary: no line-ending conversion, no text diffs
+*.npy binary
+*.joblib binary
+*.safetensors binary
+*.png binary
+*.woff2 binary
+*.woff binary
+*.xlsx binary

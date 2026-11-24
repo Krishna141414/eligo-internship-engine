@@ -18,6 +18,7 @@ from sklearn.base import BaseEstimator, TransformerMixin
 _SEPARATORS = re.compile(r"[,;/|\n]+")
 _PLACEHOLDERS = {"", "nan", "none", "not available", "not specified", "nothing", "na", "n/a"}
 _EDGE_PUNCT = " .,;:-_'\"()[]"
+_EDGE_PUNCT_NO_BRACKETS = " .,;:-_'\"[]"
 
 #: token (already lower-cased, whitespace-collapsed) -> canonical skill
 BASE_SYNONYMS: dict[str, str] = {
@@ -67,7 +68,16 @@ def split_skills(text: str) -> list[str]:
 
 
 def _clean(token: str) -> str:
-    return re.sub(r"\s+", " ", str(token).lower()).strip(_EDGE_PUNCT).strip()
+    """Lower-case, collapse whitespace, trim edge punctuation. Brackets are only trimmed when they
+    are unbalanced or wrap the whole token, so "English Proficiency (Spoken)" keeps its ")"."""
+    s = re.sub(r"\s+", " ", str(token).lower()).strip(_EDGE_PUNCT_NO_BRACKETS)
+    while s.startswith("(") and s.endswith(")") and s.count("(") == 1:
+        s = s[1:-1].strip(_EDGE_PUNCT_NO_BRACKETS)
+    if s.endswith(")") and s.count("(") < s.count(")"):
+        s = s[:-1]
+    if s.startswith("(") and s.count("(") > s.count(")"):
+        s = s[1:]
+    return s.strip(_EDGE_PUNCT_NO_BRACKETS).strip()
 
 
 def normalise_skill(token: str, synonyms: Mapping[str, str]) -> str:

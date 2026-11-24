@@ -47,6 +47,14 @@ def test_synonyms():
     assert normalise_skill("py", BASE_SYNONYMS) == "python"
 
 
+def test_normalise_keeps_balanced_brackets():
+    # real Internshala skills
+    assert normalise_skill("English Proficiency (Spoken)", BASE_SYNONYMS) == "english proficiency (spoken)"
+    assert normalise_skill("Client Relationship Management (CRM)", BASE_SYNONYMS) == "client relationship management (crm)"
+    assert normalise_skill("(Python)", BASE_SYNONYMS) == "python"
+    assert normalise_skill("Python)", BASE_SYNONYMS) == "python"
+
+
 def test_normalise_collapses_whitespace_and_case():
     assert normalise_skill("  Machine   Learning. ", BASE_SYNONYMS) == "machine learning"
 

@@ -77,6 +77,15 @@ SPECIALIZATION_GROUPS: dict[str, frozenset[str]] = {
 }
 
 
+def is_blank(value: object) -> bool:
+    """None, "", NaN (pandas missing value) and the strings "nan"/"none" all mean 'not set'."""
+    if value is None:
+        return True
+    if isinstance(value, float) and value != value:   # NaN
+        return True
+    return str(value).strip().lower() in {"", "nan", "none"}
+
+
 def accepts(required: str, student_qualification: str) -> bool:
     return student_qualification in QUALIFICATION_HIERARCHY.get(required, frozenset({required}))
 
@@ -137,7 +146,9 @@ def check_status_and_deadline(status: str, deadline: date | None, today: date) -
 
 def check_qualification(student_qualification: str, required: str) -> GateResult:
     gate = "qualification"
-    if not student_qualification:
+    if is_blank(required):
+        required = ANY_GRADUATE
+    if is_blank(student_qualification):
         return GateResult(gate, False, "Your profile is missing your qualification. Add it to check eligibility.")
     if accepts(required, student_qualification):
         return GateResult(gate, True, f"Your qualification ({student_qualification}) meets the requirement ({required}).")
@@ -147,12 +158,13 @@ def check_qualification(student_qualification: str, required: str) -> GateResult
 
 def check_specialization(student_specialization: str, required: str | None) -> GateResult:
     gate = "specialization"
-    if not required:
+    if is_blank(required):
         return GateResult(gate, True, "No specific specialisation required.")
+    required = str(required).strip()
     accepted = SPECIALIZATION_GROUPS.get(required, frozenset({required}))
     if student_specialization in accepted:
         return GateResult(gate, True, f"Your specialisation ({student_specialization}) matches {required}.")
-    shown = student_specialization or "not set in your profile"
+    shown = "not set in your profile" if is_blank(student_specialization) else student_specialization
     return GateResult(gate, False, f"Requires a {required}-related specialisation; yours is {shown}.")
 
 

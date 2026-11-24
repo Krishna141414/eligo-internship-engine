@@ -90,6 +90,13 @@ def test_specialization_none_required_passes():
     assert check_specialization("", "").passed
 
 
+@pytest.mark.parametrize("blank", [None, "", float("nan"), "nan", "None"])
+def test_specialization_blank_values_mean_no_requirement(blank):
+    # pandas 3 turns missing strings into NaN; that must not become a "nan" requirement
+    r = check_specialization("CSE", blank)
+    assert r.passed and "nan" not in r.reason.lower()
+
+
 def test_specialization_group_accepts_related_fields():
     assert check_specialization("AI & ML", "CSE").passed
     assert not check_specialization("Mechanical", "CSE").passed
