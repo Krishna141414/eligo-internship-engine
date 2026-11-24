@@ -27,3 +27,6 @@ artifacts/models/sentence_model/
 .claude/settings.local.json
 .claude/skills/
 .agents/
+
+# Superpowers plan-execution scratch (ledger, briefs)
+.superpowers/
