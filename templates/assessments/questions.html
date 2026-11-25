@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% block title %}Questions: {{ assessment.assessment_name }}{% endblock %}
+{% block content %}
+<a class="small" href="{% url 'assessments:admin_list' %}">&larr; All assessments</a>
+<div class="d-flex justify-content-between align-items-center mt-2">
+  <h1 class="h3">{{ assessment.assessment_name }}: questions</h1>
+  <a class="btn btn-primary" href="{% url 'assessments:question_add' assessment.pk %}">Add question</a>
+</div>
+<p class="text-muted">{{ questions|length }} question{{ questions|length|pluralize }} · total {{ assessment.total_marks|floatformat }} marks · {{ assessment.get_status_display }}</p>
+<ol>
+{% for q in questions %}
+<li class="mb-2">{{ q.question_text }} <span class="small text-muted">(answer {{ q.correct_option }}, {{ q.marks|floatformat }} mark{{ q.marks|pluralize }}{% if q.n_answers %}, {{ q.n_answers }} student answer{{ q.n_answers|pluralize }}{% endif %})</span>
+  <a class="small" href="{% url 'assessments:question_edit' q.pk %}">Edit</a>
+  <form method="post" action="{% url 'assessments:question_delete' q.pk %}" class="d-inline">{% csrf_token %}<button class="btn btn-link btn-sm text-danger" type="submit">Delete</button></form>
+</li>
+{% empty %}<li class="list-unstyled">No questions yet. Add at least one before activating.</li>
+{% endfor %}
+</ol>
+{% endblock %}

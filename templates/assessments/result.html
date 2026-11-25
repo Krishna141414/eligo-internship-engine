@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% block title %}Result: {{ attempt.assessment.assessment_name }}{% endblock %}
+{% block content %}
+<h1 class="h3">{{ attempt.assessment.assessment_name }}: result</h1>
+<p class="fs-4 fw-semibold">{{ attempt.score_percentage|floatformat:2 }}% · {{ attempt.get_result_display }}</p>
+<p class="text-muted">You need more than 60% to qualify. Exactly 60% does not qualify.</p>
+<dl class="row">
+  <dt class="col-sm-4">Total questions</dt><dd class="col-sm-8">{{ total_questions }}</dd>
+  <dt class="col-sm-4">Correct answers</dt><dd class="col-sm-8">{{ correct }}</dd>
+  <dt class="col-sm-4">Marks obtained</dt><dd class="col-sm-8">{{ attempt.obtained_marks|floatformat }} of {{ attempt.total_marks|floatformat }}</dd>
+  <dt class="col-sm-4">Score</dt><dd class="col-sm-8">{{ attempt.score_percentage|floatformat:2 }}%</dd>
+  <dt class="col-sm-4">Status</dt><dd class="col-sm-8">{{ attempt.get_result_display }} ({{ attempt.get_status_display|lower }} {{ attempt.submission_time|date:"d M Y, H:i" }})</dd>
+</dl>
+{% if attempt.result == "QUALIFIED" %}
+<a class="btn btn-primary" href="{% url 'accounts:home' %}">Continue to recommendations</a>
+{% else %}
+<a class="btn btn-primary" href="{% url 'assessments:list' %}">Retake an assessment</a>
+{% endif %}
+{% endblock %}
