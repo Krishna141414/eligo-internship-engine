@@ -78,6 +78,31 @@ def ollama_available(config: LLMConfig, timeout_s: float = 2.0) -> bool:
     return any(n == config.model or n.startswith(config.model + "-") or n == f"{config.model}:latest" for n in names)
 
 
+@dataclass
+class WarmResult:
+    ok: bool
+    load_seconds: float
+    detail: str
+
+
+def warm_up(config: LLMConfig, keep_alive: str = "30m", timeout_s: float = 120.0) -> WarmResult:
+    """Load the model into memory so the first real request isn't slow (D-025). Never raises.
+    Ollama loads a model when it receives a chat request with an empty messages list."""
+    if not ollama_available(config):
+        return WarmResult(False, 0.0, f"Ollama isn't running or {config.model} isn't installed; nothing to warm.")
+    try:
+        resp = requests.post(f"{config.base_url}/api/chat",
+                             json={"model": config.model, "messages": [], "keep_alive": keep_alive},
+                             timeout=timeout_s)
+        resp.raise_for_status()
+        seconds = float(resp.json().get("load_duration", 0)) / 1e9
+    except requests.Timeout:
+        return WarmResult(False, 0.0, f"Loading {config.model} timed out after {timeout_s:.0f} s.")
+    except (requests.RequestException, ValueError) as exc:
+        return WarmResult(False, 0.0, f"Couldn't load {config.model} ({type(exc).__name__}).")
+    return WarmResult(True, seconds, f"{config.model} loaded in {seconds:.1f} s and kept warm for {keep_alive}.")
+
+
 def _ask_llm(text: str, config: LLMConfig) -> SkillList:
     body = {
         "model": config.model,

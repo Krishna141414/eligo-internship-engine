@@ -47,6 +47,19 @@ def ai_status() -> ArtifactStatus:
     return get_bundle()[1]
 
 
+def llm_config():
+    """The LLM settings saved by the notebook (artifacts/config/llm_config.json), else the defaults."""
+    from ml_core.llm_extract import LLMConfig
+
+    bundle, _ = get_bundle()
+    if bundle is not None:
+        return bundle.llm
+    try:
+        return LLMConfig.from_json(Path(settings.ELIGO_ARTIFACTS_DIR) / "config" / "llm_config.json")
+    except (OSError, ValueError, TypeError):
+        return LLMConfig()
+
+
 # --- embeddings (D-014) -----------------------------------------------------------------------------
 def internship_vectors(internships, bundle: ArtifactBundle) -> np.ndarray:
     """Embedding per internship, in order: the stored embedding if its text hash still matches, else the

@@ -27,7 +27,9 @@ Criteria, in priority order (from `CLAUDE.md`): **spec compliance > correctness 
 | D-020 | 2026-11-24 | 2 | Sentence model kept out of git; one-command pinned-revision setup script verified against the manifest |
 | D-021 | 2026-11-24 | 2 | Job-role prediction shows confidence; scope status confident / low_confidence / out_of_scope |
 | D-022 | 2026-11-24 | 4 | Career skills: cleaned survey vocabulary, profile multi-select from the model's vocabulary, crosswalk suggestions |
+| D-023 | 2026-11-25 | 5 | Hallmark study: app-screen principles for Eligo's UI; four resolved conflicts with BUILD_PROMPT |
 | D-024 | 2026-11-25 | 4 | Optional LLM in the web app: skill-gap cross-check for the top 3 results; matched/missing stay deterministic |
+| D-025 | 2026-11-25 | 5 | LLM warm-up + asynchronous AI second opinion (Krishna's Phase 5 requests) |
 
 ---
 
@@ -225,3 +227,30 @@ Criteria, in priority order (from `CLAUDE.md`): **spec compliance > correctness 
   2. **The deterministic, normalised comparison of required skills decides matched/missing and the skill score. The LLM reads each top result's text and reports the skills it finds missing as a second opinion**, stored in `explanation.llm_gap` and shown as "The local LLM also read the description and found missing: …". Every row stores `analysis_method` (`llm` / `rule_based`).
 - **Chosen:** option 2, run for the **top 3** results only (`LLM_TOP_K = 3`). Each local call takes about 1–2 s on the GPU, so all 10 would make every click slow.
 - **Availability:** `ollama_available()` now returns true only when the server answers **and** the configured model is installed. With the server up but the model still downloading, each LLM call used to fail slowly (7.6 s of a 9.7 s generation run). After the fix, plus cached rule-based patterns, a real generation run over 8,207 internships takes about 3 s.
+
+## D-023 — Hallmark study: design principles for Eligo's screens
+- **Date:** 2026-11-25 · **Phase:** 5, step 5.1.1 (`hallmark` skill; "study" isn't one of its verbs, so the study read its Floor, its **App screens** branch, `craft.md` and `data-viz.md`)
+- **Classification:** app screens (behind a sign-in, tables/forms/controls) on a **locked system** (the CLAUDE.md tokens). So there's no theme deal and no marketing-page rules (hero, fold, word budget); the Floor and gates still bind. Lint with `sloplint --scope app`.
+- **Principles adopted:**
+  1. Every colour and font goes through a `:root` token (the CLAUDE.md palette). `overflow-x: clip` on `html` and `body`. A visible `:focus-visible` on every control.
+  2. Labels, table heads, chips and nav are sentence case, untracked, never uppercase. No eyebrows. No `·`-joined meta strings (they become separate elements or plain sentences).
+  3. Restrained colour: amber marks scores and the current state only; navy carries chrome (sidebar, stat band); one filled primary button per screen.
+  4. Density: controls 32–40 px with 44 px hit targets; tables before cards; tabular numerals on every compared figure; type scale ratio about 1.2.
+  5. Every data region has its states: loading, empty (what's missing and the one action that fills it), error, full.
+  6. Motion is state, not decoration: 150 ms colour/shadow transitions and the 2 px card lift (CLAUDE.md), `transform`/`opacity` only, nothing under `prefers-reduced-motion`.
+  7. Charts: one series argues in amber or navy and the rest stay neutral, baselines at zero, real numbers only.
+  8. A sidebar is earned by more than about 7 destinations. The admin has 7, and BUILD_PROMPT asks for one, so it stays and collapses to a menu under 60rem. Students get a top bar.
+- **Conflicts with BUILD_PROMPT, resolved by CLAUDE.md order (spec > Krishna > guidance):**
+
+  | Point | BUILD_PROMPT | Hallmark | Chosen |
+  |---|---|---|---|
+  | Admin pass/fail chart | donut | parts of a whole → stacked horizontal bar, never donut/gauge | stacked bar (not spec-mandated; reads better) |
+  | Chart library | Chart.js | inline SVG preferred | Chart.js (spec §9 names it), styled to Hallmark's chart rules |
+  | Score ring | ring | one value → stat tile, no gauges | ring kept (Krishna asked for it explicitly); the % is always in text too |
+  | Stat cards | icon + number + label | figure + label, no icon tile | figure + label, no icon |
+- **21st.dev (inspiration only, nothing copied):** Animated Progress Stepper (https://21st.dev/@shadcnspace/components/stepper-03): done steps turn into a check, the current step is set apart. Kept as state signalling; its travelling dot and pulse are dropped (motion rules). KPI Tile (https://21st.dev/@osagi/components/kpi-tile): explicit loading and empty states. Kept the states; dropped the count-up animation and the unmeasured trend arrow. Empty by Cnippet (https://21st.dev/@cnippet-dev/components/cnippet-empty): icon + title + one line + action, including a "filters cleared" case. Used for Eligo's empty states and the search page's "no matches" state. All rebuilt in Bootstrap 5 + `theme.css`.
+
+## D-025 — LLM warm-up and an asynchronous AI second opinion
+- **Date:** 2026-11-25 · **Phase:** 5 (Krishna's requests)
+- **Warm-up:** `python manage.py warm_llm` preloads the configured model (an empty `/api/chat` request with `keep_alive`), reporting the load time or explaining why it was skipped. `runserver` also starts a background, non-blocking warm-up when Ollama and the model are present (never in tests or other commands; off with `ELIGO_WARM_LLM=0`).
+- **Async second opinion:** "Generate recommendations" now only does the deterministic work (gates, hybrid scores, rule-based gap), about 3 s on real data, then shows the results. The top 3 cards are marked `second_opinion = pending` and each fetches its own LLM check from `recommendations:second_opinion` (POST, own rows only, JSON). Each card shows "AI second opinion: checking…" until the answer or a fallback arrives. The page never blocks on the LLM. Without Ollama the cards say the second opinion isn't available and the rule-based check stands. The score and the matched/missing lists stay deterministic (D-024).

@@ -136,3 +136,34 @@ def test_config_json_roundtrip(tmp_path):
     p = tmp_path / "llm_config.json"
     CFG.to_json(p)
     assert LLMConfig.from_json(p) == CFG
+
+
+# --- D-025: warm-up -----------------------------------------------------------------------------------
+from ml_core.llm_extract import warm_up  # noqa: E402
+
+
+def test_warm_up_skips_when_model_missing():
+    with patch("ml_core.llm_extract.requests.get", return_value=_tags("llama3.2:3b")), \
+         patch("ml_core.llm_extract.requests.post") as post:
+        r = warm_up(CFG)
+    post.assert_not_called()
+    assert r.ok is False and "qwen3:4b" in r.detail
+
+
+def test_warm_up_loads_model_with_keep_alive():
+    loaded = MagicMock()
+    loaded.raise_for_status.return_value = None
+    loaded.json.return_value = {"model": "qwen3:4b", "done": True, "done_reason": "load", "load_duration": 2_600_000_000}
+    with patch("ml_core.llm_extract.requests.get", return_value=_tags("qwen3:4b")), \
+         patch("ml_core.llm_extract.requests.post", return_value=loaded) as post:
+        r = warm_up(CFG, keep_alive="30m")
+    body = post.call_args.kwargs["json"]
+    assert body == {"model": "qwen3:4b", "messages": [], "keep_alive": "30m"}
+    assert r.ok is True and r.load_seconds == pytest.approx(2.6)
+
+
+def test_warm_up_reports_timeout_without_raising():
+    with patch("ml_core.llm_extract.requests.get", return_value=_tags("qwen3:4b")), \
+         patch("ml_core.llm_extract.requests.post", side_effect=requests.exceptions.ReadTimeout()):
+        r = warm_up(CFG)
+    assert r.ok is False and "timed out" in r.detail.lower()
