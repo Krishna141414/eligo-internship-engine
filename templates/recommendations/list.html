@@ -19,6 +19,11 @@
     <div class="small">Matched: {{ r.matched_skills|join:", "|default:"none" }} · Missing: {{ r.missing_skills|join:", "|default:"none" }}</div>
     <p class="small mb-1">{{ r.recommendation_reason }}</p>
     <div class="small text-muted">Skill-gap check: {{ r.get_analysis_method_display }}</div>
+    {% if r.second_opinion != "none" %}
+    <div class="small" data-state="{{ r.second_opinion }}" {% if r.second_opinion == "pending" %}data-second-opinion-url="{% url 'recommendations:second_opinion' r.pk %}"{% endif %} aria-live="polite">
+      <span data-second-opinion-text>{% if r.second_opinion == "pending" %}AI second opinion: checking…{% elif r.second_opinion == "done" %}AI second opinion: the local model {% if r.explanation.llm_gap.missing %}also flags {{ r.explanation.llm_gap.missing|join:", " }}{% else %}found no extra missing skills{% endif %}.{% else %}AI second opinion not available right now. The rule-based check above stands.{% endif %}</span>
+    </div>
+    {% endif %}
   </li>
 {% endfor %}
 </ol>
@@ -34,3 +39,4 @@
 </ul>
 {% else %}<p class="small text-muted">Nothing to show here.</p>{% endif %}
 {% endblock %}
+{% block extra_js %}{% load static %}<script src="{% static 'js/second_opinion.js' %}"></script>{% endblock %}

@@ -222,13 +222,104 @@ def test_related_internships_apply_gates(student, ai_bundle):
     assert "data science" in related[0][1].lower()
 
 
-def test_analysis_method_llm_when_available(student, ai_bundle, monkeypatch):
+# --- D-025: asynchronous AI second opinion -------------------------------------------------------------------
+def _llm_on(monkeypatch, gap=None):
     from ml_core.llm_extract import GapResult
+    calls = []
+
+    def fake_gap(*args, **kwargs):
+        calls.append(kwargs.get("use_llm"))
+        if kwargs.get("use_llm"):
+            return gap or GapResult(["python"], ["git"], "llm", "Extracted by qwen3:4b (prompt v1).")
+        return GapResult(["python"], [], "rule_based", "Rule-based extraction (LLM not used).")
     monkeypatch.setattr(services, "ollama_available", lambda cfg, timeout_s=2.0: True)
-    monkeypatch.setattr(services, "analyse_gap", lambda *a, **k: GapResult(["python"], ["git"], "llm", "qwen3:4b"))
+    monkeypatch.setattr(services, "analyse_gap", fake_gap)
+    return calls
+
+
+def test_generate_never_calls_llm(student, ai_bundle, monkeypatch):
+    calls = _llm_on(monkeypatch)
+    _profile(student)
+    _qualify(student)
+    services.generate_recommendations(student)
+    assert calls and not any(calls)                       # every gap check during generation is rule-based
+
+
+def test_top3_marked_pending_when_llm_available(student, ai_bundle, monkeypatch):
+    _llm_on(monkeypatch)
     _profile(student)
     _qualify(student)
     run = services.generate_recommendations(student)
-    top = InternshipRecommendation.objects.get(run_id=run.run_id, recommendation_rank=1)
-    assert top.analysis_method == "llm" and top.explanation["llm_gap"]["missing"] == ["git"]
-    assert top.missing_skills == []                                   # score-consistent list stays deterministic
+    states = {r.recommendation_rank: r.second_opinion for r in run.eligible}
+    assert states == {1: "pending", 2: "pending"}         # fixture has 2 eligible; ranks 1-3 pending
+    assert all(r.analysis_method == "rule_based" for r in run.eligible)
+
+
+def test_second_opinion_unavailable_without_ollama(student, ai_bundle):
+    _profile(student)
+    _qualify(student)
+    run = services.generate_recommendations(student)
+    assert {r.second_opinion for r in run.eligible} == {"unavailable"}
+
+
+def test_second_opinion_endpoint_updates_row(student_client, student, ai_bundle, monkeypatch):
+    _llm_on(monkeypatch)
+    _profile(student)
+    _qualify(student)
+    run = services.generate_recommendations(student)
+    rec = run.eligible[0]
+    resp = student_client.post(reverse("recommendations:second_opinion", args=[rec.pk]))
+    data = resp.json()
+    assert resp.status_code == 200 and data["status"] == "done" and data["missing"] == ["git"]
+    rec.refresh_from_db()
+    assert rec.second_opinion == "done" and rec.analysis_method == "llm"
+    assert rec.explanation["llm_gap"]["missing"] == ["git"]
+    assert rec.missing_skills == []                        # score-consistent list stays deterministic (D-024)
+
+
+def test_second_opinion_falls_back_when_llm_fails(student_client, student, ai_bundle, monkeypatch):
+    from ml_core.llm_extract import GapResult
+    _llm_on(monkeypatch, gap=GapResult(["python"], [], "rule_based", "Ollama not reachable (ReadTimeout)."))
+    _profile(student)
+    _qualify(student)
+    rec = services.generate_recommendations(student).eligible[0]
+    data = student_client.post(reverse("recommendations:second_opinion", args=[rec.pk])).json()
+    assert data["status"] == "unavailable" and "ReadTimeout" in data["detail"]
+
+
+def test_second_opinion_is_idempotent(student_client, student, ai_bundle, monkeypatch):
+    calls = _llm_on(monkeypatch)
+    _profile(student)
+    _qualify(student)
+    rec = services.generate_recommendations(student).eligible[0]
+    url = reverse("recommendations:second_opinion", args=[rec.pk])
+    student_client.post(url)
+    n = calls.count(True)
+    student_client.post(url)
+    assert calls.count(True) == n == 1
+
+
+def test_second_opinion_other_student_404(client, student, other_student, ai_bundle, monkeypatch):
+    _llm_on(monkeypatch)
+    _profile(student)
+    _qualify(student)
+    rec = services.generate_recommendations(student).eligible[0]
+    client.force_login(other_student)
+    assert client.post(reverse("recommendations:second_opinion", args=[rec.pk])).status_code == 404
+
+
+def test_second_opinion_requires_post(student_client, student, ai_bundle, monkeypatch):
+    _llm_on(monkeypatch)
+    _profile(student)
+    _qualify(student)
+    rec = services.generate_recommendations(student).eligible[0]
+    assert student_client.get(reverse("recommendations:second_opinion", args=[rec.pk])).status_code == 405
+
+
+def test_list_page_renders_pending_cards_without_waiting(student_client, student, ai_bundle, monkeypatch):
+    _llm_on(monkeypatch)
+    _profile(student)
+    _qualify(student)
+    student_client.post(reverse("recommendations:list"))
+    page = html.unescape(student_client.get(reverse("recommendations:list")).content.decode())
+    assert "AI second opinion: checking…" in page and 'data-second-opinion-url="' in page

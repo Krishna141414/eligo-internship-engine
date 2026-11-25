@@ -1,4 +1,5 @@
 from django.contrib import messages
+from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views.decorators.http import require_http_methods
 
@@ -32,6 +33,19 @@ def recommendation_detail(request, pk):
     rec = get_object_or_404(InternshipRecommendation.objects.select_related("internship", "assessment_attempt"),
                             pk=pk, student=request.user)
     return render(request, "recommendations/detail.html", {"rec": rec, "x": rec.explanation})
+
+
+@student_required
+@require_http_methods(["POST"])
+def second_opinion(request, pk):
+    """JSON: run (or return) the local-LLM cross-check for one of the student's own recommendations."""
+    rec = get_object_or_404(InternshipRecommendation.objects.select_related("internship", "student"),
+                            pk=pk, student=request.user)
+    rec = services.run_second_opinion(rec)
+    gap = rec.explanation.get("llm_gap") or {}
+    return JsonResponse({"status": rec.second_opinion, "method": rec.analysis_method,
+                         "matched": gap.get("matched", []), "missing": gap.get("missing", []),
+                         "detail": rec.analysis_detail})
 
 
 @student_required

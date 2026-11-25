@@ -27,6 +27,15 @@ class InternshipRecommendation(models.Model):
     explanation = models.JSONField(default=dict)
     analysis_method = models.CharField(max_length=12, choices=Method.choices, default=Method.RULE_BASED)
     analysis_detail = models.CharField(max_length=300, blank=True, default="")
+
+    class SecondOpinion(models.TextChoices):
+        NONE = "none", "Not requested"
+        PENDING = "pending", "Checking"
+        DONE = "done", "Done"
+        UNAVAILABLE = "unavailable", "Not available"
+
+    #: optional local-LLM cross-check, fetched after the page renders (D-025)
+    second_opinion = models.CharField(max_length=12, choices=SecondOpinion.choices, default=SecondOpinion.NONE)
     generated_date = models.DateTimeField(auto_now_add=True, db_index=True)
 
     class Meta:

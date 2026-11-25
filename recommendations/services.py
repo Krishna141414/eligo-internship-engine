@@ -142,16 +142,23 @@ def generate_recommendations(student) -> RecommendationRun:
                        weights=bundle.hybrid.weights, today=timezone.localdate(), top_n=bundle.hybrid.top_n)
 
     by_id = {i.pk: i for i in internships}
-    use_llm = bool(getattr(settings, "ELIGO_USE_LLM", True)) and ollama_available(bundle.llm)
+    # The LLM never runs here: the page shows the deterministic ranking at once and the top cards
+    # fetch their AI second opinion afterwards (D-025).
+    llm_ready = bool(getattr(settings, "ELIGO_USE_LLM", True)) and ollama_available(bundle.llm)
     run_id = uuid.uuid4()
     rows = []
     for item in result.eligible:
         internship = by_id[item.internship_id]
         explanation = explain_recommendation(item, result.weights, score)
         gap = analyse_gap(sf.skills, internship.text_for_matching(), vocab=bundle.vocab, config=bundle.llm,
-                          use_llm=use_llm and item.rank <= LLM_TOP_K)
-        explanation["llm_gap" if gap.method == "llm" else "rule_based_gap"] = {
-            "matched": gap.matched, "missing": gap.missing, "detail": gap.detail}
+                          use_llm=False)
+        explanation["rule_based_gap"] = {"matched": gap.matched, "missing": gap.missing, "detail": gap.detail}
+        if item.rank > LLM_TOP_K:
+            second = InternshipRecommendation.SecondOpinion.NONE
+        elif llm_ready:
+            second = InternshipRecommendation.SecondOpinion.PENDING
+        else:
+            second = InternshipRecommendation.SecondOpinion.UNAVAILABLE
         rows.append(InternshipRecommendation(
             student=student, internship=internship, assessment_attempt=attempt, run_id=run_id,
             qualification_match=True, skill_match_score=item.scores.skill,
@@ -159,13 +166,44 @@ def generate_recommendations(student) -> RecommendationRun:
             final_match_score=item.scores.final, recommendation_rank=item.rank,
             matched_skills=item.matched, missing_skills=item.missing,
             recommendation_reason=explanation["sentence"], explanation=_json_safe(explanation),
-            analysis_method=gap.method, analysis_detail=gap.detail[:300]))
+            analysis_method=gap.method, analysis_detail=gap.detail[:300], second_opinion=second))
     InternshipRecommendation.objects.bulk_create(rows)
     saved = list(InternshipRecommendation.objects.filter(run_id=run_id).select_related("internship")
                  .order_by("recommendation_rank"))
     preview = _ineligible_preview(sf, result.not_eligible, by_id)
     return RecommendationRun(run_id=run_id, eligible=saved, not_eligible=preview,
                              not_eligible_count=len(result.not_eligible))
+
+
+def run_second_opinion(rec):
+    """Ask the local LLM to cross-check one pending recommendation (D-024, D-025). Idempotent: only a
+    'pending' row is processed, and the update is conditional, so two tabs can't run it twice."""
+    from recommendations.models import InternshipRecommendation
+    from students.services import get_profile
+
+    Opinion = InternshipRecommendation.SecondOpinion
+    if rec.second_opinion != Opinion.PENDING:
+        return rec
+    bundle, status = get_bundle()
+    profile = get_profile(rec.student)
+    if bundle is None or profile is None:
+        detail = status.message if bundle is None else "Profile missing."
+        InternshipRecommendation.objects.filter(pk=rec.pk, second_opinion=Opinion.PENDING).update(
+            second_opinion=Opinion.UNAVAILABLE, analysis_detail=detail[:300])
+        rec.refresh_from_db()
+        return rec
+    gap = analyse_gap(profile.skills or [], rec.internship.text_for_matching(), vocab=bundle.vocab,
+                      config=bundle.llm, use_llm=True)
+    explanation = dict(rec.explanation)
+    if gap.method == "llm":
+        explanation["llm_gap"] = {"matched": gap.matched, "missing": gap.missing, "detail": gap.detail}
+        fields = dict(second_opinion=Opinion.DONE, analysis_method=InternshipRecommendation.Method.LLM)
+    else:
+        fields = dict(second_opinion=Opinion.UNAVAILABLE)
+    InternshipRecommendation.objects.filter(pk=rec.pk, second_opinion=Opinion.PENDING).update(
+        explanation=_json_safe(explanation), analysis_detail=gap.detail[:300], **fields)
+    rec.refresh_from_db()
+    return rec
 
 
 def _ineligible_preview(student_facts, not_eligible, by_id, limit: int = 10):
