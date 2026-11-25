@@ -8,7 +8,7 @@ from __future__ import annotations
 from dataclasses import asdict, dataclass
 from typing import Iterable, Literal
 
-from ml_core.skills import expand_skill
+from ml_core.skills import BASE_SYNONYMS, expand_skill
 
 ScopeStatus = Literal["confident", "low_confidence", "out_of_scope"]
 FEATURE_SCHEMA_VERSION = "1"
@@ -126,3 +126,43 @@ CAREER_FIELD_KEYWORDS: dict[str, list[str]] = {
 
 def related_internship_keywords(career_field: str) -> list[str]:
     return list(CAREER_FIELD_KEYWORDS.get(career_field, []))
+
+
+#: Free-text skill (canonical form) -> closest skills in the job-role model's vocabulary (D-022).
+#: Used ONLY to pre-suggest "Career skills" on the profile form; the student confirms them, and the
+#: prediction uses only the confirmed career skills. Every target must exist in feature_schema.json
+#: (tests/test_integration_artifacts.py checks this against the real artifacts).
+CAREER_SKILL_CROSSWALK: dict[str, tuple[str, ...]] = {
+    "python": ("programming languages",), "java": ("programming languages",), "c": ("programming languages",),
+    "c++": ("programming languages",), "c#": ("programming languages",), "kotlin": ("programming languages",),
+    "go": ("programming languages",), "r programming": ("statistics", "programming languages"),
+    "sql": ("databases", "data analysis"), "mysql": ("databases",), "postgresql": ("databases",),
+    "mongodb": ("databases",), "excel": ("data analysis",), "pandas": ("data analysis",),
+    "numpy": ("data analysis",), "power bi": ("data visualization",), "tableau": ("data visualization",),
+    "scikit-learn": ("machine learning",), "tensorflow": ("deep learning",), "pytorch": ("deep learning",),
+    "keras": ("deep learning",), "natural language processing (nlp)": ("research on natural language processing",),
+    "computer vision": ("image processing",),
+    "react": ("web development",), "angular": ("web development",), "node.js": ("web development",),
+    "django": ("web development",), "flask": ("web development",), "php": ("web development",),
+    "wordpress": ("website development",), "bootstrap": ("web development",),
+    "flutter": ("mobile app development",), "android": ("android app development",),
+    "figma": ("ui/ux design",), "adobe xd": ("ui/ux design",), "adobe photoshop": ("graphic design",),
+    "linux": ("operating systems and networking",), "networking": ("computer networks",),
+    "ethical hacking": ("cybersecurity",), "penetration testing": ("cybersecurity",),
+    "amazon web services (aws)": ("cloud computing",), "aws": ("cloud computing",), "azure": ("cloud computing",),
+    "docker": ("cloud computing",), "selenium": ("software quality assurance",),
+    "manual testing": ("software quality assurance",),
+}
+
+
+def suggest_career_skills(free_skills: Iterable[str], schema_vocab: Iterable[str]) -> list[str]:
+    """Suggest career skills from free-text skills: skills already in the model's vocabulary are kept,
+    others are mapped through CAREER_SKILL_CROSSWALK; only vocabulary members are returned."""
+    vocab = set(schema_vocab)
+    out: set[str] = set()
+    for token in free_skills:
+        for s in expand_skill(token, BASE_SYNONYMS):
+            if s in vocab:
+                out.add(s)
+            out.update(t for t in CAREER_SKILL_CROSSWALK.get(s, ()) if t in vocab)
+    return sorted(out)

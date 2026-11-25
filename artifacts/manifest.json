@@ -1,5 +1,5 @@
 {
-  "created": "2026-11-24T10:49:23+00:00",
+  "created": "2026-11-24T11:03:16+00:00",
   "best_model": {
     "name": "RandomForestClassifier",
     "version": "1"
@@ -20,8 +20,8 @@
   },
   "files": {
     "config/feature_schema.json": {
-      "sha256": "ed17ffaed8670f78efbb12e5ad3e67e59fb8b002014b3fc2648447811ccd279e",
-      "bytes": 9169
+      "sha256": "8586701d0b48265b9fb3376a61261d3e735c0f0a9be698d02fab59feef348505",
+      "bytes": 7039
     },
     "config/hybrid_config.json": {
       "sha256": "6368430667b612f8462113dc53acea24171ca3a294c68a5ad2b0894b1672f7c8",
@@ -32,32 +32,32 @@
       "bytes": 823
     },
     "config/skills_vocab.json": {
-      "sha256": "590ce05196307c88dcaf3c411b88c9572517680d6a4036be3b987a15428c5fc7",
-      "bytes": 27520
+      "sha256": "9bdd11b244b28d19e4d27aebcdf51b4b6d159e50ae37c566823d1f0100dcfacb",
+      "bytes": 29932
     },
     "data/internships_clean.csv": {
-      "sha256": "2ac24f5e8a2ef0521367b26e6427d045e1b5d80b16b321c80cb5dddc02409229",
-      "bytes": 8768595
+      "sha256": "67a0fd1d61ef18ec7d08899510ef882645bc9e9ca1a1c90bf9b4268efef81ae5",
+      "bytes": 8768115
     },
     "embeddings/internship_index.json": {
-      "sha256": "df36cc79b424d96876ab6030b6638fd9c445fd1e321cfa24db230100adacd04e",
+      "sha256": "184956f21e636b32f9a683d13ef99b55f43fa0ebd4bf0580f1104313e4ca5263",
       "bytes": 1024765
     },
     "embeddings/internships.npy": {
-      "sha256": "264dea8113d7085a554c9d37ff978731bf2a8c239478a724f6d19e97a482df9f",
+      "sha256": "826c8ae860a24a72118aabd21d32d3ca431482fe70df04b4e2b1f2b080a33afe",
       "bytes": 12606080
     },
     "figures/confidence_vs_accuracy.png": {
-      "sha256": "1192aeddab7590fdae0a5c71d3000a5d999bd56e5536b7e1444a2979343260a3",
-      "bytes": 50366
+      "sha256": "cd8ae472686d4ac0ac5c75e643bac5e9d7f08c5115c775c714ad339657318f5c",
+      "bytes": 50948
     },
     "figures/confusion_matrix_dt.png": {
-      "sha256": "cb8875b4e837960c97a3075f2bb5f5183dbd60c493dc7f8666e94ed77ed1764c",
-      "bytes": 73886
+      "sha256": "2bd377334c4d0a1e66f1aed64af830b20f9bb69e13e68aa3da03382584597caf",
+      "bytes": 72165
     },
     "figures/confusion_matrix_rf.png": {
-      "sha256": "54cd41786391fcf29945faa5b3c1238fa6bc30b71f49ca9b8e361d9d1070293e",
-      "bytes": 72242
+      "sha256": "8b636c0e3bf906fb1e8a2a7d4256ef0de1831c1654c2b7bce1d82a0181f24e96",
+      "bytes": 71693
     },
     "figures/dist_internships.png": {
       "sha256": "654d67727a88557a113065580dde670c05ac0c0abcab9222e9081da73a873eac",
@@ -68,56 +68,56 @@
       "bytes": 76714
     },
     "figures/feature_importance_rf.png": {
-      "sha256": "f7fea4f0717e0a3a8c9fca53f1dc84d63ac28216b9a067a32b7bdb8c3ca56cd9",
-      "bytes": 67738
+      "sha256": "8bdaae921d1d871f6847f779403b8d7c609824d0ee3408c46d84d94e9ac798cd",
+      "bytes": 67892
     },
     "figures/model_comparison.png": {
-      "sha256": "d44a2d08049549c01bbacd907a2fe2131a34e71d93f62167408e82d976d98c57",
-      "bytes": 40410
+      "sha256": "9ce38636938604450c5b6d23330692f2712f32cb6fe6340dfbfd8277d7d911ae",
+      "bytes": 40260
     },
     "figures/permutation_importance_best.png": {
-      "sha256": "d3cd15e681424231dc432e3bbd69eae557e9bfb142401a7c9f8218284cc425f9",
-      "bytes": 72120
+      "sha256": "bab7a5bafd412ca3fc40da8d895a47879a7cd97b992ba879e5b6a0496607a778",
+      "bytes": 71153
     },
     "figures/shap_summary.png": {
-      "sha256": "ff805b3b689d432ef34633735f13e100b2158faa41bccf0c325c7236a2375ec9",
-      "bytes": 88522
+      "sha256": "af3e66ca08d279e5449015d68bfef0bf32700f4cf75d7631cde1380d653a53ae",
+      "bytes": 90127
     },
     "figures/similarity_ranking_demo.png": {
-      "sha256": "8ec54cc61cd440bee2e7d2be54fef9918f4155990e40c34c60cf84dc8cd43d47",
-      "bytes": 93708
+      "sha256": "751985d7c43bcaab1f3053bbac3493b791173f77bc30901ec2c1278675debc07",
+      "bytes": 94881
     },
     "figures/skill_match_demo.png": {
-      "sha256": "5c0cf99d283ba05096ac93b2c03db5ee7ea26ce1b1179df68f714549686dc82f",
-      "bytes": 65964
+      "sha256": "baadb8ab8ee317352a3646c5d7edb5da98354fdba46fbf2c8f234fa8585068f8",
+      "bytes": 60918
     },
     "metrics/classification_report_dt.txt": {
-      "sha256": "fe1c27c6d85f57a4562416e4f24566714c14a6ffe7e77e4dcf2ca1e7be60f700",
+      "sha256": "bc7749c2ca90a6b67299c347a53b2cf83cf2d67349352c841f781077f6765165",
       "bytes": 944
     },
     "metrics/classification_report_rf.txt": {
-      "sha256": "0807d7995d20530f758cf29400eda1867424a6526612ecca845326d5fafb8a70",
+      "sha256": "a500fa3e43950d2f138dd81d0587b19659c4be070627407f308c3df8a0dc4056",
       "bytes": 944
     },
     "metrics/metrics.json": {
-      "sha256": "4988408f07dee9333a7d36275fc9545d353810dc1de8789bd12d55623fb391e8",
-      "bytes": 7505
+      "sha256": "92f811865e8a6a18c871a0cffca17865c7140f414421775bc6cc729f0991369b",
+      "bytes": 7492
     },
     "models/best_model.joblib": {
-      "sha256": "06dac7226cfb095e4d086c66211fa4939d7d45bc97b8635773a577dd471b16e8",
-      "bytes": 5064247
+      "sha256": "7ab7d035d3fb9edd4e01aff3e5835b34493de4d8234efb6b6dbafcda3965f517",
+      "bytes": 17263991
     },
     "models/dt.joblib": {
-      "sha256": "77d64db9861c194fc83da20dd3c8c93d20ac1c407115b251e0574965c1e96bc5",
-      "bytes": 88192
+      "sha256": "f360aba7592d6b7477b6b547e1181314f2f8fdef84f339fd066967472b7e009e",
+      "bytes": 54288
     },
     "models/preprocess.joblib": {
-      "sha256": "f9731c37da34322c1037b72b1271977dec98c9f78a1ccd90f57de1c74e731080",
-      "bytes": 12900
+      "sha256": "e625e44f246d76a202061eb0df0e336f8de628a050388dbf68d1ff57707f7560",
+      "bytes": 9580
     },
     "models/rf.joblib": {
-      "sha256": "06dac7226cfb095e4d086c66211fa4939d7d45bc97b8635773a577dd471b16e8",
-      "bytes": 5064247
+      "sha256": "7ab7d035d3fb9edd4e01aff3e5835b34493de4d8234efb6b6dbafcda3965f517",
+      "bytes": 17263991
     },
     "models/sentence_model/1_Pooling/config.json": {
       "sha256": "bb80272f7adad76ce93073c25e18113ee66be1e91f60bcdd72aa41d05b28247e",
@@ -156,10 +156,10 @@
       "bytes": 618
     },
     "vectorizers/tfidf.joblib": {
-      "sha256": "fbe379bdad0ae2c25aaf27736156e735270e853ba5317cfb044724a845188528",
+      "sha256": "906a91ffee4d9c3ae0f037b3dc236a260f6b0876bb798f69a64dc8610047daac",
       "bytes": 363819
     }
   },
   "internships": 8207,
-  "job_role_rows": 1868
+  "job_role_rows": 1646
 }

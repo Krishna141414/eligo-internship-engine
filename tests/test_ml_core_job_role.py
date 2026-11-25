@@ -107,3 +107,20 @@ def test_keyword_map_covers_all_classes():
     assert set(CAREER_FIELD_KEYWORDS) == REAL_CLASSES
     assert "machine learning" in related_internship_keywords("Artificial Intelligence")
     assert related_internship_keywords("Astronaut") == []
+
+
+# --- D-022: crosswalk from free-text skills to the model's vocabulary --------------------------
+from ml_core.job_role import CAREER_SKILL_CROSSWALK, suggest_career_skills  # noqa: E402
+
+
+def test_suggest_career_skills_python():
+    vocab = ["programming languages", "machine learning", "data analysis"]
+    assert suggest_career_skills(["Python", "SQL"], vocab) == ["data analysis", "programming languages"]
+
+
+def test_suggest_keeps_skills_already_in_vocab_and_drops_targets_not_in_vocab():
+    assert suggest_career_skills(["machine learning", "figma"], ["machine learning"]) == ["machine learning"]
+
+
+def test_crosswalk_keys_are_canonical_lowercase():
+    assert all(k == k.lower().strip() for k in CAREER_SKILL_CROSSWALK)

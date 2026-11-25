@@ -139,3 +139,35 @@ def test_binarizer_is_cloneable_and_dense_int():
     assert b.min_count == 3
     X = SkillBinarizer(min_count=1).fit([["x"]]).transform([["x"], []])
     assert X.dtype == np.int8 and X.tolist() == [[1], [0]]
+
+
+# --- D-022: survey spelling variants collapse to one canonical skill ----------------------------
+@pytest.mark.parametrize("raw,canonical", [
+    ("Interpersonnal Skills", "interpersonal skills"),
+    ("interpersonalskills", "interpersonal skills"),
+    ("cybersec", "cybersecurity"),
+    ("Android App Make", "android app development"),
+    ("android application develop", "android app development"),
+    ("Database Developement", "database development"),
+    ("Web Based Projectdevelop", "web development"),
+    ("Cryptograph", "cryptography"),
+    ("Data Scientist", "data science"),
+    ("Statisticians", "statistics"),
+    ("Robotics Knowhow", "robotics knowledge"),
+    ("Problemsolving & Analyzing", "problem solving"),
+    ("UX/UI Knowledge", "ui/ux design"),
+    ("iot", "internet of things"),
+])
+def test_survey_variants_collapse(raw, canonical):
+    assert normalise_skill(raw, BASE_SYNONYMS) == canonical
+
+
+def test_survey_compound_splits():
+    v = SkillVocab.build([["problem solving", "communication", "video editing", "animation",
+                           "artificial intelligence", "machine learning", "game development"]], BASE_SYNONYMS)
+    assert normalise_skills("Problem Solving and Communication", v) == ["communication", "problem solving"]
+    assert normalise_skills("Video Editing & Animation", v) == ["animation", "video editing"]
+    assert normalise_skills("Artifical Intelligence (AI) and Machine Learning", v) == [
+        "artificial intelligence", "machine learning"]
+    assert normalise_skills("game develop} artificial intelligence (ai) and machine learning", v) == [
+        "artificial intelligence", "game development", "machine learning"]

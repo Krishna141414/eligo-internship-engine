@@ -26,6 +26,7 @@ Criteria, in priority order (from `CLAUDE.md`): **spec compliance > correctness 
 | D-019 | 2026-11-24 | 2 | Exam: one question per view in a single page, palette navigation, no-JS fallback = list |
 | D-020 | 2026-11-24 | 2 | Sentence model kept out of git; one-command pinned-revision setup script verified against the manifest |
 | D-021 | 2026-11-24 | 2 | Job-role prediction shows confidence; scope status confident / low_confidence / out_of_scope |
+| D-022 | 2026-11-24 | 4 | Career skills: cleaned survey vocabulary, profile multi-select from the model's vocabulary, crosswalk suggestions |
 
 ---
 
@@ -182,5 +183,34 @@ Criteria, in priority order (from `CLAUDE.md`): **spec compliance > correctness 
   | 2 | 33 | 0.818 |
   | 3+ | 331 | 0.903 |
 
-- **Final thresholds (Phase 3, 2026-11-24): keep `min_confidence = 0.5`, `min_known_skills = 2`, `min_coverage = 0.5`.** Below 0.5 confidence, accuracy falls to 0.600 (60 rows), against 0.946 at or above it (314 rows). That's a clear break, so "low confidence" means something real. One known skill gives 0.700 over just 10 rows; two or more give 0.82+. `min_coverage` can't be checked against the test set, because test rows only contain skills from the training data. It stays a product rule: if most of a student's skills are unknown to the model, the profile is mostly outside its scope.
-- **Tests:** `test_scope_status_rules` (parametrised boundaries), `test_scope_status_no_known_skills_no_model_call`, `test_scope_status_mostly_unknown_is_out_of_scope`, `test_scope_status_thresholds_read_from_schema`, `test_explain_job_role_low_confidence_has_scope_message`, `test_prediction_view_out_of_scope_message`, `test_low_confidence_not_shown_as_confident`, `test_confident_prediction_shows_confidence_percentage`.
+- **Superseded by the Phase 4 retrain (D-022 cleaned vocabulary), 2026-11-24.** The tables above are from the Phase 3 model. After the vocabulary clean-up (test n = 330):
+
+  | Max class probability | Rows | Accuracy |
+  |---|---|---|
+  | < 0.4 | 8 | 0.250 |
+  | 0.4–0.5 | 23 | 0.478 |
+  | 0.5–0.6 | 34 | 0.706 |
+  | 0.6–0.8 | 77 | 0.831 |
+  | ≥ 0.8 | 188 | 0.952 |
+
+  | Career skills the model knows | Rows | Accuracy |
+  |---|---|---|
+  | 1 | 9 | 0.444 |
+  | 2 | 24 | 0.625 |
+  | 3+ | 297 | 0.879 |
+
+- **Final thresholds (Phase 4): `min_confidence = 0.5`, `min_known_skills = 3`, `min_coverage = 0.5`.** Confidence still splits cleanly: 0.419 accuracy below 0.5 vs 0.893 at or above it. Two known skills now give only 0.625, against 0.879 for three or more, so the numbers argue for raising `min_known_skills` from 2 to 3 (the rule above said to keep the defaults "unless the numbers argue otherwise"). The profile form asks for at least 3 career skills.
+- *(Phase 3 values, for the record: `min_confidence = 0.5`, `min_known_skills = 2`, `min_coverage = 0.5`.)* Below 0.5 confidence, accuracy falls to 0.600 (60 rows), against 0.946 at or above it (314 rows). That's a clear break, so "low confidence" means something real. One known skill gives 0.700 over just 10 rows; two or more give 0.82+. `min_coverage` can't be checked against the test set, because test rows only contain skills from the training data. It stays a product rule: if most of a student's skills are unknown to the model, the profile is mostly outside its scope.
+- **Tests:** `test_scope_status_rules` (parametrised boundaries), `test_demo_cs_profile_confident_and_correct` (real artifacts), `test_scope_status_no_known_skills_no_model_call`, `test_scope_status_mostly_unknown_is_out_of_scope`, `test_scope_status_thresholds_read_from_schema`, `test_explain_job_role_low_confidence_has_scope_message`, `test_prediction_view_out_of_scope_message`, `test_low_confidence_not_shown_as_confident`, `test_confident_prediction_shows_confidence_percentage`.
+
+## D-022 — Career skills: cleaned vocabulary, model-vocabulary multi-select, crosswalk
+- **Date:** 2026-11-24 · **Phase:** 4 (Krishna's instruction, after Phase 3 showed `python` isn't in the model's vocabulary)
+- **Problem:** the job-role model's features are the student survey's own skill names. Students type free-text skills ("Python", "TensorFlow"), so most of them were unknown to the model and predictions came out low-confidence. Reviewing the 268 model features also showed many spelling variants of one skill ("interpersonnal skills", "android app make", five spellings of "web based project develop"). A multi-select built from those raw strings would look unprofessional, and splitting one skill across several features weakens the model.
+- **Options:**
+  1. Map free-text skills to model features automatically, with no student input: hidden and hard to explain, and wrong mappings become wrong predictions.
+  2. A multi-select over the raw 268-feature vocabulary: honest but noisy (typos as options).
+  3. **Clean the survey vocabulary at the source** (a written variant → canonical map, `SURVEY_SYNONYMS` + compound splits in `ml_core/skills.py`, built from the real 268 strings), retrain, then offer the cleaned vocabulary as a **"Career skills" multi-select labelled "Skills the job-role model understands"**. The prediction uses only these. A small **crosswalk** (`CAREER_SKILL_CROSSWALK` in `ml_core/job_role.py`, e.g. `python` → `programming languages`, `figma` → `ui/ux design`, `tensorflow` → `deep learning`) only *pre-suggests* career skills from the free-text skills, and the student confirms them. Free-text skills stay for internship matching.
+- **Chosen:** option 3. Spec §2 asks for exactly this kind of skill-feature processing, and the student keeps control over what the model sees.
+- **Effect on the model (real numbers, test split):** rows used went from 1,868 to 1,646, because more rows became exact duplicates after the variants were merged and were removed before splitting. Random Forest test macro-F1 went from 0.9107 to **0.8787** (accuracy 0.8904 → 0.8485); Decision Tree macro-F1 0.8604 → 0.8048. The test sets differ, so the numbers aren't directly comparable. The earlier score was partly inflated: two spellings of the same student row could land one in train and one in test. The new numbers are the honest ones.
+- **DEMO profiles** now live in one shared module, `ml_core/demo.py` (used by the notebook and by `seed_demo`), each with free-text skills and career skills. The DEMO CS profile predicts **Artificial Intelligence at 95%, scope confident** (test `test_demo_cs_profile_confident_and_correct`, against the real artifacts).
+- **Guards:** `test_crosswalk_targets_exist_in_schema_vocab` fails if a crosswalk target isn't a real model feature; `test_demo_career_skills_all_known_to_model` does the same for the DEMO profiles.

@@ -27,16 +27,16 @@ Last updated: 2026-11-24 (Phase 3)
 | 2.1 | Load and analyse datasets | `notebooks/eligo_engine.ipynb` §3.1 | ✅ shapes, dtypes, heads, nulls, duplicates, placeholders, class distribution |
 | 2.2 | Handle missing values and duplicates | `ml_core/preprocessing.py`, notebook §3.1–3.2 | ✅ 1,900 exact duplicates removed, then post-normalisation duplicates; placeholders → missing; tests `test_ml_core_preprocessing.py` |
 | 2.3 | Encode categorical variables | `ml_core/skills.py` `SkillBinarizer` (inside the Pipeline) | ✅ multi-hot canonical skills (D-012); the target is the categorical label |
-| 2.4 | Process academic and skill-related features | `ml_core/skills.py`, `ml_core/preprocessing.py` | ✅ canonical vocabulary 1,068 skills + synonym/compound map; academic fields → gates |
+| 2.4 | Process academic and skill-related features | `ml_core/skills.py`, `ml_core/preprocessing.py` | ✅ canonical vocabulary 934 skills + synonym/compound map incl. survey spelling variants (D-022); model features 215; academic fields → gates |
 | 2.5 | Clean internship descriptions | `ml_core/preprocessing.py` `clean_text`, `clean_internships` | ✅ HTML/whitespace/placeholders removed; composed description flagged `description_derived` |
-| 2.6 | Prepare training and testing datasets | `notebooks/eligo_engine.ipynb` §3.2 | ✅ stratified 80/20, random_state 42: train 1,494 / test 374 |
+| 2.6 | Prepare training and testing datasets | `notebooks/eligo_engine.ipynb` §3.2 | ✅ stratified 80/20, random_state 42: train 1,316 / test 330 (after D-022) |
 | 2.7 | Prevent data leakage | dedup before split; `SkillBinarizer` vocabulary fitted on train folds only | ✅ test `test_binarizer_vocab_from_train_only`; notebook prints overlap check |
 
 ### 3. ML-based job role prediction
 | ID | Requirement | Where implemented | Status |
 |---|---|---|---|
-| 3.1 | Train Decision Tree Classifier | `artifacts/models/dt.joblib` | ✅ GridSearchCV (5-fold, macro-F1); test acc 0.8396, macro-F1 0.8604 |
-| 3.2 | Train Random Forest Classifier | `artifacts/models/rf.joblib` | ✅ GridSearchCV; test acc 0.8904, macro-F1 0.9107 |
+| 3.1 | Train Decision Tree Classifier | `artifacts/models/dt.joblib` | ✅ GridSearchCV (5-fold, macro-F1); test acc 0.8030, macro-F1 0.8048 (after D-022 vocabulary clean-up; test n=330) |
+| 3.2 | Train Random Forest Classifier | `artifacts/models/rf.joblib` | ✅ GridSearchCV; test acc 0.8485, macro-F1 0.8787 (after D-022; best model) |
 | 3.3 | Predict job-role categories from academic info, skills, assessment features (where supported) | `ml_core/job_role.py` `predict_job_role` | ✅ skills only (assessment not supported by the data, D-008); confidence + scope (D-021) |
 | 3.4 | Evaluate: Accuracy | `artifacts/metrics/metrics.json` | ✅ |
 | 3.5 | Evaluate: Precision | `artifacts/metrics/metrics.json` | ✅ macro + weighted |
@@ -372,7 +372,7 @@ Last updated: 2026-11-24 (Phase 3)
 - [x] `ml_core/` built test-first (9 modules): `pytest tests` → 172 passed, 1 skipped (the live-Ollama test, which skips until the model is installed)
 - [x] `jupyter nbconvert --to notebook --execute notebooks/eligo_engine.ipynb` → exit 0 (final run 2026-11-24)
 - [x] Every spec §8 artifact saved + `manifest.json` (SHA-256); restart-safe reload test passes (same ranking, nothing retrained)
-- [x] Real metrics (test n=374): Decision Tree acc 0.8396 / macro-F1 0.8604; **Random Forest acc 0.8904 / macro-F1 0.9107 (best)**
+- [x] Real metrics at Phase 3 (test n=374): DT 0.8396 / 0.8604; RF 0.8904 / 0.9107. **Current, after the D-022 retrain (test n=330): Decision Tree acc 0.8030 / macro-F1 0.8048; Random Forest acc 0.8485 / macro-F1 0.8787 (best)**
 - [x] `scripts/setup_sentence_model.py` re-creates the git-ignored sentence model and verifies it byte-for-byte against the manifest (D-020)
 - [ ] Live LLM output in notebook §3.5: PENDING – Ollama (model pull still running)
 
