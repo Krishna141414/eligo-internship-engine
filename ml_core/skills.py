@@ -5,6 +5,7 @@ all become "excel" everywhere, so matched/missing skills don't silently miss on 
 """
 from __future__ import annotations
 
+import functools
 import json
 import re
 from collections import Counter
@@ -241,20 +242,25 @@ def _phrase_pattern(phrase: str) -> re.Pattern[str]:
     return re.compile(r"(?<![a-z0-9])" + re.escape(phrase) + r"(?![a-z0-9+#])")
 
 
+@functools.lru_cache(maxsize=8)
+def _phrase_table(vocab: SkillVocab) -> tuple[tuple[str, str, re.Pattern[str]], ...]:
+    """(phrase, canonical skill, compiled pattern), longest phrase first. Cached per vocabulary."""
+    phrases: dict[str, str] = {s: s for s in vocab.canonical}
+    for alias, target in vocab.synonyms.items():
+        if target in vocab.canonical and len(alias) >= 2:
+            phrases.setdefault(alias, target)
+    return tuple((p, phrases[p], _phrase_pattern(p)) for p in sorted(phrases, key=len, reverse=True))
+
+
 def extract_skills_rule_based(free_text: str, vocab: SkillVocab) -> list[str]:
     """Deterministic extraction from free text: longest phrase first, word boundaries,
     synonyms included. Matched spans are masked so "learning" isn't found inside
     "machine learning"."""
     text = " " + re.sub(r"\s+", " ", str(free_text or "").lower()) + " "
-    phrases: dict[str, str] = {s: s for s in vocab.canonical}
-    for alias, target in vocab.synonyms.items():
-        if target in vocab.canonical and len(alias) >= 2:
-            phrases.setdefault(alias, target)
     found: set[str] = set()
-    for phrase in sorted(phrases, key=len, reverse=True):
-        pattern = _phrase_pattern(phrase)
-        if pattern.search(text):
-            found.add(phrases[phrase])
+    for phrase, target, pattern in _phrase_table(vocab):
+        if phrase in text and pattern.search(text):
+            found.add(target)
             text = pattern.sub(lambda m: " " * len(m.group(0)), text)
     return sorted(found)
 

@@ -170,3 +170,12 @@ def test_evaluate_gates_collects_all_failures():
     result = evaluate_gates(student, internship, Decimal("55"), REFERENCE_DATE)
     assert not result.eligible
     assert {g.gate for g in result.failed} == {"qualification", "academic_percentage", "assessment"}
+
+
+def test_internship_gate_date_overrides_today():
+    # imported postings are judged against the dataset's last scrape day, admin-added ones against today
+    imported = _internship(deadline=date(2025, 10, 1), gate_date=date(2025, 9, 28))
+    result = evaluate_gates(_student(), imported, Decimal("72.5"), date(2026, 11, 25))
+    assert result.eligible
+    fresh = _internship(deadline=date(2025, 10, 1))
+    assert not evaluate_gates(_student(), fresh, Decimal("72.5"), date(2026, 11, 25)).eligible

@@ -27,6 +27,7 @@ Criteria, in priority order (from `CLAUDE.md`): **spec compliance > correctness 
 | D-020 | 2026-11-24 | 2 | Sentence model kept out of git; one-command pinned-revision setup script verified against the manifest |
 | D-021 | 2026-11-24 | 2 | Job-role prediction shows confidence; scope status confident / low_confidence / out_of_scope |
 | D-022 | 2026-11-24 | 4 | Career skills: cleaned survey vocabulary, profile multi-select from the model's vocabulary, crosswalk suggestions |
+| D-024 | 2026-11-25 | 4 | Optional LLM in the web app: skill-gap cross-check for the top 3 results; matched/missing stay deterministic |
 
 ---
 
@@ -214,3 +215,12 @@ Criteria, in priority order (from `CLAUDE.md`): **spec compliance > correctness 
 - **Effect on the model (real numbers, test split):** rows used went from 1,868 to 1,646, because more rows became exact duplicates after the variants were merged and were removed before splitting. Random Forest test macro-F1 went from 0.9107 to **0.8787** (accuracy 0.8904 → 0.8485); Decision Tree macro-F1 0.8604 → 0.8048. The test sets differ, so the numbers aren't directly comparable. The earlier score was partly inflated: two spellings of the same student row could land one in train and one in test. The new numbers are the honest ones.
 - **DEMO profiles** now live in one shared module, `ml_core/demo.py` (used by the notebook and by `seed_demo`), each with free-text skills and career skills. The DEMO CS profile predicts **Artificial Intelligence at 95%, scope confident** (test `test_demo_cs_profile_confident_and_correct`, against the real artifacts).
 - **Guards:** `test_crosswalk_targets_exist_in_schema_vocab` fails if a crosswalk target isn't a real model feature; `test_demo_career_skills_all_known_to_model` does the same for the DEMO profiles.
+
+## D-024 — Optional LLM in the web app: a cross-check, not the score
+- **Date:** 2026-11-25 · **Phase:** 4 (Task 16)
+- **Question:** spec §13 says to "integrate optional LLM skill extraction". Where should its output go?
+- **Options:**
+  1. Let the LLM decide matched/missing skills, and with them the skill score: the score would then depend on a non-deterministic model, breaking "explanations from computed values" and the reproducibility of a ranking.
+  2. **The deterministic, normalised comparison of required skills decides matched/missing and the skill score. The LLM reads each top result's text and reports the skills it finds missing as a second opinion**, stored in `explanation.llm_gap` and shown as "The local LLM also read the description and found missing: …". Every row stores `analysis_method` (`llm` / `rule_based`).
+- **Chosen:** option 2, run for the **top 3** results only (`LLM_TOP_K = 3`). Each local call takes about 1–2 s on the GPU, so all 10 would make every click slow.
+- **Availability:** `ollama_available()` now returns true only when the server answers **and** the configured model is installed. With the server up but the model still downloading, each LLM call used to fail slowly (7.6 s of a 9.7 s generation run). After the fix, plus cached rule-based patterns, a real generation run over 8,207 internships takes about 3 s.

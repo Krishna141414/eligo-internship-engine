@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% block title %}Job-role prediction{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center">
+  <h1 class="h3">Job-role prediction</h1>
+  <form method="post">{% csrf_token %}<button class="btn btn-primary" type="submit">Predict my job role</button></form>
+</div>
+<p class="text-muted">Uses only your career skills (“Skills the job-role model understands” in your <a href="{% url 'students:profile_edit' %}">profile</a>).</p>
+
+{% if not pred %}
+<p>No prediction yet. Pick at least 3 career skills in your profile, then select “Predict my job role”.</p>
+{% else %}
+  {% if x.scope_status == "confident" %}
+  <section class="border rounded p-3 mb-3" aria-labelledby="pred-h">
+    <h2 class="h6 text-muted mb-1" id="pred-h">Predicted job role</h2>
+    <p class="fs-3 fw-semibold mb-1">{{ x.label }}</p>
+    <p class="mb-0">Model confidence: {{ x.confidence_pct }}%</p>
+  </section>
+  {% else %}
+  <section class="border rounded p-3 mb-3" aria-labelledby="scope-h">
+    <h2 class="h6 mb-1" id="scope-h">{% if x.scope_status == "low_confidence" %}Low confidence{% else %}Outside the model's scope{% endif %}</h2>
+    <p>{{ x.scope_message }}</p>
+    {% if x.label %}<p class="mb-0">Closest field (tentative): {{ x.label }} · model confidence {{ x.confidence_pct }}%</p>{% endif %}
+  </section>
+  {% endif %}
+
+  <p class="small">Skills the model used: {{ x.known_skills|join:", "|default:"none" }}{% if x.unknown_skills %} · not recognised: {{ x.unknown_skills|join:", " }}{% endif %}</p>
+  {% if x.top_features %}
+  <h2 class="h5">Your skills that weigh most in this model</h2>
+  <ul>{% for f in x.top_features %}<li>{{ f.feature }} ({{ f.importance|floatformat:3 }})</li>{% endfor %}</ul>
+  <p class="small text-muted">Importance is the model's overall (global) feature importance for each of your skills.</p>
+  {% endif %}
+  <p class="small text-muted">{{ x.note }} Model: {{ x.model }}. Predicted {{ pred.predicted_date|date:"d M Y, H:i" }}.</p>
+
+  {% if related %}
+  <h2 class="h5">Related internships you can apply to</h2>
+  <ul>{% for i, why in related %}<li><a href="{% url 'internships:detail' i.pk %}">{{ i.internship_title }}</a> ({{ i.company_name }}): {{ why }}</li>{% endfor %}</ul>
+  {% endif %}
+{% endif %}
+{% endblock %}

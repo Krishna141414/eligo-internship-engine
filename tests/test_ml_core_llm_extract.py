@@ -105,11 +105,23 @@ def test_ollama_available_false_on_error():
         assert ollama_available(CFG) is False
 
 
-def test_ollama_available_true_on_200():
-    ok = MagicMock(status_code=200)
-    with patch("ml_core.llm_extract.requests.get", return_value=ok) as get:
+def _tags(*names):
+    """Mirror of Ollama's GET /api/tags response."""
+    r = MagicMock(status_code=200)
+    r.json.return_value = {"models": [{"name": n, "model": n, "size": 1} for n in names]}
+    return r
+
+
+def test_ollama_available_true_when_model_installed():
+    with patch("ml_core.llm_extract.requests.get", return_value=_tags("qwen3:4b", "llama3.2:3b")) as get:
         assert ollama_available(CFG) is True
     assert get.call_args.args[0] == "http://localhost:11434/api/tags"
+
+
+def test_ollama_available_false_when_model_missing():
+    # server up but the configured model isn't pulled yet -> treat the LLM as unavailable (no slow failing calls)
+    with patch("ml_core.llm_extract.requests.get", return_value=_tags("llama3.2:3b")):
+        assert ollama_available(CFG) is False
 
 
 def test_config_json_roundtrip(tmp_path):

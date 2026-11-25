@@ -55,7 +55,8 @@ def internship_facts(internship: Internship) -> InternshipFacts:
         id=internship.pk, status=internship.status, deadline=internship.application_deadline,
         required_qualification=internship.required_qualification, specialization=internship.specialization or None,
         minimum_academic_percentage=Decimal(internship.minimum_academic_percentage),
-        required_skills=tuple(internship.required_skills or ()), text=internship.text_for_matching())
+        required_skills=tuple(internship.required_skills or ()), text=internship.text_for_matching(),
+        gate_date=gate_date(internship))
 
 
 def requirements_open_to(qualification: str) -> list[str]:

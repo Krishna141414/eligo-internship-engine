@@ -106,3 +106,22 @@ def write_internship_rows(root: Path, rows: list[dict]) -> None:
     for i in range(len(rows)):
         vecs[i, i % 384] = 1.0
     np.save(root / "embeddings" / "internships.npy", vecs)
+
+
+class FakeEncoder:
+    """Deterministic stand-in for the sentence model (test fixture): bag-of-words hashed into 384 dims,
+    L2-normalised. Records every batch it encodes so tests can check caching."""
+
+    def __init__(self):
+        self.calls: list[list[str]] = []
+
+    def encode(self, texts, normalize_embeddings=True, **kwargs):
+        import hashlib
+        texts = list(texts)
+        self.calls.append(texts)
+        out = np.zeros((len(texts), 384), dtype=np.float32)
+        for i, t in enumerate(texts):
+            for w in str(t).lower().replace(",", " ").replace(".", " ").split():
+                out[i, int(hashlib.md5(w.encode()).hexdigest(), 16) % 384] += 1.0
+        norms = np.linalg.norm(out, axis=1, keepdims=True)
+        return out / np.where(norms == 0, 1, norms)

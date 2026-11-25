@@ -6,6 +6,7 @@ urlpatterns = [
     path("student/", include("students.urls")),
     path("", include("internships.urls")),
     path("", include("assessments.urls")),
+    path("", include("recommendations.urls")),
     path("manage/", include("adminpanel.urls")),
     path("django-admin/", admin.site.urls),
 ]

@@ -66,10 +66,16 @@ class GapResult:
 
 
 def ollama_available(config: LLMConfig, timeout_s: float = 2.0) -> bool:
+    """True only if the Ollama server answers AND the configured model is installed, so a missing model
+    never causes slow failing calls; the rule-based path runs instead."""
     try:
-        return requests.get(f"{config.base_url}/api/tags", timeout=timeout_s).status_code == 200
-    except requests.RequestException:
+        resp = requests.get(f"{config.base_url}/api/tags", timeout=timeout_s)
+        if resp.status_code != 200:
+            return False
+        names = [m.get("name", "") for m in resp.json().get("models", [])]
+    except (requests.RequestException, ValueError, AttributeError):
         return False
+    return any(n == config.model or n.startswith(config.model + "-") or n == f"{config.model}:latest" for n in names)
 
 
 def _ask_llm(text: str, config: LLMConfig) -> SkillList:

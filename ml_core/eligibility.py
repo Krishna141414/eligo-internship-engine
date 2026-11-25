@@ -118,6 +118,9 @@ class InternshipFacts:
     minimum_academic_percentage: Decimal
     required_skills: tuple[str, ...]
     text: str
+    #: date the deadline is judged against; None = the caller's `today` (D-007: imported postings use
+    #: the dataset's last scrape day, admin-added postings use the real date)
+    gate_date: date | None = None
 
 
 @dataclass
@@ -192,7 +195,7 @@ def evaluate_gates(student: StudentFacts, internship: InternshipFacts,
                    assessment_score: Decimal | None, today: date) -> EligibilityResult:
     """Run every gate (no short-circuit) so all failure reasons can be shown together."""
     return EligibilityResult([
-        check_status_and_deadline(internship.status, internship.deadline, today),
+        check_status_and_deadline(internship.status, internship.deadline, internship.gate_date or today),
         check_qualification(student.qualification, internship.required_qualification),
         check_specialization(student.specialization, internship.specialization),
         check_academic_percentage(student.academic_percentage, internship.minimum_academic_percentage),

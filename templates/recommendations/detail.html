@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block title %}Why this match{% endblock %}
+{% block content %}
+<a class="small" href="{% url 'recommendations:list' %}">&larr; All recommendations</a>
+<h1 class="h3 mt-2">#{{ rec.recommendation_rank }} {{ rec.internship.internship_title }}</h1>
+<p class="text-muted">{{ rec.internship.company_name }} · {{ rec.internship.location }}</p>
+<p class="fs-5">{{ rec.recommendation_reason }}</p>
+
+<h2 class="h5">Eligibility checks</h2>
+<ul>{% for g in x.gates %}<li>{% if g.passed %}✓{% else %}✗{% endif %} {{ g.reason }}</li>{% endfor %}</ul>
+<p>Assessment score {{ x.assessment.score }} against the {{ x.assessment.threshold }} threshold (must be above).</p>
+
+<h2 class="h5">How the score was built</h2>
+<table class="table table-sm w-auto">
+  <thead><tr><th scope="col">Component</th><th scope="col">Score</th><th scope="col">Weight</th><th scope="col">Contribution</th></tr></thead>
+  <tbody>
+  {% for c in x.components %}<tr><td>{{ c.label }}</td><td>{{ c.score|floatformat:3 }}</td><td>{{ c.weight }}</td><td>{{ c.contribution|floatformat:3 }}</td></tr>{% endfor %}
+  <tr class="fw-semibold"><td>Final match score</td><td colspan="2"></td><td>{{ x.final_score|floatformat:3 }}</td></tr>
+  </tbody>
+</table>
+
+<h2 class="h5">Skills</h2>
+<p>Matched: {{ x.matched_skills|join:", "|default:"none" }}</p>
+<p>Missing: {{ x.missing_skills|join:", "|default:"none" }}</p>
+<p class="small text-muted">Skill-gap check method: {{ rec.get_analysis_method_display }}{% if rec.analysis_detail %} ({{ rec.analysis_detail }}){% endif %}.
+{% if x.llm_gap %}The local LLM also read the description and found missing: {{ x.llm_gap.missing|join:", "|default:"none" }}.{% endif %}</p>
+{% endblock %}

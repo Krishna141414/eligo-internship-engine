@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% block title %}Recommendations{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center">
+  <h1 class="h3">Your internship recommendations</h1>
+  <form method="post">{% csrf_token %}<button class="btn btn-primary" type="submit">Generate recommendations</button></form>
+</div>
+<p class="text-muted">Only internships you're eligible for are ranked. The match score shows how well your profile fits the listed requirements; it is not a prediction of selection.</p>
+
+{% if rows %}
+<p class="small text-muted">Generated {{ latest.generated_date|date:"d M Y, H:i" }} · based on your assessment score {{ latest.assessment_attempt.score_percentage|floatformat:2 }}%</p>
+<ol class="list-unstyled">
+{% for r in rows %}
+  <li class="border rounded p-3 mb-2">
+    <div class="d-flex justify-content-between"><a class="fw-semibold" href="{% url 'recommendations:detail' r.pk %}">#{{ r.recommendation_rank }} {{ r.internship.internship_title }}</a>
+      <span class="fw-semibold">{% widthratio r.final_match_score 1 100 %}% match</span></div>
+    <div class="small text-muted">{{ r.internship.company_name }} · {{ r.internship.location }} · {{ r.internship.work_mode }}</div>
+    <div class="small">Content {{ r.content_similarity_score|floatformat:2 }} · Semantic {{ r.semantic_similarity_score|floatformat:2 }} · Skill overlap {{ r.skill_match_score|floatformat:2 }}</div>
+    <div class="small">Matched: {{ r.matched_skills|join:", "|default:"none" }} · Missing: {{ r.missing_skills|join:", "|default:"none" }}</div>
+    <p class="small mb-1">{{ r.recommendation_reason }}</p>
+    <div class="small text-muted">Skill-gap check: {{ r.get_analysis_method_display }}</div>
+  </li>
+{% endfor %}
+</ol>
+{% else %}
+<p>No recommendations yet. Complete your profile, pass an assessment with more than 60%, then select “Generate recommendations”.</p>
+{% endif %}
+
+<h2 class="h5 mt-4">Why you can't apply yet</h2>
+{% if preview %}
+<p class="small text-muted">{{ not_eligible_count }} active internship{{ not_eligible_count|pluralize }} aren't open to you right now. These ones share skills with you:</p>
+<ul>
+{% for i, reasons in preview %}<li><a href="{% url 'internships:detail' i.pk %}">{{ i.internship_title }}</a> ({{ i.company_name }}): {{ reasons|join:" " }}</li>{% endfor %}
+</ul>
+{% else %}<p class="small text-muted">Nothing to show here.</p>{% endif %}
+{% endblock %}
