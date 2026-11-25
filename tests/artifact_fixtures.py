@@ -55,7 +55,7 @@ def build_fake_artifacts(root: Path, *, with_sentence_model: bool = True) -> Pat
     schema = build_feature_schema(rf.named_steps["skills"], list(rf.classes_), ScopeThresholds())
     (root / "config" / "feature_schema.json").write_text(json.dumps(schema))
     LLMConfig().to_json(root / "config" / "llm_config.json")
-    SkillVocab.build(TRAIN_X, BASE_SYNONYMS).to_json(root / "config" / "skills_vocab.json")
+    SkillVocab.build(TRAIN_X + [["sql", "excel", "canva"]], BASE_SYNONYMS).to_json(root / "config" / "skills_vocab.json")
     (root / "metrics" / "metrics.json").write_text(json.dumps({"best_model": "RandomForestClassifier"}))
     (root / "data" / "internships_clean.csv").write_text("source_id,internship_title\nS1,Data Science\nS2,Web Development\n")
     if with_sentence_model:
@@ -65,3 +65,44 @@ def build_fake_artifacts(root: Path, *, with_sentence_model: bool = True) -> Pat
         (sm / "model.safetensors").write_bytes(b"\x00fake-weights")
         (sm / "README.md").write_text("model card")
     return root
+
+
+CLEAN_COLUMNS = ["source_id", "company_name", "internship_title", "job_role", "description", "description_derived",
+                 "required_qualification", "specialization", "minimum_academic_percentage", "required_skills",
+                 "required_skills_text", "location", "work_mode", "stipend_text", "stipend_min", "stipend_max",
+                 "duration_text", "duration_months", "application_deadline", "eligibility_criteria",
+                 "derived_fields", "text"]
+
+
+def fixture_internship_row(source_id, title="Data Science", company="Acme Analytics (fixture)",
+                           skills=("python", "sql"), location="Bangalore", qualification="Any Graduate",
+                           specialization="", deadline="2025-10-15", stipend="₹ 10,000 - 15,000 /month"):
+    """One row in the exact internships_clean.csv format written by the notebook (test fixture)."""
+    from ml_core.preprocessing import build_internship_text
+    description = f"{title} internship at {company}. Required skills: {', '.join(skills)}."
+    return {"source_id": source_id, "company_name": company, "internship_title": title, "job_role": title,
+            "description": description, "description_derived": True, "required_qualification": qualification,
+            "specialization": specialization, "minimum_academic_percentage": 0,
+            "required_skills": json.dumps(list(skills)), "required_skills_text": ", ".join(skills),
+            "location": location, "work_mode": "Remote" if location == "Work from home" else "On-site",
+            "stipend_text": stipend, "stipend_min": 10000.0, "stipend_max": 15000.0, "duration_text": "3 Months",
+            "duration_months": 3.0, "application_deadline": deadline, "eligibility_criteria": "Start: Immediately",
+            "derived_fields": json.dumps(["description", "minimum_academic_percentage", "required_qualification"]),
+            "text": build_internship_text(title, title, list(skills), "", "", description)}
+
+
+def write_internship_rows(root: Path, rows: list[dict]) -> None:
+    """Replace the fake artifacts' internships_clean.csv + internship_index.json + embeddings with `rows`."""
+    import csv
+    import hashlib
+    with open(root / "data" / "internships_clean.csv", "w", newline="", encoding="utf-8") as f:
+        w = csv.DictWriter(f, fieldnames=CLEAN_COLUMNS)
+        w.writeheader()
+        w.writerows(rows)
+    index = [{"source_id": r["source_id"], "row": i, "text_hash": hashlib.sha256(r["text"].encode()).hexdigest()}
+             for i, r in enumerate(rows)]
+    (root / "embeddings" / "internship_index.json").write_text(json.dumps(index))
+    vecs = np.zeros((len(rows), 384), dtype=np.float32)
+    for i in range(len(rows)):
+        vecs[i, i % 384] = 1.0
+    np.save(root / "embeddings" / "internships.npy", vecs)

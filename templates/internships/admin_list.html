@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block title %}Manage internships{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center">
+  <h1 class="h3">Internships</h1>
+  <a class="btn btn-primary" href="{% url 'internships:admin_add' %}">Add internship</a>
+</div>
+<form method="get" class="row g-2 my-2">
+  <div class="col-md-6"><label class="form-label small" for="q">Search</label><input class="form-control" id="q" name="q" value="{{ q }}"></div>
+  <div class="col-md-3"><label class="form-label small" for="status">Status</label>
+    <select class="form-select" id="status" name="status"><option value="">All</option>
+      <option value="ACTIVE" {% if status == "ACTIVE" %}selected{% endif %}>Active</option>
+      <option value="INACTIVE" {% if status == "INACTIVE" %}selected{% endif %}>Inactive</option></select></div>
+  <div class="col-md-3 align-self-end"><button class="btn btn-outline-primary" type="submit">Filter</button></div>
+</form>
+<p class="small text-muted">{{ total }} internship{{ total|pluralize }}</p>
+<table class="table table-sm align-middle">
+  <thead><tr><th scope="col">Title</th><th scope="col">Company</th><th scope="col">Location</th><th scope="col">Status</th><th scope="col"><span class="visually-hidden">Actions</span></th></tr></thead>
+  <tbody>
+  {% for i in page.object_list %}
+  <tr><td>{{ i.internship_title }}</td><td>{{ i.company_name }}</td><td>{{ i.location }}</td><td>{{ i.get_status_display }}</td>
+    <td class="text-end"><a href="{% url 'internships:admin_edit' i.pk %}">Edit</a>
+      <form method="post" action="{% url 'internships:admin_toggle' i.pk %}" class="d-inline">{% csrf_token %}
+        <button class="btn btn-link btn-sm" type="submit">{% if i.status == "ACTIVE" %}Deactivate{% else %}Activate{% endif %}</button></form></td></tr>
+  {% empty %}<tr><td colspan="5">No internships yet. Run <code>python manage.py load_internships</code> or add one.</td></tr>
+  {% endfor %}
+  </tbody>
+</table>
+{% include "partials/pagination.html" %}
+{% endblock %}

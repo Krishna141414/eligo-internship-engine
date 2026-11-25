@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block title %}Internships{% endblock %}
+{% block content %}
+<h1 class="h3">Internships</h1>
+<form method="get" class="row g-2 mb-3" role="search">
+  {% for field in form %}
+  <div class="col-md-3"><label class="form-label small" for="{{ field.id_for_label }}">{{ field.label }}</label>{{ field }}</div>
+  {% endfor %}
+  <div class="col-12"><button class="btn btn-primary" type="submit">Search internships</button>
+    <a class="btn btn-link" href="{% url 'internships:list' %}">Clear filters</a></div>
+</form>
+<p class="text-muted small">{{ total }} active internship{{ total|pluralize }}</p>
+{% if page.object_list %}
+<ul class="list-unstyled">
+  {% for i in page.object_list %}
+  <li class="border rounded p-3 mb-2">
+    <a class="fw-semibold" href="{% url 'internships:detail' i.pk %}">{{ i.internship_title }}</a>
+    <div class="small text-muted">{{ i.company_name }} · {{ i.location }} · {{ i.work_mode }}{% if i.stipend %} · {{ i.stipend }}{% endif %}</div>
+    <div class="small">Requires {{ i.required_qualification }}{% if i.specialization %} ({{ i.specialization }}){% endif %}</div>
+  </li>
+  {% endfor %}
+</ul>
+{% include "partials/pagination.html" %}
+{% else %}
+<p>No internships match these filters. Try a broader location or job role.</p>
+{% endif %}
+{% endblock %}

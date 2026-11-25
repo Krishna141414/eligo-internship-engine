@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block title %}{{ internship.internship_title }}{% endblock %}
+{% block content %}
+<a href="{% url 'internships:list' %}" class="small">&larr; All internships</a>
+<h1 class="h3 mt-2">{{ internship.internship_title }}</h1>
+<p class="text-muted">{{ internship.company_name }} · {{ internship.location }} · {{ internship.work_mode }}</p>
+<dl class="row">
+  <dt class="col-sm-3">Stipend</dt><dd class="col-sm-9">{{ internship.stipend|default:"Not stated" }}</dd>
+  <dt class="col-sm-3">Duration</dt><dd class="col-sm-9">{{ internship.duration|default:"Not stated" }}</dd>
+  <dt class="col-sm-3">Apply by</dt><dd class="col-sm-9">{{ internship.application_deadline|date:"d M Y"|default:"No deadline listed" }}</dd>
+  <dt class="col-sm-3">Required qualification</dt><dd class="col-sm-9">{{ internship.required_qualification }}{% if internship.specialization %} ({{ internship.specialization }}){% endif %}</dd>
+  <dt class="col-sm-3">Minimum academic %</dt><dd class="col-sm-9">{{ internship.minimum_academic_percentage }}</dd>
+  <dt class="col-sm-3">Required skills</dt><dd class="col-sm-9">{{ internship.required_skills|join:", "|default:"None listed" }}</dd>
+  <dt class="col-sm-3">Eligibility criteria</dt><dd class="col-sm-9">{{ internship.eligibility_criteria|default:"—" }}</dd>
+</dl>
+<p>{{ internship.description }}</p>
+{% if internship.description_derived %}<p class="small text-muted">Description composed from the public listing's fields (the source dataset has no full description).</p>{% endif %}
+
+<h2 class="h5 mt-4">Your eligibility</h2>
+{% if missing %}
+<p>Complete your profile ({{ missing|join:", " }}) to see whether you can apply.</p>
+{% else %}
+<ul class="list-unstyled">
+  {% for g in gates.gates %}
+  <li>{% if g.passed %}<span aria-hidden="true">✓</span> <span class="visually-hidden">Passed:</span>{% else %}<span aria-hidden="true">✗</span> <span class="visually-hidden">Not met:</span>{% endif %} {{ g.reason }}</li>
+  {% endfor %}
+</ul>
+<p class="fw-semibold">{% if gates.eligible %}You're eligible for this internship.{% else %}You can't apply yet.{% endif %}</p>
+{% endif %}
+{% endblock %}
