@@ -1,3 +1,17 @@
 {% extends "base.html" %}
 {% block title %}Admin dashboard{% endblock %}
-{% block content %}<h1 class="h3">Admin dashboard</h1>{% endblock %}
+{% block content %}
+<h1 class="h3">Admin dashboard</h1>
+<dl class="row">
+  <dt class="col-sm-4">Total students</dt><dd class="col-sm-8">{{ c.total_students }} · <a href="{% url 'adminpanel:students' %}">Manage students</a></dd>
+  <dt class="col-sm-4">Total internships</dt><dd class="col-sm-8">{{ c.total_internships }} ({{ c.active_internships }} active) · <a href="{% url 'internships:admin_list' %}">Manage internships</a></dd>
+  <dt class="col-sm-4">Total assessments</dt><dd class="col-sm-8">{{ c.total_assessments }} · <a href="{% url 'assessments:admin_list' %}">Manage assessments</a></dd>
+  <dt class="col-sm-4">Qualified students</dt><dd class="col-sm-8">{{ c.qualified_students }}</dd>
+  <dt class="col-sm-4">Not qualified students</dt><dd class="col-sm-8">{{ c.not_qualified_students }} (plus {{ c.not_attempted_students }} not attempted yet)</dd>
+  <dt class="col-sm-4">Total recommendations</dt><dd class="col-sm-8">{{ c.total_recommendations }} in {{ c.recommendation_runs }} run{{ c.recommendation_runs|pluralize }} · <a href="{% url 'adminpanel:recommendations' %}">Monitor</a></dd>
+  <dt class="col-sm-4">Job-role predictions</dt><dd class="col-sm-8">{{ c.total_predictions }} · <a href="{% url 'adminpanel:ml' %}">ML monitoring</a></dd>
+</dl>
+<h2 class="h5">Recent assessment results</h2>
+<ul>{% for a in recent_attempts %}<li>{{ a.student.name }} · {{ a.assessment }} · {{ a.score_percentage|floatformat:2 }}% · {{ a.get_result_display }}</li>{% empty %}<li>No results yet.</li>{% endfor %}</ul>
+<p><a href="{% url 'adminpanel:results' %}">All assessment results</a></p>
+{% endblock %}

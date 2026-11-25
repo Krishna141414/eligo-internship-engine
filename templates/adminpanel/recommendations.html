@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+{% block title %}Recommendation monitoring{% endblock %}
+{% block content %}
+<h1 class="h3">Recommendation monitoring</h1>
+<table class="table table-sm"><thead><tr><th scope="col">Student</th><th scope="col">Generated</th><th scope="col">Results</th><th scope="col">Top match</th><th scope="col">Top score</th></tr></thead><tbody>
+{% for r in page.object_list %}<tr><td>{{ r.student__name }}<div class="small text-muted">{{ r.student__email }}</div></td><td><a href="{% url 'adminpanel:recommendation_run' r.run_id %}">{{ r.generated|date:"d M Y, H:i" }}</a></td><td>{{ r.n }}</td>
+<td>{% if r.first %}<a href="{% url 'adminpanel:recommendation_detail' r.first.pk %}">{{ r.first.internship }}</a>{% endif %}</td><td>{% widthratio r.top 1 100 %}%</td></tr>
+{% empty %}<tr><td colspan="5">No recommendations generated yet.</td></tr>{% endfor %}</tbody></table>
+{% include "partials/pagination.html" %}
+{% endblock %}

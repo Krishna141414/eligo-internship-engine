@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% block title %}Recommendation run{% endblock %}
+{% block content %}
+<a class="small" href="{% url 'adminpanel:recommendations' %}">&larr; All runs</a>
+<h1 class="h3 mt-2">Recommendations for {{ student.name }}</h1>
+<table class="table table-sm"><thead><tr><th scope="col">Rank</th><th scope="col">Internship</th><th scope="col">Final</th><th scope="col">Content</th><th scope="col">Semantic</th><th scope="col">Skill</th><th scope="col">Matched</th><th scope="col">Missing</th><th scope="col">Method</th></tr></thead><tbody>
+{% for r in rows %}<tr><td>{{ r.recommendation_rank }}</td><td><a href="{% url 'adminpanel:recommendation_detail' r.pk %}">{{ r.internship }}</a></td>
+<td>{{ r.final_match_score|floatformat:3 }}</td><td>{{ r.content_similarity_score|floatformat:3 }}</td><td>{{ r.semantic_similarity_score|floatformat:3 }}</td><td>{{ r.skill_match_score|floatformat:3 }}</td>
+<td>{{ r.matched_skills|join:", "|default:"—" }}</td><td>{{ r.missing_skills|join:", "|default:"—" }}</td><td>{{ r.get_analysis_method_display }}</td></tr>{% endfor %}
+</tbody></table>
+{% endblock %}

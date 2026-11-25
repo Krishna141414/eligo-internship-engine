@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block title %}{{ s.name }}{% endblock %}
+{% block content %}
+<a class="small" href="{% url 'adminpanel:students' %}">&larr; All students</a>
+<h1 class="h3 mt-2">{{ s.name }}</h1>
+<p class="text-muted">{{ s.email }} · {{ s.mobile_number|default:"no mobile" }} · registered {{ s.registered_date|date:"d M Y" }} · {{ s.get_status_display }}</p>
+<form method="post" action="{% url 'adminpanel:student_toggle' s.pk %}">{% csrf_token %}<input type="hidden" name="next" value="{{ request.path }}">
+  <button class="btn btn-outline-secondary btn-sm" type="submit">{% if s.status == "ACTIVE" %}Deactivate student{% else %}Activate student{% endif %}</button></form>
+
+<h2 class="h5 mt-4">Academic profile</h2>
+{% if profile %}
+<dl class="row">
+  <dt class="col-sm-3">Qualification</dt><dd class="col-sm-9">{{ profile.qualification }}{% if profile.specialization %} ({{ profile.specialization }}){% endif %}</dd>
+  <dt class="col-sm-3">College</dt><dd class="col-sm-9">{{ profile.college_name|default:"—" }}</dd>
+  <dt class="col-sm-3">Academic %</dt><dd class="col-sm-9">{{ profile.academic_percentage|default:"—" }}</dd>
+  <dt class="col-sm-3">Skills</dt><dd class="col-sm-9">{{ profile.skills|join:", "|default:"—" }}</dd>
+  <dt class="col-sm-3">Career skills</dt><dd class="col-sm-9">{{ profile.career_skills|join:", "|default:"—" }}</dd>
+  <dt class="col-sm-3">Interests / preferred role / location</dt><dd class="col-sm-9">{{ profile.career_interests|default:"—" }} · {{ profile.preferred_job_role|default:"—" }} · {{ profile.preferred_location|default:"—" }}</dd>
+</dl>
+{% else %}<p>No profile yet.</p>{% endif %}
+
+<h2 class="h5">Assessment results</h2>
+<table class="table table-sm"><thead><tr><th scope="col">Assessment</th><th scope="col">Status</th><th scope="col">Marks</th><th scope="col">Score</th><th scope="col">Result</th></tr></thead><tbody>
+{% for a in attempts %}<tr><td>{{ a.assessment }}</td><td>{{ a.get_status_display }}</td><td>{{ a.obtained_marks|floatformat }} / {{ a.total_marks|floatformat }}</td><td>{% if a.score_percentage is not None %}{{ a.score_percentage|floatformat:2 }}%{% else %}—{% endif %}</td><td>{{ a.get_result_display|default:"—" }}</td></tr>
+{% empty %}<tr><td colspan="5">No attempts.</td></tr>{% endfor %}</tbody></table>
+
+<h2 class="h5">Latest recommendations</h2>
+<ol>{% for r in recs %}<li><a href="{% url 'adminpanel:recommendation_detail' r.pk %}">{{ r.internship }}</a> · {% widthratio r.final_match_score 1 100 %}% · matched {{ r.matched_skills|join:", "|default:"none" }} · missing {{ r.missing_skills|join:", "|default:"none" }}</li>{% empty %}<li class="list-unstyled">None yet.</li>{% endfor %}</ol>
+
+<h2 class="h5">Job-role predictions</h2>
+<ul>{% for p in predictions %}<li>{{ p.predicted_job_role|default:"No prediction" }} · {{ p.get_scope_status_display }}{% if p.probability is not None %} · {% widthratio p.probability 1 100 %}%{% endif %} · {{ p.model_name }} v{{ p.model_version }} · {{ p.predicted_date|date:"d M Y" }}</li>{% empty %}<li>None yet.</li>{% endfor %}</ul>
+{% endblock %}

@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block title %}ML monitoring{% endblock %}
+{% block content %}
+<h1 class="h3">ML monitoring</h1>
+<p class="small text-muted">AI engine: {{ status.message }}</p>
+{% if not metrics %}
+<div class="alert alert-warning">No saved model metrics found. Run the notebook (<code>notebooks/eligo_engine.ipynb</code>) to create the AI artifacts.</div>
+{% else %}
+<h2 class="h5">Saved model evaluation (test split)</h2>
+<p>Best model: <strong>{{ metrics.best_model }}</strong> ({{ metrics.selection_rule }}){% if manifest %} · artifacts created {{ manifest.created }}{% endif %}</p>
+<table class="table table-sm w-auto">
+  <thead><tr><th scope="col">Model</th><th scope="col">Accuracy</th><th scope="col">Precision (macro)</th><th scope="col">Recall (macro)</th><th scope="col">F1 (macro)</th><th scope="col">F1 (weighted)</th></tr></thead>
+  <tbody>{% for name, m in metrics.models.items %}<tr><td>{{ name }}</td><td>{{ m.accuracy|floatformat:4 }}</td><td>{{ m.precision_macro|floatformat:4 }}</td><td>{{ m.recall_macro|floatformat:4 }}</td><td>{{ m.f1_macro|floatformat:4 }}</td><td>{{ m.f1_weighted|floatformat:4 }}</td></tr>{% endfor %}</tbody>
+</table>
+{% if metrics.dataset %}<p class="small text-muted">Data: {{ metrics.dataset.name }} · {{ metrics.dataset.rows_used }} rows used · train {{ metrics.dataset.train }} / test {{ metrics.dataset.test }}</p>{% endif %}
+{% endif %}
+{% if figures %}
+<h2 class="h5 mt-4">Figures</h2>
+<div class="row g-3">{% for f in figures %}<figure class="col-md-6"><img class="img-fluid border" src="{% url 'adminpanel:figure' f %}" alt="{{ f }}" loading="lazy"><figcaption class="small text-muted">{{ f }}</figcaption></figure>{% endfor %}</div>
+{% endif %}
+<h2 class="h5 mt-4">Student job-role predictions</h2>
+<table class="table table-sm"><thead><tr><th scope="col">Student</th><th scope="col">Prediction</th><th scope="col">Confidence</th><th scope="col">Scope</th><th scope="col">Model</th><th scope="col">Date</th></tr></thead><tbody>
+{% for p in predictions %}<tr><td>{{ p.student.name }}</td><td>{{ p.predicted_job_role|default:"—" }}</td><td>{% if p.probability is not None %}{% widthratio p.probability 1 100 %}%{% else %}—{% endif %}</td><td>{{ p.get_scope_status_display }}</td><td>{{ p.model_name }} v{{ p.model_version }}</td><td>{{ p.predicted_date|date:"d M Y" }}</td></tr>
+{% empty %}<tr><td colspan="6">No predictions yet.</td></tr>{% endfor %}</tbody></table>
+{% endblock %}
