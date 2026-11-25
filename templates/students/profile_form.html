@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% block title %}Academic profile{% endblock %}
+{% block content %}
+<h1 class="h3">Academic profile</h1>
+<p class="text-muted">Your qualification, academic score and skills decide which internships you're eligible for and how well they match.</p>
+{% if suggested_career_skills %}
+<div class="alert alert-info" role="status">Suggested career skills from your skills: {{ suggested_career_skills|join:", " }}. Check them below and adjust before saving.</div>
+{% endif %}
+<form method="post" novalidate>{% csrf_token %}
+  {% include "partials/form.html" %}
+  <button class="btn btn-primary" type="submit">Save profile</button>
+</form>
+{% endblock %}

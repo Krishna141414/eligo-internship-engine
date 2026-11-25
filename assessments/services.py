@@ -10,6 +10,19 @@ from ml_core.eligibility import QUALIFICATION_HIERARCHY
 FINISHED = (Attempt.Status.SUBMITTED, Attempt.Status.AUTO_SUBMITTED)
 
 
+def available_assessments(qualification: str):
+    """Active assessments the given qualification satisfies, with at least one question."""
+    from django.db.models import Count
+
+    from assessments.models import Assessment
+
+    if not qualification:
+        return Assessment.objects.none()
+    open_to = [req for req, accepted in QUALIFICATION_HIERARCHY.items() if qualification in accepted]
+    return (Assessment.objects.filter(status=Assessment.Status.ACTIVE, qualification__in=open_to)
+            .annotate(n_questions=Count("questions")).filter(n_questions__gt=0).order_by("assessment_name"))
+
+
 def _matching(student, qualification: str):
     """Finished attempts on assessments the student's qualification satisfies."""
     open_to = [req for req, accepted in QUALIFICATION_HIERARCHY.items() if qualification in accepted]

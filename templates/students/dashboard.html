@@ -1,3 +1,37 @@
 {% extends "base.html" %}
 {% block title %}Dashboard{% endblock %}
-{% block content %}<h1 class="h3">Welcome, {{ user.name }}</h1>{% endblock %}
+{% block content %}
+<h1 class="h3">Welcome, {{ user.name }}</h1>
+
+<ol class="list-inline" aria-label="Your progress">
+  {% for step in journey %}
+  <li class="list-inline-item me-3" data-state="{{ step.state }}">
+    {% if step.url %}<a href="{{ step.url }}">{{ step.label }}</a>{% else %}{{ step.label }}{% endif %}
+    <span class="small text-muted">({% if step.state == "done" %}done{% elif step.state == "current" %}next{% else %}later{% endif %})</span>
+  </li>
+  {% endfor %}
+</ol>
+
+{% if missing %}
+<div class="alert alert-info">Complete your profile ({{ missing|join:", " }}) to see matches. <a href="{% url 'students:profile_edit' %}">Complete profile</a></div>
+{% endif %}
+
+<dl class="row">
+  <dt class="col-sm-4">Active internships</dt><dd class="col-sm-8">{{ stats.internships }} · <a href="{% url 'internships:list' %}">Search internships</a></dd>
+  <dt class="col-sm-4">Assessments for you</dt><dd class="col-sm-8">{{ stats.assessments }}</dd>
+  <dt class="col-sm-4">Latest assessment result</dt>
+  <dd class="col-sm-8">{% if latest_attempt %}{{ latest_attempt.assessment }}: {{ latest_attempt.score_percentage|floatformat:2 }}% – {{ latest_attempt.get_result_display }}{% else %}No attempts yet{% endif %}</dd>
+  <dt class="col-sm-4">Predicted job role</dt>
+  <dd class="col-sm-8">{% if latest_prediction %}{{ latest_prediction.predicted_job_role|default:"No prediction" }} ({{ latest_prediction.get_scope_status_display }}){% else %}Not predicted yet{% endif %}</dd>
+</dl>
+
+{% if available_assessments %}
+<h2 class="h5">Assessments for your qualification</h2>
+<ul>{% for a in available_assessments %}<li>{{ a.assessment_name }} · {{ a.duration_minutes }} min</li>{% endfor %}</ul>
+{% endif %}
+
+{% if latest_recommendations %}
+<h2 class="h5">Your top recommendations</h2>
+<ol>{% for r in latest_recommendations %}<li>{{ r.internship }} – {% widthratio r.final_match_score 1 100 %}% match</li>{% endfor %}</ol>
+{% endif %}
+{% endblock %}

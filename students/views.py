@@ -1,8 +1,35 @@
-from django.shortcuts import render
+from django.contrib import messages
+from django.shortcuts import redirect, render
 
 from accounts.decorators import student_required
+from students.forms import AccountForm, StudentProfileForm
+from students.services import dashboard_context, get_profile
 
 
 @student_required
 def dashboard(request):
-    return render(request, "students/dashboard.html", {})
+    return render(request, "students/dashboard.html", dashboard_context(request.user))
+
+
+@student_required
+def profile_edit(request):
+    profile = get_profile(request.user)
+    form = StudentProfileForm(request.POST or None, instance=profile)
+    if request.method == "POST" and form.is_valid():
+        obj = form.save(commit=False)
+        obj.student = request.user
+        obj.save()
+        messages.success(request, "Profile saved.")
+        return redirect("students:dashboard")
+    return render(request, "students/profile_form.html",
+                  {"form": form, "suggested_career_skills": form.suggested_career_skills})
+
+
+@student_required
+def account_edit(request):
+    form = AccountForm(request.POST or None, instance=request.user)
+    if request.method == "POST" and form.is_valid():
+        form.save()
+        messages.success(request, "Account details saved.")
+        return redirect("students:dashboard")
+    return render(request, "students/account_form.html", {"form": form})

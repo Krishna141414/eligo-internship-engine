@@ -8,27 +8,14 @@ from django.urls import reverse
 from django.utils import timezone
 
 from internships.models import Internship
-from ml_core.artifacts import write_manifest
-from recommendations.services import reset_bundle_cache
 from students.models import StudentProfile
-from tests.artifact_fixtures import build_fake_artifacts, fixture_internship_row, write_internship_rows
 
 pytestmark = pytest.mark.django_db
 
 
 @pytest.fixture
-def artifacts(tmp_path, settings):
-    root = build_fake_artifacts(tmp_path / "artifacts")
-    write_internship_rows(root, [
-        fixture_internship_row("T1", "Data Science", skills=("python", "sql")),
-        fixture_internship_row("T2", "Web Development", skills=("html", "css"), location="Work from home"),
-        fixture_internship_row("T3", "MBA Strategy Intern", skills=("excel",), qualification="MBA", location="Mumbai"),
-    ])
-    write_manifest(root, best_model_name="RandomForestClassifier", model_version="1", sentence_model_revision="x")
-    settings.ELIGO_ARTIFACTS_DIR = root
-    reset_bundle_cache()
-    yield root
-    reset_bundle_cache()
+def artifacts(fake_artifacts):
+    return fake_artifacts
 
 
 def _internship(**kw):
