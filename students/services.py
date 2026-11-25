@@ -61,26 +61,32 @@ def dashboard_context(user) -> dict:
     latest_rec = InternshipRecommendation.objects.filter(student=user).order_by("-generated_date").first()
     latest_prediction = JobRolePrediction.objects.filter(student=user).first()
 
-    steps = [("profile", "Profile", profile_done, "students:profile_edit"),
-             ("assessment", "Assessment", attempted, "assessments:list"),
-             ("eligibility", "Eligibility", qualifying is not None, "assessments:list"),
-             ("recommendations", "Recommendations", latest_rec is not None, "recommendations:list"),
-             ("job_role", "Job role", latest_prediction is not None, "recommendations:job_role")]
+    steps = [("profile", "Profile", profile_done, "students:profile_edit", "Complete your profile"),
+             ("assessment", "Assessment", attempted, "assessments:list", "Take an assessment"),
+             ("eligibility", "Eligibility", qualifying is not None, "assessments:list",
+              "Score above 60% on an assessment"),
+             ("recommendations", "Recommendations", latest_rec is not None, "recommendations:list",
+              "Generate your recommendations"),
+             ("job_role", "Job role", latest_prediction is not None, "recommendations:job_role",
+              "Predict your job role")]
     journey, blocked = [], False
-    for key, label, done, url in steps:
+    for key, label, done, url, action in steps:
         state = "done" if done and not blocked else ("pending" if blocked else "current")
         blocked = blocked or not done
-        journey.append({"key": key, "label": label, "state": state, "url": _url(url)})
+        journey.append({"key": key, "label": label, "state": state, "url": _url(url), "action": action})
+    next_step = next((s for s in journey if s["state"] == "current"), None)
 
-    latest_recommendations = []
+    latest_recommendations, n_recommendations = [], 0
     if latest_rec is not None:
-        latest_recommendations = list(InternshipRecommendation.objects.filter(student=user, run_id=latest_rec.run_id)
-                                      .select_related("internship").order_by("recommendation_rank")[:3])
+        run = InternshipRecommendation.objects.filter(student=user, run_id=latest_rec.run_id)
+        n_recommendations = run.count()
+        latest_recommendations = list(run.select_related("internship").order_by("recommendation_rank")[:3])
     assessments = list(available_assessments(qualification))
     return {
         "profile": profile,
         "missing": missing,
         "journey": journey,
+        "next_step": next_step,
         "available_assessments": assessments,
         "available_internships_count": Internship.objects.active().count(),
         "latest_attempt": Attempt.objects.filter(student=user, status__in=FINISHED).select_related("assessment").first(),
@@ -88,5 +94,5 @@ def dashboard_context(user) -> dict:
         "latest_recommendations": latest_recommendations,
         "latest_prediction": latest_prediction,
         "stats": {"internships": Internship.objects.active().count(), "assessments": len(assessments),
-                  "recommendations": len(latest_recommendations)},
+                  "recommendations": n_recommendations},
     }

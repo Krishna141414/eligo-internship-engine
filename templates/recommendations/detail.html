@@ -1,27 +1,72 @@
 {% extends "base.html" %}
+{% load eligo_ui %}
 {% block title %}Why this match{% endblock %}
 {% block content %}
-<a class="small" href="{% url 'recommendations:list' %}">&larr; All recommendations</a>
-<h1 class="h3 mt-2">#{{ rec.recommendation_rank }} {{ rec.internship.internship_title }}</h1>
-<p class="text-muted">{{ rec.internship.company_name }} · {{ rec.internship.location }}</p>
-<p class="fs-5">{{ rec.recommendation_reason }}</p>
+<a class="back-link" href="{% url 'recommendations:list' %}"><i class="bi bi-arrow-left" aria-hidden="true"></i>All recommendations</a>
 
-<h2 class="h5">Eligibility checks</h2>
-<ul>{% for g in x.gates %}<li>{% if g.passed %}✓{% else %}✗{% endif %} {{ g.reason }}</li>{% endfor %}</ul>
-<p>Assessment score {{ x.assessment.score }} against the {{ x.assessment.threshold }} threshold (must be above).</p>
+<section class="panel rec-detail-head" aria-labelledby="rec-h">
+  <div class="score-ring score-ring--lg" style="--value: {{ rec.final_match_score|pct }}" role="img" aria-label="{{ rec.final_match_score|pct }}% match">
+    <span class="score-ring__inner"><span class="score-ring__value">{{ rec.final_match_score|pct }}%</span><span class="score-ring__label">match</span></span>
+  </div>
+  <div>
+    <p class="text-muted mb-1">Rank #{{ rec.recommendation_rank }}</p>
+    <h1 id="rec-h" class="mb-1">{{ rec.internship.internship_title }}</h1>
+    <ul class="meta-list mb-3">
+      <li>{{ rec.internship.company_name }}</li><li>{{ rec.internship.location }}</li>
+      {% if rec.internship.work_mode %}<li>{{ rec.internship.work_mode }}</li>{% endif %}
+    </ul>
+    <p class="lead-text">{{ rec.recommendation_reason }}</p>
+    <p class="small-note"><a href="{% url 'internships:detail' rec.internship.pk %}">View the internship</a></p>
+  </div>
+</section>
 
-<h2 class="h5">How the score was built</h2>
-<table class="table table-sm w-auto">
-  <thead><tr><th scope="col">Component</th><th scope="col">Score</th><th scope="col">Weight</th><th scope="col">Contribution</th></tr></thead>
-  <tbody>
-  {% for c in x.components %}<tr><td>{{ c.label }}</td><td>{{ c.score|floatformat:3 }}</td><td>{{ c.weight }}</td><td>{{ c.contribution|floatformat:3 }}</td></tr>{% endfor %}
-  <tr class="fw-semibold"><td>Final match score</td><td colspan="2"></td><td>{{ x.final_score|floatformat:3 }}</td></tr>
-  </tbody>
-</table>
+<div class="split mt-4">
+  <section class="panel" aria-labelledby="build-h">
+    <h2 class="panel__title" id="build-h">How the score was built</h2>
+    <div class="breakdown mb-3">
+      <div class="breakdown__bar" role="img" aria-label="Score breakdown:{% for c in x.components %} {{ c.label }} {{ c.contribution|floatformat:2 }}{% if not forloop.last %},{% endif %}{% endfor %}">
+        {% for c in x.components %}<div class="breakdown__seg breakdown__seg--{{ c.name }}" style="width: {{ c.contribution|as_percent_width }}%"></div>{% endfor %}
+      </div>
+    </div>
+    <table class="table table-sm xai-table">
+      <thead><tr><th scope="col">Part</th><th scope="col">Score</th><th scope="col">Weight</th><th scope="col">Adds</th></tr></thead>
+      <tbody>
+      {% for c in x.components %}<tr><td><span class="swatch swatch--{{ c.name }} d-inline-block me-2" aria-hidden="true"></span>{{ c.label|capfirst }}</td>
+        <td class="num">{{ c.score|floatformat:3 }}</td><td class="num">{{ c.weight }}</td><td class="num">{{ c.contribution|floatformat:3 }}</td></tr>{% endfor %}
+      </tbody>
+      <tfoot><tr><td colspan="3">Final match score</td><td class="num">{{ x.final_score|floatformat:3 }}</td></tr></tfoot>
+    </table>
+    <p class="small-note mb-0">Score = weight × part score, added up. Weights come from the saved model configuration.</p>
+  </section>
 
-<h2 class="h5">Skills</h2>
-<p>Matched: {{ x.matched_skills|join:", "|default:"none" }}</p>
-<p>Missing: {{ x.missing_skills|join:", "|default:"none" }}</p>
-<p class="small text-muted">Skill-gap check method: {{ rec.get_analysis_method_display }}{% if rec.analysis_detail %} ({{ rec.analysis_detail }}){% endif %}.
-{% if x.llm_gap %}The local LLM also read the description and found missing: {{ x.llm_gap.missing|join:", "|default:"none" }}.{% endif %}</p>
+  <section class="panel" aria-labelledby="gates-h">
+    <h2 class="panel__title" id="gates-h">Eligibility checks</h2>
+    <ul class="gate-list">
+      {% for g in x.gates %}
+      <li class="{% if g.passed %}is-pass{% else %}is-fail{% endif %}"><i class="bi {% if g.passed %}bi-check-circle-fill{% else %}bi-x-circle-fill{% endif %}" aria-hidden="true"></i>
+        <span><span class="visually-hidden">{% if g.passed %}Passed:{% else %}Not met:{% endif %} </span>{{ g.reason }}</span></li>
+      {% endfor %}
+      <li class="{% if x.assessment.passed %}is-pass{% else %}is-fail{% endif %}"><i class="bi {% if x.assessment.passed %}bi-check-circle-fill{% else %}bi-x-circle-fill{% endif %}" aria-hidden="true"></i>
+        <span>Assessment score {{ x.assessment.score }}, which must be above {{ x.assessment.threshold }}.</span></li>
+    </ul>
+  </section>
+</div>
+
+<section class="panel mt-4" aria-labelledby="skills-h">
+  <h2 class="panel__title" id="skills-h">Skills</h2>
+  <div class="split">
+    <div>
+      <p class="rec-card__group-label">Skills you have ({{ x.matched_skills|length }})</p>
+      {% if x.matched_skills %}<ul class="chips">{% for s in x.matched_skills %}<li class="chip chip--matched"><i class="bi bi-check2" aria-hidden="true"></i>{{ s }}</li>{% endfor %}</ul>
+      {% else %}<p class="text-muted mb-0">None of the listed skills yet.</p>{% endif %}
+    </div>
+    <div>
+      <p class="rec-card__group-label">Skills to build ({{ x.missing_skills|length }})</p>
+      {% if x.missing_skills %}<ul class="chips">{% for s in x.missing_skills %}<li class="chip chip--missing"><span class="visually-hidden">Missing: </span>{{ s }}</li>{% endfor %}</ul>
+      {% else %}<p class="text-muted mb-0">You have every listed skill.</p>{% endif %}
+    </div>
+  </div>
+  <p class="small-note">Skill-gap check method: {{ rec.get_analysis_method_display }}{% if rec.analysis_detail %} ({{ rec.analysis_detail }}){% endif %}.
+  {% if x.llm_gap %}The local LLM also read the description and found missing: {{ x.llm_gap.missing|join:", "|default:"none" }}.{% endif %}</p>
+</section>
 {% endblock %}

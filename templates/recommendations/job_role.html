@@ -1,40 +1,91 @@
 {% extends "base.html" %}
+{% load static %}
 {% block title %}Job-role prediction{% endblock %}
 {% block content %}
-<div class="d-flex justify-content-between align-items-center">
-  <h1 class="h3">Job-role prediction</h1>
-  <form method="post">{% csrf_token %}<button class="btn btn-primary" type="submit">Predict my job role</button></form>
+<div class="page-header">
+  <div><h1>Job-role prediction</h1>
+    <p>Uses only your career skills ("Skills the job-role model understands" in your <a href="{% url 'students:profile_edit' %}">profile</a>).</p></div>
+  <form method="post">{% csrf_token %}<button class="btn btn-primary" type="submit">{% if pred %}Predict again{% else %}Predict my job role{% endif %}</button></form>
 </div>
-<p class="text-muted">Uses only your career skills (“Skills the job-role model understands” in your <a href="{% url 'students:profile_edit' %}">profile</a>).</p>
 
 {% if not pred %}
-<p>No prediction yet. Pick at least 3 career skills in your profile, then select “Predict my job role”.</p>
+<div class="empty">
+  <i class="bi bi-diagram-3" aria-hidden="true"></i>
+  <h2>No prediction yet</h2>
+  <p>Pick at least 3 career skills in your profile, then select "Predict my job role".</p>
+  <a class="btn btn-outline-secondary" href="{% url 'students:profile_edit' %}">Edit career skills</a>
+</div>
 {% else %}
-  {% if x.scope_status == "confident" %}
-  <section class="border rounded p-3 mb-3" aria-labelledby="pred-h">
-    <h2 class="h6 text-muted mb-1" id="pred-h">Predicted job role</h2>
-    <p class="fs-3 fw-semibold mb-1">{{ x.label }}</p>
-    <p class="mb-0">Model confidence: {{ x.confidence_pct }}%</p>
-  </section>
-  {% else %}
-  <section class="border rounded p-3 mb-3" aria-labelledby="scope-h">
-    <h2 class="h6 mb-1" id="scope-h">{% if x.scope_status == "low_confidence" %}Low confidence{% else %}Outside the model's scope{% endif %}</h2>
-    <p>{{ x.scope_message }}</p>
-    {% if x.label %}<p class="mb-0">Closest field (tentative): {{ x.label }} · model confidence {{ x.confidence_pct }}%</p>{% endif %}
-  </section>
-  {% endif %}
+<div class="split split--wide-left">
+  <div class="stack">
+    {% if x.scope_status == "confident" %}
+    <section class="role-hero" aria-labelledby="pred-h">
+      <h2 id="pred-h">Predicted job role</h2>
+      <p class="role-hero__label">{{ x.label }}</p>
+      <p class="role-hero__confidence">Model confidence <strong>{{ x.confidence_pct }}%</strong></p>
+    </section>
+    {% else %}
+    <section class="role-scope" aria-labelledby="scope-h">
+      <h2 id="scope-h">{% if x.scope_status == "low_confidence" %}Low confidence{% else %}Outside the model's scope{% endif %}</h2>
+      <p>{{ x.scope_message }}</p>
+      {% if x.label %}<p class="mb-0">Closest field (tentative): <strong>{{ x.label }}</strong>, model confidence {{ x.confidence_pct }}%</p>{% endif %}
+    </section>
+    {% endif %}
 
-  <p class="small">Skills the model used: {{ x.known_skills|join:", "|default:"none" }}{% if x.unknown_skills %} · not recognised: {{ x.unknown_skills|join:", " }}{% endif %}</p>
-  {% if x.top_features %}
-  <h2 class="h5">Your skills that weigh most in this model</h2>
-  <ul>{% for f in x.top_features %}<li>{{ f.feature }} ({{ f.importance|floatformat:3 }})</li>{% endfor %}</ul>
-  <p class="small text-muted">Importance is the model's overall (global) feature importance for each of your skills.</p>
-  {% endif %}
-  <p class="small text-muted">{{ x.note }} Model: {{ x.model }}. Predicted {{ pred.predicted_date|date:"d M Y, H:i" }}.</p>
+    {% if role_chart %}
+    <section class="panel" aria-labelledby="probs-h">
+      <h2 class="panel__title" id="probs-h">How sure the model is, per career field</h2>
+      <div class="chart-box chart-box--short"><canvas id="role-chart" role="img" aria-label="Probability per career field:{% for l in role_chart.labels %} {{ l }}{% endfor %}"></canvas></div>
+      {{ role_chart|json_script:"role-chart-data" }}
+      <details class="mt-2"><summary>Show the numbers</summary>
+        <table class="table table-sm xai-table mt-2"><thead><tr><th scope="col">Career field</th><th scope="col">Probability</th></tr></thead><tbody>
+        {% for label, value in role_chart_rows %}<tr><td>{{ label }}</td><td class="num">{{ value }}%</td></tr>{% endfor %}
+        </tbody></table></details>
+    </section>
+    {% endif %}
+  </div>
 
+  <div class="stack">
+    <section class="panel" aria-labelledby="used-h">
+      <h2 class="panel__title" id="used-h">Skills the model used</h2>
+      {% if x.known_skills %}<ul class="chips">{% for s in x.known_skills %}<li class="chip chip--matched">{{ s }}</li>{% endfor %}</ul>
+      {% else %}<p class="text-muted mb-0">None.</p>{% endif %}
+      {% if x.unknown_skills %}
+      <p class="rec-card__group-label mt-3">Not recognised by the model</p>
+      <ul class="chips">{% for s in x.unknown_skills %}<li class="chip chip--neutral">{{ s }}</li>{% endfor %}</ul>
+      {% endif %}
+    </section>
+
+    {% if feature_chart %}
+    <section class="panel" aria-labelledby="feat-h">
+      <h2 class="panel__title" id="feat-h">Your skills that weigh most</h2>
+      <div class="chart-box chart-box--short"><canvas id="feature-chart" role="img" aria-label="Feature importance of your skills"></canvas></div>
+      {{ feature_chart|json_script:"feature-chart-data" }}
+      <details class="mt-2"><summary>Show the numbers</summary>
+        <table class="table table-sm xai-table mt-2"><thead><tr><th scope="col">Skill</th><th scope="col">Importance</th></tr></thead><tbody>
+        {% for f in x.top_features %}<tr><td>{{ f.feature }}</td><td class="num">{{ f.importance|floatformat:3 }}</td></tr>{% endfor %}
+        </tbody></table></details>
+      <p class="small-note">Importance is the model's overall (global) feature importance for each of your skills.</p>
+    </section>
+    {% endif %}
+  </div>
+</div>
+
+<p class="small-note">{{ x.note }} Model: {{ x.model }}. Predicted {{ pred.predicted_date|date:"d M Y, H:i" }}.</p>
+
+<section class="panel mt-4" aria-labelledby="related-h">
+  <h2 class="panel__title" id="related-h">Related internships you can apply to</h2>
   {% if related %}
-  <h2 class="h5">Related internships you can apply to</h2>
-  <ul>{% for i, why in related %}<li><a href="{% url 'internships:detail' i.pk %}">{{ i.internship_title }}</a> ({{ i.company_name }}): {{ why }}</li>{% endfor %}</ul>
-  {% endif %}
+  <ul class="blocked-list">
+    {% for i, why in related %}<li><a href="{% url 'internships:detail' i.pk %}">{{ i.internship_title }}</a> <span class="text-muted">at {{ i.company_name }}</span><p class="text-muted">{{ why }}</p></li>{% endfor %}
+  </ul>
+  {% else %}<p class="text-muted mb-0">No open internships match this field for you right now.</p>{% endif %}
+</section>
+{% endif %}
+{% endblock %}
+{% block extra_js %}
+{% if pred %}
+<script src="{% static 'vendor/chartjs/chart.umd.min.js' %}"></script>
+<script src="{% static 'js/charts.js' %}"></script>
 {% endif %}
 {% endblock %}

@@ -1,28 +1,57 @@
 {% extends "base.html" %}
 {% block title %}Assessments{% endblock %}
 {% block content %}
-<h1 class="h3">Assessments</h1>
-<p class="text-muted">Score above 60% on an assessment for your qualification to unlock internship recommendations.</p>
+<div class="page-header">
+  <div><h1>Assessments</h1><p>Score above 60% on an assessment for your qualification to unlock internship recommendations. Exactly 60% does not qualify.</p></div>
+</div>
+
 {% if not has_qualification %}
-<div class="alert alert-info">Add your qualification to see assessments for you. <a href="{% url 'students:profile_edit' %}">Complete profile</a></div>
+<div class="empty">
+  <i class="bi bi-person-vcard" aria-hidden="true"></i>
+  <h2>Add your qualification first</h2>
+  <p>Assessments are matched to your qualification.</p>
+  <a class="btn btn-primary" href="{% url 'students:profile_edit' %}">Complete profile</a>
+</div>
 {% elif not assessments %}
-<p>No assessments are open for your qualification yet. Check back later.</p>
+<div class="empty">
+  <i class="bi bi-ui-checks" aria-hidden="true"></i>
+  <h2>No assessments open yet</h2>
+  <p>None are open for your qualification right now. Check back later.</p>
+</div>
 {% else %}
-<ul class="list-unstyled">
+<ul class="listing">
   {% for a in assessments %}
-  <li class="border rounded p-3 mb-2 d-flex justify-content-between align-items-center">
-    <div><div class="fw-semibold">{{ a.assessment_name }}</div><div class="small text-muted">{{ a.n_questions }} questions · {{ a.duration_minutes }} minutes</div></div>
-    <form method="post" action="{% url 'assessments:start' a.pk %}">{% csrf_token %}
+  <li class="listing__item">
+    <div class="listing__main">
+      <span class="listing__title">{{ a.assessment_name }}</span>
+      <ul class="meta-list">
+        <li><i class="bi bi-list-ol" aria-hidden="true"></i>{{ a.n_questions }} questions</li>
+        <li><i class="bi bi-clock" aria-hidden="true"></i>{{ a.duration_minutes }} minutes</li>
+        <li>Pass mark above 60%</li>
+      </ul>
+    </div>
+    <form method="post" action="{% url 'assessments:start' a.pk %}" class="m-0">{% csrf_token %}
       <button class="btn btn-primary" type="submit">{% if a.pk in in_progress %}Resume assessment{% else %}Start assessment{% endif %}</button></form>
   </li>
   {% endfor %}
 </ul>
 {% endif %}
-<h2 class="h5 mt-4">Your attempts</h2>
+
+<h2 class="section-title mt-4">Your attempts</h2>
 {% if history %}
-<table class="table table-sm"><thead><tr><th scope="col">Assessment</th><th scope="col">Submitted</th><th scope="col">Score</th><th scope="col">Result</th><th scope="col"></th></tr></thead><tbody>
-{% for at in history %}<tr><td>{{ at.assessment }}</td><td>{{ at.submission_time|date:"d M Y, H:i" }}{% if at.status == "AUTO_SUBMITTED" %} (auto){% endif %}</td>
-<td>{{ at.score_percentage|floatformat:2 }}%</td><td>{{ at.get_result_display }}</td><td><a href="{% url 'assessments:result' at.pk %}">View result</a></td></tr>{% endfor %}
-</tbody></table>
+<div class="table-wrap">
+<table class="table mb-0">
+  <thead><tr><th scope="col">Assessment</th><th scope="col">Submitted</th><th scope="col">Score</th><th scope="col">Result</th><th scope="col"><span class="visually-hidden">Actions</span></th></tr></thead>
+  <tbody>
+  {% for at in history %}
+  <tr><td>{{ at.assessment }}</td>
+    <td>{{ at.submission_time|date:"d M Y, H:i" }}{% if at.status == "AUTO_SUBMITTED" %}<span class="cell-sub">Auto-submitted</span>{% endif %}</td>
+    <td class="num">{{ at.score_percentage|floatformat:2 }}%</td>
+    <td><span class="badge-status {% if at.result == 'QUALIFIED' %}badge-status--ok{% else %}badge-status--no{% endif %}">{{ at.get_result_display }}</span></td>
+    <td><a href="{% url 'assessments:result' at.pk %}">View result</a></td></tr>
+  {% endfor %}
+  </tbody>
+</table>
+</div>
 {% else %}<p class="text-muted">No attempts yet.</p>{% endif %}
 {% endblock %}

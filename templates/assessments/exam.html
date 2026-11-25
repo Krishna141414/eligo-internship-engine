@@ -1,31 +1,72 @@
 {% extends "base.html" %}
-{% load static %}
+{% load static eligo_ui %}
 {% block title %}{{ attempt.assessment.assessment_name }}{% endblock %}
 {% block content %}
-<div class="d-flex justify-content-between align-items-center sticky-top bg-white py-2 border-bottom">
-  <h1 class="h5 m-0">{{ attempt.assessment.assessment_name }}</h1>
-  <div id="timer" role="timer" aria-live="polite" data-remaining="{{ remaining_seconds }}">
-    Time left: <span id="timer-value">{{ remaining_seconds }} s</span>
+<div class="exam-bar">
+  <h1>{{ attempt.assessment.assessment_name }}</h1>
+  <span class="exam-bar__progress"><span id="answered-count">{{ answered }}</span> of {{ questions|length }} answered</span>
+  <div class="timer-pill" id="timer" role="timer" aria-live="off" data-remaining="{{ remaining_seconds }}">
+    <i class="bi bi-clock" aria-hidden="true"></i><span class="visually-hidden">Time left:</span>
+    <span id="timer-value">{{ remaining_seconds|mmss }}</span>
   </div>
 </div>
-<p class="small text-muted mt-2">Answers save automatically. The timer is shown for convenience; the server enforces the deadline.</p>
-<nav aria-label="Question palette" id="palette" class="mb-3">
-  {% for q in questions %}<a href="#q-{{ q.number }}" class="btn btn-sm {% if q.selected %}btn-secondary{% else %}btn-outline-secondary{% endif %} me-1 mb-1" data-qid="{{ q.id }}">{{ q.number }}</a>{% endfor %}
-</nav>
-<form method="post" action="{% url 'assessments:submit' attempt.pk %}" id="exam-form" data-save-url="{% url 'assessments:save_answer' attempt.pk %}">
-  {% csrf_token %}
-  {% for q in questions %}
-  <fieldset class="border rounded p-3 mb-3 exam-question" id="q-{{ q.number }}">
-    <legend class="fs-6 fw-semibold">Question {{ q.number }} of {{ questions|length }} <span class="text-muted small">({{ q.marks|floatformat }} mark{{ q.marks|pluralize }})</span></legend>
-    <p>{{ q.question_text|linebreaksbr }}</p>
-    <div class="form-check"><input class="form-check-input" type="radio" name="q_{{ q.id }}" id="q{{ q.id }}a" value="A" {% if q.selected == "A" %}checked{% endif %}><label class="form-check-label" for="q{{ q.id }}a">A. {{ q.option_a }}</label></div>
-    <div class="form-check"><input class="form-check-input" type="radio" name="q_{{ q.id }}" id="q{{ q.id }}b" value="B" {% if q.selected == "B" %}checked{% endif %}><label class="form-check-label" for="q{{ q.id }}b">B. {{ q.option_b }}</label></div>
-    <div class="form-check"><input class="form-check-input" type="radio" name="q_{{ q.id }}" id="q{{ q.id }}c" value="C" {% if q.selected == "C" %}checked{% endif %}><label class="form-check-label" for="q{{ q.id }}c">C. {{ q.option_c }}</label></div>
-    <div class="form-check"><input class="form-check-input" type="radio" name="q_{{ q.id }}" id="q{{ q.id }}d" value="D" {% if q.selected == "D" %}checked{% endif %}><label class="form-check-label" for="q{{ q.id }}d">D. {{ q.option_d }}</label></div>
-  </fieldset>
-  {% endfor %}
-  <button type="submit" class="btn btn-primary" id="submit-btn">Submit assessment</button>
-</form>
+<p class="visually-hidden" id="timer-announce" aria-live="assertive"></p>
+<p class="small-note mt-0 mb-3">Answers save automatically. The timer is for your convenience; the server enforces the deadline.</p>
+
+<div class="exam-layout">
+  <form method="post" action="{% url 'assessments:submit' attempt.pk %}" id="exam-form" data-save-url="{% url 'assessments:save_answer' attempt.pk %}">
+    {% csrf_token %}
+    {% for q in questions %}
+    <fieldset class="question" id="q-{{ q.number }}" data-qid="{{ q.id }}">
+      <legend>Question {{ q.number }} of {{ questions|length }} ({{ q.marks|floatformat }} mark{{ q.marks|pluralize }})</legend>
+      <p class="question__text">{{ q.question_text|linebreaksbr }}</p>
+      <label class="option"><input type="radio" name="q_{{ q.id }}" value="A" {% if q.selected == "A" %}checked{% endif %}><span class="option__letter">A</span><span>{{ q.option_a }}</span></label>
+      <label class="option"><input type="radio" name="q_{{ q.id }}" value="B" {% if q.selected == "B" %}checked{% endif %}><span class="option__letter">B</span><span>{{ q.option_b }}</span></label>
+      <label class="option"><input type="radio" name="q_{{ q.id }}" value="C" {% if q.selected == "C" %}checked{% endif %}><span class="option__letter">C</span><span>{{ q.option_c }}</span></label>
+      <label class="option"><input type="radio" name="q_{{ q.id }}" value="D" {% if q.selected == "D" %}checked{% endif %}><span class="option__letter">D</span><span>{{ q.option_d }}</span></label>
+    </fieldset>
+    {% endfor %}
+    <div class="exam-nav">
+      <button type="button" class="btn btn-outline-secondary js-only" data-exam-prev><i class="bi bi-chevron-left" aria-hidden="true"></i> Previous</button>
+      <button type="button" class="btn btn-outline-secondary js-only" data-exam-next>Next <i class="bi bi-chevron-right" aria-hidden="true"></i></button>
+      <button type="submit" class="btn btn-primary" id="submit-btn">Submit assessment</button>
+    </div>
+  </form>
+
+  <aside class="palette panel" aria-labelledby="palette-h">
+    <h2 class="panel__title" id="palette-h">Questions</h2>
+    <ol class="palette__grid" id="palette">
+      {% for q in questions %}
+      <li><a class="palette__btn" href="#q-{{ q.number }}" data-qid="{{ q.id }}" data-index="{{ forloop.counter0 }}" data-answered="{% if q.selected %}true{% else %}false{% endif %}"
+             aria-label="Question {{ q.number }}{% if q.selected %}, answered{% endif %}">{{ q.number }}</a></li>
+      {% endfor %}
+    </ol>
+    <ul class="palette__legend">
+      <li><span class="palette__swatch palette__swatch--answered" aria-hidden="true"></span>Answered</li>
+      <li><span class="palette__swatch" aria-hidden="true"></span>Not answered</li>
+      <li class="js-only"><span class="palette__swatch palette__swatch--current" aria-hidden="true"></span>Current</li>
+    </ul>
+  </aside>
+</div>
+
+<div class="modal" id="confirm-submit" tabindex="-1" aria-labelledby="confirm-submit-h" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2 class="modal-title h5" id="confirm-submit-h">Submit your assessment?</h2>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <p id="confirm-submit-text" class="mb-2"></p>
+        <p class="text-muted mb-0">You can't change your answers after submitting.</p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Keep answering</button>
+        <button type="button" class="btn btn-primary" id="confirm-submit-go">Submit now</button>
+      </div>
+    </div>
+  </div>
+</div>
 {% endblock %}
 {% block extra_js %}
 <script src="{% static 'js/timer.js' %}"></script>

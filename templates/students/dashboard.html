@@ -1,37 +1,86 @@
 {% extends "base.html" %}
+{% load humanize eligo_ui %}
 {% block title %}Dashboard{% endblock %}
 {% block content %}
-<h1 class="h3">Welcome, {{ user.name }}</h1>
+<div class="page-header">
+  <div><h1>Welcome, {{ user.name }}</h1><p>Your progress from profile to job-role prediction.</p></div>
+</div>
 
-<ol class="list-inline" aria-label="Your progress">
+<ol class="journey" aria-label="Your progress">
   {% for step in journey %}
-  <li class="list-inline-item me-3" data-state="{{ step.state }}">
-    {% if step.url %}<a href="{{ step.url }}">{{ step.label }}</a>{% else %}{{ step.label }}{% endif %}
-    <span class="small text-muted">({% if step.state == "done" %}done{% elif step.state == "current" %}next{% else %}later{% endif %})</span>
+  <li class="journey__step" data-state="{{ step.state }}"{% if step.state == "current" %} aria-current="step"{% endif %}>
+    <span class="journey__marker" aria-hidden="true">{% if step.state == "done" %}<i class="bi bi-check-lg"></i>{% endif %}</span>
+    <span class="journey__text">
+      {% if step.url %}<a class="journey__link" href="{{ step.url }}">{{ step.label }}</a>{% else %}<span class="journey__link">{{ step.label }}</span>{% endif %}
+      <span class="journey__state">{% if step.state == "done" %}Done{% elif step.state == "current" %}Next step{% else %}Not yet{% endif %}</span>
+    </span>
   </li>
   {% endfor %}
 </ol>
 
-{% if missing %}
-<div class="alert alert-info">Complete your profile ({{ missing|join:", " }}) to see matches. <a href="{% url 'students:profile_edit' %}">Complete profile</a></div>
+{% if next_step %}
+<div class="next-step">
+  <div>
+    <p class="next-step__label">Next step</p>
+    <p class="next-step__action">{{ next_step.action }}</p>
+    {% if missing and next_step.key == "profile" %}<p class="small-note">Missing: {{ missing|join:", " }}.</p>{% endif %}
+  </div>
+  {% if next_step.url %}<a class="btn btn-primary" href="{{ next_step.url }}">{{ next_step.action }}</a>{% endif %}
+</div>
 {% endif %}
 
-<dl class="row">
-  <dt class="col-sm-4">Active internships</dt><dd class="col-sm-8">{{ stats.internships }} · <a href="{% url 'internships:list' %}">Search internships</a></dd>
-  <dt class="col-sm-4">Assessments for you</dt><dd class="col-sm-8">{{ stats.assessments }}</dd>
-  <dt class="col-sm-4">Latest assessment result</dt>
-  <dd class="col-sm-8">{% if latest_attempt %}{{ latest_attempt.assessment }}: {{ latest_attempt.score_percentage|floatformat:2 }}% – {{ latest_attempt.get_result_display }}{% else %}No attempts yet{% endif %}</dd>
-  <dt class="col-sm-4">Predicted job role</dt>
-  <dd class="col-sm-8">{% if latest_prediction %}{{ latest_prediction.predicted_job_role|default:"No prediction" }} ({{ latest_prediction.get_scope_status_display }}){% else %}Not predicted yet{% endif %}</dd>
+<dl class="stat-band">
+  <div><dt>Active internships</dt><dd>{{ stats.internships|intcomma }}</dd></div>
+  <div><dt>Assessments for you</dt><dd>{{ stats.assessments }}</dd></div>
+  <div><dt>Latest score</dt>
+    {% if latest_attempt %}<dd class="is-score">{{ latest_attempt.score_percentage|floatformat:2 }}%</dd>{% else %}<dd class="is-empty">Not taken yet</dd>{% endif %}</div>
+  <div><dt>Recommendations</dt>
+    {% if stats.recommendations %}<dd>{{ stats.recommendations }}</dd>{% else %}<dd class="is-empty">None yet</dd>{% endif %}</div>
 </dl>
 
-{% if available_assessments %}
-<h2 class="h5">Assessments for your qualification</h2>
-<ul>{% for a in available_assessments %}<li>{{ a.assessment_name }} · {{ a.duration_minutes }} min</li>{% endfor %}</ul>
-{% endif %}
+<div class="split">
+  <section class="panel" aria-labelledby="matches-h">
+    <h2 class="panel__title" id="matches-h">Your top matches</h2>
+    {% if latest_recommendations %}
+    <ol class="match-rows">
+      {% for r in latest_recommendations %}
+      <li>
+        <div class="score-ring score-ring--sm" style="--value: {{ r.final_match_score|pct }}" role="img" aria-label="{{ r.final_match_score|pct }}% match">
+          <span class="score-ring__inner"><span class="score-ring__value">{{ r.final_match_score|pct }}%</span></span>
+        </div>
+        <div><a href="{% url 'recommendations:detail' r.pk %}">{{ r.internship.internship_title }}</a>
+          <ul class="meta-list"><li>{{ r.internship.company_name }}</li><li>{{ r.internship.location }}</li></ul></div>
+      </li>
+      {% endfor %}
+    </ol>
+    <p class="small-note"><a href="{% url 'recommendations:list' %}">See all recommendations</a></p>
+    {% else %}
+    <p class="text-muted mb-0">Matches appear here once you've passed an assessment and generated recommendations.</p>
+    {% endif %}
+  </section>
 
-{% if latest_recommendations %}
-<h2 class="h5">Your top recommendations</h2>
-<ol>{% for r in latest_recommendations %}<li>{{ r.internship }} – {% widthratio r.final_match_score 1 100 %}% match</li>{% endfor %}</ol>
-{% endif %}
+  <section class="panel" aria-labelledby="exams-h">
+    <h2 class="panel__title" id="exams-h">Assessments for your qualification</h2>
+    {% if available_assessments %}
+    <ul class="match-rows">
+      {% for a in available_assessments %}
+      <li><i class="bi bi-ui-checks" aria-hidden="true"></i>
+        <div><a href="{% url 'assessments:list' %}">{{ a.assessment_name }}</a>
+          <ul class="meta-list"><li>{{ a.duration_minutes }} minutes</li><li>Pass mark above 60%</li></ul></div></li>
+      {% endfor %}
+    </ul>
+    {% elif missing %}
+    <p class="text-muted mb-0">Add your qualification to see the assessments open to you.</p>
+    {% else %}
+    <p class="text-muted mb-0">No assessments are open for your qualification yet.</p>
+    {% endif %}
+    <h2 class="panel__title mt-4" id="role-h">Predicted job role</h2>
+    {% if latest_prediction and latest_prediction.predicted_job_role %}
+    <p class="mb-0"><a href="{% url 'recommendations:job_role' %}">{{ latest_prediction.predicted_job_role }}</a>
+      <span class="badge-status {% if latest_prediction.scope_status == 'confident' %}badge-status--ok{% else %}badge-status--warn{% endif %}">{{ latest_prediction.get_scope_status_display }}</span></p>
+    {% else %}
+    <p class="text-muted mb-0">Not predicted yet. It uses the career skills in your profile.</p>
+    {% endif %}
+  </section>
+</div>
 {% endblock %}

@@ -35,3 +35,13 @@ def as_percent_width(value):
         return f"{max(0.0, min(100.0, float(value) * 100)):.2f}"
     except (TypeError, ValueError):
         return "0"
+
+
+@register.filter
+def mmss(seconds):
+    """754 -> '12:34' (the exam timer's first, server-rendered value)."""
+    try:
+        s = max(0, int(seconds))
+    except (TypeError, ValueError):
+        return ""
+    return f"{s // 60}:{s % 60:02d}"

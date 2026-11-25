@@ -13,7 +13,7 @@ CAREER_SKILLS_HELP = ("Pick the skills from this list that describe you (at leas
 
 class StudentProfileForm(forms.ModelForm):
     skills = forms.CharField(label="Your skills", help_text="Comma-separated, e.g. Python, SQL, Excel. Used for internship matching.",
-                             widget=forms.TextInput(attrs={"autocomplete": "off"}))
+                             widget=forms.TextInput(attrs={"autocomplete": "off", "data-tag-input": "skill-suggestions"}))
     career_skills = forms.MultipleChoiceField(label=CAREER_SKILLS_LABEL, help_text=CAREER_SKILLS_HELP, required=False,
                                               widget=forms.CheckboxSelectMultiple)
 

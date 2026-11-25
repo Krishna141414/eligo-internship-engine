@@ -1,9 +1,11 @@
 {% extends "base.html" %}
 {% block title %}Account details{% endblock %}
 {% block content %}
-<h1 class="h3">Account details</h1>
-<form method="post" novalidate>{% csrf_token %}
-  {% include "partials/form.html" %}
-  <button class="btn btn-primary" type="submit">Save details</button>
-</form>
+<div class="page-header"><div><h1>Account details</h1><p>Your name and mobile number. Your email is your login and can't be changed here.</p></div></div>
+<div class="panel" style="max-width: 34rem">
+  <form method="post" novalidate>{% csrf_token %}
+    {% include "partials/form.html" %}
+    <button class="btn btn-primary" type="submit">Save details</button>
+  </form>
+</div>
 {% endblock %}

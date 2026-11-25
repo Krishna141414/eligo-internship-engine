@@ -1,0 +1,11 @@
+<fieldset class="mb-3 skill-picker" data-skill-picker>
+  <legend class="form-label">{{ field.label }}{% if field.field.required %} <span class="req" aria-hidden="true">*</span>{% endif %}</legend>
+  {% if field.help_text %}<div class="form-text mb-2" id="{{ field.auto_id }}_help">{{ field.help_text }}</div>{% endif %}
+  <input type="search" class="form-control skill-picker__search js-only" placeholder="Filter the list" aria-label="Filter career skills" data-skill-filter>
+  <div class="skill-picker__list">
+    {% for opt in field %}<div class="form-check">{{ opt.tag }}<label class="form-check-label" for="{{ opt.id_for_label }}">{{ opt.choice_label }}</label></div>
+    {% empty %}<p class="text-muted mb-0">The job-role model isn't loaded, so its skill list is unavailable right now.</p>{% endfor %}
+  </div>
+  <p class="skill-picker__count" aria-live="polite"><span data-skill-count>{{ field.value|length }}</span> selected (pick at least 3)</p>
+  {% for e in field.errors %}<div class="invalid-feedback d-block">{{ e }}</div>{% endfor %}
+</fieldset>

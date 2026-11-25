@@ -9,6 +9,7 @@ from accounts.decorators import admin_required, student_required
 from assessments import services
 from assessments.forms import AssessmentForm, QuestionForm
 from assessments.models import Assessment, Attempt, Question
+from ml_core.config import PASS_THRESHOLD
 from students.services import get_profile
 
 
@@ -95,6 +96,7 @@ def result(request, pk):
     answers = attempt.answers.all()
     return render(request, "assessments/result.html", {
         "attempt": attempt, "total_questions": answers.count(), "correct": answers.filter(is_correct=True).count(),
+        "threshold": PASS_THRESHOLD,
     })
 
 

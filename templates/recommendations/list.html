@@ -1,42 +1,119 @@
 {% extends "base.html" %}
+{% load static humanize eligo_ui %}
 {% block title %}Recommendations{% endblock %}
 {% block content %}
-<div class="d-flex justify-content-between align-items-center">
-  <h1 class="h3">Your internship recommendations</h1>
-  <form method="post">{% csrf_token %}<button class="btn btn-primary" type="submit">Generate recommendations</button></form>
+<div class="page-header">
+  <div><h1>Your internship recommendations</h1>
+    <p>Only internships you're eligible for are ranked. The match score shows how well your profile fits the listed requirements. It doesn't predict selection.</p></div>
+  <form method="post" data-busy="busy-generate">{% csrf_token %}
+    <button class="btn btn-primary" type="submit">{% if rows %}Generate again{% else %}Generate recommendations{% endif %}</button></form>
 </div>
-<p class="text-muted">Only internships you're eligible for are ranked. The match score shows how well your profile fits the listed requirements; it is not a prediction of selection.</p>
+
+<div class="busy" id="busy-generate" role="status" aria-live="polite" aria-hidden="true">
+  <span class="spinner-border" aria-hidden="true"></span>
+  <span>Analysing your profile… checking {{ active_count|intcomma }} internships</span>
+</div>
 
 {% if rows %}
-<p class="small text-muted">Generated {{ latest.generated_date|date:"d M Y, H:i" }} · based on your assessment score {{ latest.assessment_attempt.score_percentage|floatformat:2 }}%</p>
-<ol class="list-unstyled">
+<p class="result-count">Generated {{ latest.generated_date|date:"d M Y, H:i" }}, using your assessment score of {{ latest.assessment_attempt.score_percentage|floatformat:2 }}%.</p>
+<ol class="rec-list">
 {% for r in rows %}
-  <li class="border rounded p-3 mb-2">
-    <div class="d-flex justify-content-between"><a class="fw-semibold" href="{% url 'recommendations:detail' r.pk %}">#{{ r.recommendation_rank }} {{ r.internship.internship_title }}</a>
-      <span class="fw-semibold">{% widthratio r.final_match_score 1 100 %}% match</span></div>
-    <div class="small text-muted">{{ r.internship.company_name }} · {{ r.internship.location }} · {{ r.internship.work_mode }}</div>
-    <div class="small">Content {{ r.content_similarity_score|floatformat:2 }} · Semantic {{ r.semantic_similarity_score|floatformat:2 }} · Skill overlap {{ r.skill_match_score|floatformat:2 }}</div>
-    <div class="small">Matched: {{ r.matched_skills|join:", "|default:"none" }} · Missing: {{ r.missing_skills|join:", "|default:"none" }}</div>
-    <p class="small mb-1">{{ r.recommendation_reason }}</p>
-    <div class="small text-muted">Skill-gap check: {{ r.get_analysis_method_display }}</div>
-    {% if r.second_opinion != "none" %}
-    <div class="small" data-state="{{ r.second_opinion }}" {% if r.second_opinion == "pending" %}data-second-opinion-url="{% url 'recommendations:second_opinion' r.pk %}"{% endif %} aria-live="polite">
-      <span data-second-opinion-text>{% if r.second_opinion == "pending" %}AI second opinion: checking…{% elif r.second_opinion == "done" %}AI second opinion: the local model {% if r.explanation.llm_gap.missing %}also flags {{ r.explanation.llm_gap.missing|join:", " }}{% else %}found no extra missing skills{% endif %}.{% else %}AI second opinion not available right now. The rule-based check above stands.{% endif %}</span>
+  {% with x=r.explanation %}
+  <li class="rec-card lift">
+    <div class="rec-card__head">
+      <span class="rec-card__rank"><span class="visually-hidden">Rank </span>#{{ r.recommendation_rank }}</span>
+      <div>
+        <h2 class="rec-card__title"><a href="{% url 'recommendations:detail' r.pk %}">{{ r.internship.internship_title }}</a></h2>
+        <ul class="rec-card__meta">
+          <li>{{ r.internship.company_name }}</li>
+          <li>{{ r.internship.location }}</li>
+          {% if r.internship.work_mode %}<li>{{ r.internship.work_mode }}</li>{% endif %}
+          {% if r.internship.stipend %}<li>{{ r.internship.stipend }}</li>{% endif %}
+        </ul>
+      </div>
     </div>
-    {% endif %}
+    <div class="rec-card__body">
+      <div class="score-ring score-ring--md" style="--value: {{ r.final_match_score|pct }}" role="img" aria-label="{{ r.final_match_score|pct }}% match">
+        <span class="score-ring__inner"><span class="score-ring__value">{{ r.final_match_score|pct }}%</span><span class="score-ring__label">match</span></span>
+      </div>
+      <div>
+        <p class="rec-card__reason">{{ r.recommendation_reason }}</p>
+        <ul class="chips" aria-label="Eligibility">
+          <li class="chip chip--gate"><i class="bi bi-shield-check" aria-hidden="true"></i>All {{ x.gates|length }} eligibility checks passed</li>
+        </ul>
+
+        <div class="breakdown">
+          <div class="breakdown__bar" role="img" aria-label="Score breakdown:{% for c in x.components %} {{ c.label }} {{ c.contribution|floatformat:2 }}{% if not forloop.last %},{% endif %}{% endfor %}">
+            {% for c in x.components %}<div class="breakdown__seg breakdown__seg--{{ c.name }}" style="width: {{ c.contribution|as_percent_width }}%"></div>{% endfor %}
+          </div>
+          <ul class="breakdown__legend" aria-hidden="true">
+            <li><span class="swatch swatch--content"></span>Content {{ r.content_similarity_score|floatformat:2 }}</li>
+            <li><span class="swatch swatch--semantic"></span>Semantic {{ r.semantic_similarity_score|floatformat:2 }}</li>
+            <li><span class="swatch swatch--skill"></span>Skill overlap {{ r.skill_match_score|floatformat:2 }}</li>
+          </ul>
+        </div>
+
+        {% if r.matched_skills %}
+        <div class="rec-card__group">
+          <p class="rec-card__group-label">Skills you have</p>
+          <ul class="chips">{% for s in r.matched_skills %}<li class="chip chip--matched"><i class="bi bi-check2" aria-hidden="true"></i>{{ s }}</li>{% endfor %}</ul>
+        </div>
+        {% endif %}
+        {% if r.missing_skills %}
+        <div class="rec-card__group">
+          <p class="rec-card__group-label">Skills to build</p>
+          <ul class="chips">{% for s in r.missing_skills %}<li class="chip chip--missing"><span class="visually-hidden">Missing: </span>{{ s }}</li>{% endfor %}</ul>
+        </div>
+        {% endif %}
+
+        {% if r.second_opinion != "none" %}
+        <div class="second-opinion" data-state="{{ r.second_opinion }}" {% if r.second_opinion == "pending" %}data-second-opinion-url="{% url 'recommendations:second_opinion' r.pk %}"{% endif %} aria-live="polite">
+          <span data-second-opinion-text>{% if r.second_opinion == "pending" %}AI second opinion: checking…{% elif r.second_opinion == "done" %}AI second opinion: the local model {% if x.llm_gap.missing %}also flags {{ x.llm_gap.missing|join:", " }}{% else %}found no extra missing skills{% endif %}.{% else %}AI second opinion not available right now. The rule-based check above stands.{% endif %}</span>
+        </div>
+        {% endif %}
+      </div>
+
+      <details>
+        <summary>Explain this match</summary>
+        <table class="table table-sm xai-table mt-2">
+          <caption class="visually-hidden">How the match score was built</caption>
+          <thead><tr><th scope="col">Part</th><th scope="col">Score</th><th scope="col">Weight</th><th scope="col">Adds</th></tr></thead>
+          <tbody>
+          {% for c in x.components %}<tr><td><span class="swatch swatch--{{ c.name }} d-inline-block me-2" aria-hidden="true"></span>{{ c.label|capfirst }}</td>
+            <td class="num">{{ c.score|floatformat:3 }}</td><td class="num">{{ c.weight }}</td><td class="num">{{ c.contribution|floatformat:3 }}</td></tr>{% endfor %}
+          </tbody>
+          <tfoot><tr><td colspan="3">Final match score</td><td class="num">{{ x.final_score|floatformat:3 }}</td></tr></tfoot>
+        </table>
+        <ul class="gate-list">
+          {% for g in x.gates %}<li class="is-pass"><i class="bi bi-check-circle-fill" aria-hidden="true"></i><span>{{ g.reason }}</span></li>{% endfor %}
+        </ul>
+        <p class="small-note">Skill-gap check: {{ r.get_analysis_method_display }}. <a href="{% url 'recommendations:detail' r.pk %}">Full explanation</a></p>
+      </details>
+    </div>
   </li>
+  {% endwith %}
 {% endfor %}
 </ol>
 {% else %}
-<p>No recommendations yet. Complete your profile, pass an assessment with more than 60%, then select “Generate recommendations”.</p>
+<div class="empty">
+  <i class="bi bi-stars" aria-hidden="true"></i>
+  <h2>No recommendations yet</h2>
+  <p>Complete your profile and score above 60% on an assessment, then select "Generate recommendations".</p>
+  <a class="btn btn-outline-secondary" href="{% url 'assessments:list' %}">Go to assessments</a>
+</div>
 {% endif %}
 
-<h2 class="h5 mt-4">Why you can't apply yet</h2>
-{% if preview %}
-<p class="small text-muted">{{ not_eligible_count }} active internship{{ not_eligible_count|pluralize }} aren't open to you right now. These ones share skills with you:</p>
-<ul>
-{% for i, reasons in preview %}<li><a href="{% url 'internships:detail' i.pk %}">{{ i.internship_title }}</a> ({{ i.company_name }}): {{ reasons|join:" " }}</li>{% endfor %}
-</ul>
-{% else %}<p class="small text-muted">Nothing to show here.</p>{% endif %}
+<section class="panel mt-4" aria-labelledby="blocked-h">
+  <h2 class="panel__title" id="blocked-h">Why you can't apply yet</h2>
+  {% if preview %}
+  <p class="text-muted">{{ not_eligible_count|intcomma }} active internship{{ not_eligible_count|pluralize }} aren't open to you right now. These ones share skills with you:</p>
+  <ul class="blocked-list">
+    {% for i, reasons in preview %}
+    <li><a href="{% url 'internships:detail' i.pk %}">{{ i.internship_title }}</a> <span class="text-muted">at {{ i.company_name }}</span>
+      {% for reason in reasons %}<p>{{ reason }}</p>{% endfor %}</li>
+    {% endfor %}
+  </ul>
+  {% else %}<p class="text-muted mb-0">Nothing to show here.</p>{% endif %}
+</section>
 {% endblock %}
 {% block extra_js %}{% load static %}<script src="{% static 'js/second_opinion.js' %}"></script>{% endblock %}
