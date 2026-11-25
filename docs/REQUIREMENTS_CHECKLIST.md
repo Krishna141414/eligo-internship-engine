@@ -5,7 +5,7 @@ Every bullet of `docs/PROJECT_SPEC.md` sections 1–19 (plus the final goal) map
 
 **Status legend:** ⬜ not started · 🟨 in progress / partial · ✅ done (verified) · ❌ not done (reason given)
 
-Last updated: 2026-11-24 (Phase 3)
+Last updated: 2026-11-25 (Phase 4)
 
 ---
 
@@ -121,168 +121,168 @@ Last updated: 2026-11-24 (Phase 3)
 ### 9. Technology stack
 | ID | Requirement | Where implemented | Status |
 |---|---|---|---|
-| 9.1 | Frontend: HTML5, CSS3, JavaScript, Bootstrap 5 | `templates/`, `static/`, `static/vendor/bootstrap/` | 🟨 Bootstrap 5.3.9 vendored |
-| 9.2 | Backend: Django 5.2 LTS | `config/` | 🟨 Django 5.2.19 installed |
-| 9.3 | Database: SQLite | `config/settings.py` | ⬜ |
-| 9.4 | ML: scikit-learn, Joblib | `ml_core/` | ✅ used in notebook; Django in Phase 4 |
-| 9.5 | AI recommendation: TF-IDF, Sentence Transformers, cosine similarity | `ml_core/recommender.py` | ✅ engine built; Django integration in Phase 4 |
-| 9.6 | LLM: optional Ollama | `ml_core/llm_extract.py` | ⬜ PENDING – Ollama |
-| 9.7 | XAI: feature-based recommendation explanations | `ml_core/explain.py` | ⬜ |
-| 9.8 | Visualisation: Chart.js | `static/vendor/chartjs/`, `static/js/charts.js` | 🟨 Chart.js 4.6.1 vendored |
+| 9.1 | Frontend: HTML5, CSS3, JavaScript, Bootstrap 5 | `templates/`, `static/`, vendored Bootstrap 5.3.9 | 🟨 working templates; design system in Phase 5 |
+| 9.2 | Backend: Django 5.2 LTS | `config/`, six apps | ✅ Django 5.2.19 |
+| 9.3 | Database: SQLite | `config/settings.py` (SQLite) | ✅ |
+| 9.4 | ML: scikit-learn, Joblib | `ml_core/`, joblib loads in `ml_core.artifacts` | ✅ |
+| 9.5 | AI recommendation: TF-IDF, Sentence Transformers, cosine similarity | `recommendations/services.py` → `ml_core.recommender` | ✅ |
+| 9.6 | LLM: optional Ollama | `ml_core/llm_extract.py`, `recommendations/services.py` (D-024) | 🟨 integrated with fallback; live LLM PENDING – Ollama (model pull) |
+| 9.7 | XAI: feature-based recommendation explanations | `ml_core/explain.py`, recommendation detail pages | ✅ |
+| 9.8 | Visualisation: Chart.js | `static/vendor/chartjs/` (charts in Phase 5) | 🟨 vendored; charts built in Phase 5 |
 
 ### 10. Database tables
 | ID | Requirement | Where implemented | Status |
 |---|---|---|---|
-| 10.1 | Users (name, email, mobile, password hash, user_type, registered_date, status) | `accounts/models.py` | ⬜ |
-| 10.2 | Student_Profiles | `students/models.py` | ⬜ |
-| 10.3 | Internships | `internships/models.py` | ⬜ |
-| 10.4 | Assessments | `assessments/models.py` | ⬜ |
-| 10.5 | Assessment_Questions | `assessments/models.py` | ⬜ |
-| 10.6 | Assessment_Attempts | `assessments/models.py` | ⬜ |
-| 10.7 | Student_Answers | `assessments/models.py` | ⬜ |
-| 10.8 | Internship_Recommendations | `recommendations/models.py` | ⬜ |
-| 10.9 | Job_Role_Predictions | `recommendations/models.py` | ⬜ |
-| 10.10 | Django authentication + secure password hashing | `accounts/` | ⬜ |
-| 10.11 | Foreign keys, constraints, JSON fields, migrations | all apps' `models.py` + `migrations/` | ⬜ |
+| 10.1 | Users (name, email, mobile, password hash, user_type, registered_date, status) | `accounts/models.py` `User` | ✅ email login, Admin/Student, Active/Inactive synced to is_active |
+| 10.2 | Student_Profiles | `students/models.py` `StudentProfile` (+ `career_skills`, D-022) | ✅ |
+| 10.3 | Internships | `internships/models.py` `Internship` | ✅ |
+| 10.4 | Assessments | `assessments/models.py` `Assessment` | ✅ |
+| 10.5 | Assessment_Questions | `assessments/models.py` `Question` (A–D validator, marks ≥ 0) | ✅ |
+| 10.6 | Assessment_Attempts | `assessments/models.py` `Attempt` (one In_Progress constraint, deadline) | ✅ |
+| 10.7 | Student_Answers | `assessments/models.py` `Answer` (unique per question) | ✅ |
+| 10.8 | Internship_Recommendations | `recommendations/models.py` `InternshipRecommendation` (run_id, explanation, method) | ✅ |
+| 10.9 | Job_Role_Predictions | `recommendations/models.py` `JobRolePrediction` (probability, scope, top features) | ✅ |
+| 10.10 | Django authentication + secure password hashing | `accounts/`, Django PBKDF2 hashers | ✅ |
+| 10.11 | Foreign keys, constraints, JSON fields, migrations | all apps' `models.py` + committed migrations | ✅ FKs (PROTECT for history), constraints, JSONFields |
 
 ### 11. Admin module
 | ID | Requirement | Where implemented | Status |
 |---|---|---|---|
-| 11.1.1 | Admin login | `accounts/views.py` | ⬜ |
-| 11.1.2 | Admin change password | `accounts/views.py` | ⬜ |
-| 11.1.3 | Admin logout | `accounts/views.py` | ⬜ |
-| 11.2.1 | Dashboard: total students | `adminpanel/views.py` | ⬜ |
-| 11.2.2 | Dashboard: total internships | `adminpanel/views.py` | ⬜ |
-| 11.2.3 | Dashboard: total assessments | `adminpanel/views.py` | ⬜ |
-| 11.2.4 | Dashboard: qualified / not-qualified students | `adminpanel/views.py` | ⬜ |
-| 11.2.5 | Dashboard: total recommendations | `adminpanel/views.py` | ⬜ |
-| 11.3.1 | View registered students | `adminpanel/views.py` | ⬜ |
-| 11.3.2 | View student academic profiles and skills | `adminpanel/views.py` | ⬜ |
-| 11.3.3 | View student assessment results | `adminpanel/views.py` | ⬜ |
-| 11.3.4 | View student internship recommendations | `adminpanel/views.py` | ⬜ |
-| 11.3.5 | Activate / deactivate students | `adminpanel/views.py` | ⬜ |
-| 11.4.1 | Add internship | `internships/views.py` (admin) | ⬜ |
-| 11.4.2 | View internships | `internships/views.py` (admin) | ⬜ |
-| 11.4.3 | Update internship | `internships/views.py` (admin) | ⬜ |
-| 11.4.4 | Activate / deactivate internship | `internships/views.py` (admin) | ⬜ |
-| 11.4.5 | Form fields: company, job role, qualification, skills, location, stipend, duration, eligibility criteria, deadline | `internships/forms.py` | ⬜ |
-| 11.5.1 | Create qualification-based assessment | `assessments/views.py` (admin) | ⬜ |
-| 11.5.2 | View / update / deactivate assessment | `assessments/views.py` (admin) | ⬜ |
-| 11.5.3 | Add MCQ with four options and correct answer | `assessments/forms.py` | ⬜ |
-| 11.5.4 | View / update / delete questions | `assessments/views.py` (admin) | ⬜ |
-| 11.6.1 | View student assessment results | `adminpanel/views.py` | ⬜ |
-| 11.6.2 | View obtained marks and percentage | `adminpanel/views.py` | ⬜ |
-| 11.6.3 | View qualified / not-qualified status | `adminpanel/views.py` | ⬜ |
-| 11.7.1 | View student-wise recommended internships | `adminpanel/views.py` | ⬜ |
-| 11.7.2 | View match scores and ranking | `adminpanel/views.py` | ⬜ |
-| 11.7.3 | View recommendation explanations | `adminpanel/views.py` | ⬜ |
-| 11.7.4 | View matched and missing skills | `adminpanel/views.py` | ⬜ |
-| 11.8.1 | View student job-role predictions | `adminpanel/views.py` | ⬜ |
-| 11.8.2 | View saved ML model evaluation results | `adminpanel/views.py` (reads `artifacts/metrics/`, `artifacts/figures/`) | ⬜ |
+| 11.1.1 | Admin login | `accounts/views.py` (email login) | ✅ |
+| 11.1.2 | Admin change password | `accounts:password_change` | ✅ |
+| 11.1.3 | Admin logout | `accounts:logout` (POST) | ✅ |
+| 11.2.1 | Dashboard: total students | `adminpanel/services.py` `dashboard_counts` | ✅ |
+| 11.2.2 | Dashboard: total internships | `adminpanel/services.py` | ✅ |
+| 11.2.3 | Dashboard: total assessments | `adminpanel/services.py` | ✅ |
+| 11.2.4 | Dashboard: qualified / not-qualified students | `adminpanel/services.py` (qualified = any attempt > 60%, same rule as the gate) | ✅ |
+| 11.2.5 | Dashboard: total recommendations | `adminpanel/services.py` | ✅ |
+| 11.3.1 | View registered students | `adminpanel:students` | ✅ |
+| 11.3.2 | View student academic profiles and skills | `adminpanel:student_detail` | ✅ incl. career skills |
+| 11.3.3 | View student assessment results | `adminpanel:student_detail` | ✅ |
+| 11.3.4 | View student internship recommendations | `adminpanel:student_detail` | ✅ |
+| 11.3.5 | Activate / deactivate students | `adminpanel:student_toggle` (POST) | ✅ |
+| 11.4.1 | Add internship | `internships:admin_add` | ✅ |
+| 11.4.2 | View internships | `internships:admin_list` | ✅ |
+| 11.4.3 | Update internship | `internships:admin_edit` | ✅ |
+| 11.4.4 | Activate / deactivate internship | `internships:admin_toggle` (POST) | ✅ |
+| 11.4.5 | Form fields: company, job role, qualification, skills, location, stipend, duration, eligibility criteria, deadline | `internships/forms.py` `InternshipForm` | ✅ all spec fields required; skills normalised with suggestions |
+| 11.5.1 | Create qualification-based assessment | `assessments:admin_add` | ✅ |
+| 11.5.2 | View / update / deactivate assessment | `assessments:admin_list/admin_edit/admin_toggle` | ✅ activation needs questions |
+| 11.5.3 | Add MCQ with four options and correct answer | `assessments:question_add` `QuestionForm` | ✅ |
+| 11.5.4 | View / update / delete questions | `assessments:questions/question_edit/question_delete` | ✅ answered questions protected |
+| 11.6.1 | View student assessment results | `adminpanel:results` | ✅ |
+| 11.6.2 | View obtained marks and percentage | `adminpanel:results` | ✅ |
+| 11.6.3 | View qualified / not-qualified status | `adminpanel:results` (filter by result) | ✅ |
+| 11.7.1 | View student-wise recommended internships | `adminpanel:recommendations`, `recommendation_run` | ✅ |
+| 11.7.2 | View match scores and ranking | `adminpanel:recommendation_run` | ✅ |
+| 11.7.3 | View recommendation explanations | `adminpanel:recommendation_detail` | ✅ |
+| 11.7.4 | View matched and missing skills | `adminpanel:recommendation_run/detail` | ✅ |
+| 11.8.1 | View student job-role predictions | `adminpanel:ml` predictions table | ✅ |
+| 11.8.2 | View saved ML model evaluation results | `adminpanel:ml` metrics.json + manifest-listed figures | ✅ |
 
 ### 12. Student module
 | ID | Requirement | Where implemented | Status |
 |---|---|---|---|
-| 12.1.1 | Student registration | `accounts/views.py` | ⬜ |
-| 12.1.2 | Login | `accounts/views.py` | ⬜ |
-| 12.1.3 | Update profile | `students/views.py` | ⬜ |
-| 12.1.4 | Change password | `accounts/views.py` | ⬜ |
-| 12.1.5 | Logout | `accounts/views.py` | ⬜ |
-| 12.2.1 | Update qualification and specialisation | `students/forms.py` | ⬜ |
-| 12.2.2 | Update college and academic percentage | `students/forms.py` | ⬜ |
-| 12.2.3 | Add / update skills | `students/forms.py`, skill tag input JS | ⬜ |
-| 12.2.4 | Select career interests | `students/forms.py` | ⬜ |
-| 12.2.5 | Select preferred job role and location | `students/forms.py` | ⬜ |
-| 12.3.1 | Dashboard: available internships | `students/views.py` | ⬜ |
-| 12.3.2 | Dashboard: available assessments | `students/views.py` | ⬜ |
-| 12.3.3 | Dashboard: latest assessment result | `students/views.py` | ⬜ |
-| 12.3.4 | Dashboard: recommended internships | `students/views.py` | ⬜ |
-| 12.3.5 | Dashboard: predicted job role | `students/views.py` | ⬜ |
-| 12.4.1 | View active internships | `internships/views.py` | ⬜ |
-| 12.4.2 | Search by qualification, job role, location | `internships/views.py` | ⬜ |
-| 12.4.3 | View internship details and eligibility criteria | `internships/views.py` | ⬜ |
-| 12.5.1 | View qualification-based assessments | `assessments/views.py` | ⬜ |
-| 12.5.2 | Select and start assessment | `assessments/views.py` | ⬜ |
-| 12.5.3 | Attempt MCQ questions | `assessments/views.py`, exam template | ⬜ |
-| 12.5.4 | View remaining time | `static/js/timer.js` (server-provided remaining seconds) | ⬜ |
-| 12.5.5 | Submit assessment | `assessments/views.py` | ⬜ |
-| 12.5.6 | Auto-submit when time expires | `static/js/timer.js` + server-side lazy finalisation | ⬜ |
-| 12.6.1 | Result: total questions | result template | ⬜ |
-| 12.6.2 | Result: correct answers | result template | ⬜ |
-| 12.6.3 | Result: obtained marks | result template | ⬜ |
-| 12.6.4 | Result: assessment percentage, `(obtained / total) × 100` | `assessments/services.py` (Decimal) | ⬜ |
-| 12.6.5 | Result: qualified / not-qualified status | `assessments/services.py` | ⬜ |
-| 12.7.1 | Check assessment and qualification eligibility | `recommendations/services.py` → `ml_core/eligibility.py` | ⬜ |
-| 12.7.2 | Analyse student skills and academic profile | `recommendations/services.py` | ⬜ |
-| 12.7.3 | Match student profile with internship requirements | `recommendations/services.py` → `ml_core/recommender.py` | ⬜ |
-| 12.7.4 | Generate hybrid AI-based recommendations | `recommendations/services.py` | ⬜ |
-| 12.7.5 | View ranked internships with match scores | recommendations template | ⬜ |
-| 12.7.6 | View matched and missing skills | recommendations template | ⬜ |
-| 12.7.7 | View XAI recommendation reasons | recommendations template | ⬜ |
-| 12.8.1 | Predict job role from academic profile + available assessment features | `recommendations/services.py` → `ml_core/job_role.py` | ⬜ |
-| 12.8.2 | View predicted job role | job-role template | ⬜ |
-| 12.8.3 | View related internship opportunities | job-role template | ⬜ |
+| 12.1.1 | Student registration | `accounts:register` | ✅ |
+| 12.1.2 | Login | `accounts:login` | ✅ |
+| 12.1.3 | Update profile | `students:profile_edit`, `students:account_edit` | ✅ |
+| 12.1.4 | Change password | `accounts:password_change` | ✅ |
+| 12.1.5 | Logout | `accounts:logout` | ✅ |
+| 12.2.1 | Update qualification and specialisation | `students/forms.py` `StudentProfileForm` | ✅ |
+| 12.2.2 | Update college and academic percentage | `students/forms.py` | ✅ |
+| 12.2.3 | Add / update skills | `students/forms.py` (free-text skills + career skills multi-select, D-022) | ✅ tag-style input in Phase 5 |
+| 12.2.4 | Select career interests | `students/forms.py` | ✅ |
+| 12.2.5 | Select preferred job role and location | `students/forms.py` | ✅ |
+| 12.3.1 | Dashboard: available internships | `students/services.py` `dashboard_context` | ✅ |
+| 12.3.2 | Dashboard: available assessments | `dashboard_context` → `available_assessments` | ✅ |
+| 12.3.3 | Dashboard: latest assessment result | `dashboard_context` | ✅ |
+| 12.3.4 | Dashboard: recommended internships | `dashboard_context` | ✅ |
+| 12.3.5 | Dashboard: predicted job role | `dashboard_context` | ✅ |
+| 12.4.1 | View active internships | `internships:list` | ✅ |
+| 12.4.2 | Search by qualification, job role, location | `internships:list` (keyword, qualification, job role, location) | ✅ |
+| 12.4.3 | View internship details and eligibility criteria | `internships:detail` (every gate with its reason) | ✅ |
+| 12.5.1 | View qualification-based assessments | `assessments:list` | ✅ |
+| 12.5.2 | Select and start assessment | `assessments:start` (server deadline, resume) | ✅ |
+| 12.5.3 | Attempt MCQ questions | `assessments:exam` + autosave | ✅ |
+| 12.5.4 | View remaining time | `static/js/timer.js` (server remaining seconds) | ✅ styling in Phase 5 |
+| 12.5.5 | Submit assessment | `assessments:submit` | ✅ |
+| 12.5.6 | Auto-submit when time expires | `timer.js` auto-submit + server lazy finalise | ✅ |
+| 12.6.1 | Result: total questions | `assessments:result` | ✅ |
+| 12.6.2 | Result: correct answers | `assessments:result` | ✅ |
+| 12.6.3 | Result: obtained marks | `assessments:result` | ✅ |
+| 12.6.4 | Result: assessment percentage, `(obtained / total) × 100` | `assessments/services.py` (Decimal, unrounded) | ✅ |
+| 12.6.5 | Result: qualified / not-qualified status | `assessments/services.py` (strictly > 60) | ✅ |
+| 12.7.1 | Check assessment and qualification eligibility | `recommendations/services.py` `generate_recommendations` | ✅ |
+| 12.7.2 | Analyse student skills and academic profile | `recommendations/services.py` | ✅ |
+| 12.7.3 | Match student profile with internship requirements | `recommendations/services.py` → `ml_core.recommender.recommend` | ✅ |
+| 12.7.4 | Generate hybrid AI-based recommendations | `recommendations:list` (POST generate) | ✅ |
+| 12.7.5 | View ranked internships with match scores | `recommendations:list` | ✅ cards in Phase 5 |
+| 12.7.6 | View matched and missing skills | `recommendations:list/detail` | ✅ |
+| 12.7.7 | View XAI recommendation reasons | `recommendations:detail` (gates, components, contributions) | ✅ |
+| 12.8.1 | Predict job role from academic profile + available assessment features | `recommendations/services.py` `predict_job_role` (career skills only, D-022) | ✅ |
+| 12.8.2 | View predicted job role | `recommendations:job_role` (confidence + scope states, D-021) | ✅ |
+| 12.8.3 | View related internship opportunities | `recommendations/services.py` `related_internships` (D-016) | ✅ |
 
 ### 13. Django AI model integration
 | ID | Requirement | Where implemented | Status |
 |---|---|---|---|
-| 13.1 | Load trained job-role model with Joblib | `ml_core/artifacts.py` | ⬜ |
-| 13.2 | Load fitted preprocessing pipeline and feature schema | `ml_core/artifacts.py` | ⬜ |
-| 13.3 | Load saved TF-IDF vectorizer | `ml_core/artifacts.py` | ⬜ |
-| 13.4 | Load Sentence Transformer model | `ml_core/artifacts.py` | ⬜ |
-| 13.5 | Import reusable hybrid recommendation functions | `recommendations/services.py` imports `ml_core` | ⬜ |
-| 13.6 | Mandatory eligibility checks | `ml_core/eligibility.py` | ⬜ |
-| 13.7 | Similarity scores and ranked results | `ml_core/recommender.py` | ⬜ |
-| 13.8 | Optional LLM skill extraction integrated | `recommendations/services.py` | ⬜ |
-| 13.9 | Explainable recommendations | `ml_core/explain.py` | ⬜ |
-| 13.10 | Save predictions and recommendations to SQLite | `recommendations/services.py` | ⬜ |
-| 13.11 | Do not retrain models inside Django | `ml_core/artifacts.py` load-only; `content_similarity` never refits (tested) | 🟨 ml_core side done; Django side in Phase 4 |
-| 13.12 | Use same preprocessing and recommendation configs as notebook | shared `ml_core/` + `artifacts/config/` | ⬜ |
+| 13.1 | Load trained job-role model with Joblib | `ml_core/artifacts.py` via `recommendations.services.get_bundle` | ✅ |
+| 13.2 | Load fitted preprocessing pipeline and feature schema | `ml_core/artifacts.py` | ✅ |
+| 13.3 | Load saved TF-IDF vectorizer | `ml_core/artifacts.py` | ✅ |
+| 13.4 | Load Sentence Transformer model | `ml_core/artifacts.py` (local folder only, manifest-verified) | ✅ |
+| 13.5 | Import reusable hybrid recommendation functions | `recommendations/services.py` imports `ml_core` | ✅ |
+| 13.6 | Mandatory eligibility checks | `ml_core/eligibility.py` (incl. per-internship gate date) | ✅ |
+| 13.7 | Similarity scores and ranked results | `ml_core/recommender.py` | ✅ |
+| 13.8 | Optional LLM skill extraction integrated | `recommendations/services.py` (D-024) | 🟨 integrated + tested with mocked Ollama; live run PENDING – Ollama |
+| 13.9 | Explainable recommendations | `ml_core/explain.py` → stored `explanation` | ✅ |
+| 13.10 | Save predictions and recommendations to SQLite | `recommendations/services.py` (append-only runs) | ✅ |
+| 13.11 | Do not retrain models inside Django | load-only artifacts; `test_new_internship_scored_without_refit` | ✅ |
+| 13.12 | Use same preprocessing and recommendation configs as notebook | shared `ml_core/` + `artifacts/config/` | ✅ |
 
 ### 14. End-to-end processing rules
 | ID | Requirement | Where implemented | Status |
 |---|---|---|---|
-| 14.1 | Student registers and completes academic profile | `accounts/`, `students/` | ⬜ |
-| 14.2 | Student searches available internships | `internships/` | ⬜ |
-| 14.3 | Student attempts qualification-based assessment | `assessments/` | ⬜ |
-| 14.4 | System automatically evaluates assessment | `assessments/services.py` | ⬜ |
-| 14.5 | Score strictly above 60% satisfies assessment eligibility | `assessments/services.py`, `ml_core/eligibility.py` | ⬜ |
-| 14.6 | Check mandatory qualifications and other explicit eligibility rules | `ml_core/eligibility.py` | ⬜ |
-| 14.7 | Hybrid engine ranks only eligible internships | `ml_core/recommender.py` | ⬜ |
-| 14.8 | Display scores, matched skills, missing skills, explanations | recommendations template | ⬜ |
-| 14.9 | ML model predicts job-role category separately | `ml_core/job_role.py` | ⬜ |
-| 14.10 | All important results stored in the database | `recommendations/services.py`, `assessments/services.py` | ⬜ |
-| 14.11 | Mandatory qualifications/thresholds never overridden by similarity scores | `ml_core/eligibility.py` gates run before scoring | ⬜ |
+| 14.1 | Student registers and completes academic profile | `accounts:register` → `students:profile_edit` | ✅ |
+| 14.2 | Student searches available internships | `internships:list` | ✅ |
+| 14.3 | Student attempts qualification-based assessment | `assessments:*` | ✅ |
+| 14.4 | System automatically evaluates assessment | `assessments/services.py` | ✅ |
+| 14.5 | Score strictly above 60% satisfies assessment eligibility | `assessments/services.py`, `ml_core/eligibility.py` | ✅ |
+| 14.6 | Check mandatory qualifications and other explicit eligibility rules | `ml_core/eligibility.py` | ✅ |
+| 14.7 | Hybrid engine ranks only eligible internships | `ml_core/recommender.py` (gates first) | ✅ |
+| 14.8 | Display scores, matched skills, missing skills, explanations | recommendation templates | ✅ visual design in Phase 5 |
+| 14.9 | ML model predicts job-role category separately | `recommendations:job_role` | ✅ |
+| 14.10 | All important results stored in the database | attempts, answers, recommendation runs, predictions in SQLite | ✅ |
+| 14.11 | Mandatory qualifications/thresholds never overridden by similarity scores | gates before scoring; tested + mutation-checked | ✅ |
 
 ### 15. User interface requirements
 | ID | Requirement | Where implemented | Status |
 |---|---|---|---|
 | 15.1 | Attractive academic and career-themed design | `static/css/theme.css`, templates | ⬜ |
 | 15.2 | Responsive Bootstrap layouts | templates | ⬜ |
-| 15.3 | Separate admin and student dashboards | `adminpanel/`, `students/` | ⬜ |
+| 15.3 | Separate admin and student dashboards | `adminpanel/`, `students/` | 🟨 separate dashboards work; design in Phase 5 |
 | 15.4 | Simple forms and navigation | templates | ⬜ |
-| 15.5 | Searchable internship listings | `internships/` | ⬜ |
-| 15.6 | Online MCQ interface with timer | exam template, `static/js/timer.js` | ⬜ |
+| 15.5 | Searchable internship listings | `internships:list` | 🟨 working; styling in Phase 5 |
+| 15.6 | Online MCQ interface with timer | `assessments:exam`, `timer.js`, `exam.js` | 🟨 working; signature exam screen in Phase 5 |
 | 15.7 | Recommendation cards with match scores | recommendation card partial | ⬜ |
 | 15.8 | Matched and missing skills visualisation | skill chips + chart | ⬜ |
-| 15.9 | Job-role prediction result page | job-role template | ⬜ |
-| 15.10 | User-friendly validation and error messages | forms + templates | ⬜ |
+| 15.9 | Job-role prediction result page | `recommendations:job_role` | 🟨 working; hero card + chart in Phase 5 |
+| 15.10 | User-friendly validation and error messages | forms + messages | 🟨 specific messages in place; copy pass in Phase 5/7 |
 | 15.11 | Avoid unnecessary animations, complex dashboards, decorative elements | `theme.css` motion rules | ⬜ |
 
 ### 16. Security and validation
 | ID | Requirement | Where implemented | Status |
 |---|---|---|---|
-| 16.1 | Django built-in authentication | `accounts/` | ⬜ |
-| 16.2 | Store passwords securely | Django hashers | ⬜ |
-| 16.3 | Protect admin and student routes | role decorators/mixins | ⬜ |
-| 16.4 | Validate student profiles and assessment inputs | forms + validators | ⬜ |
-| 16.5 | Prevent duplicate assessment submissions | `transaction.atomic` + `select_for_update` | ⬜ |
-| 16.6 | Enforce assessment timing on the server | `assessments/services.py` (deadline) | ⬜ |
-| 16.7 | Don't expose correct answers during exams | exam view excludes `correct_option` | ⬜ |
-| 16.8 | Restrict students to their own results | ownership checks (404) | ⬜ |
-| 16.9 | Load ML models only from trusted local files | `ml_core/artifacts.py` SHA-256 manifest, path-traversal check | 🟨 ml_core side done (tested); Django wiring in Phase 4 |
-| 16.10 | Handle missing model artifacts gracefully | `ml_core/artifacts.py` `load_bundle` never raises | 🟨 ml_core side done (tested); banner in Phase 4 |
-| 16.11 | Preserve historical assessment scores | no delete/overwrite of attempts | ⬜ |
+| 16.1 | Django built-in authentication | `accounts/` | ✅ |
+| 16.2 | Store passwords securely | Django PBKDF2 (tests use a fast hasher only) | ✅ |
+| 16.3 | Protect admin and student routes | `accounts/decorators.py` `student_required`/`admin_required` | ✅ |
+| 16.4 | Validate student profiles and assessment inputs | forms + `assessments.services._validate` | ✅ |
+| 16.5 | Prevent duplicate assessment submissions | `assessments/services.py` `submit` (D-011) | ✅ sequential duplicates tested; parallel test in Phase 6 |
+| 16.6 | Enforce assessment timing on the server | `assessments/services.py` (deadline + 10 s grace, lazy finalise) | ✅ |
+| 16.7 | Don't expose correct answers during exams | `assessments/services.py` `exam_questions` (.values() without correct_option) | ✅ |
+| 16.8 | Restrict students to their own results | `get_object_or_404(..., student=request.user)` everywhere | ✅ 404 for others' objects |
+| 16.9 | Load ML models only from trusted local files | `ml_core/artifacts.py` SHA-256 manifest; figure view serves manifest-listed files only | ✅ |
+| 16.10 | Handle missing model artifacts gracefully | `load_bundle` never raises; banner via context processor | ✅ |
+| 16.11 | Preserve historical assessment scores | PROTECT FKs, append-only runs, retakes create new attempts | ✅ |
 
 ### 17. Software requirements
 | ID | Requirement | Where implemented | Status |
@@ -323,17 +323,17 @@ Last updated: 2026-11-24 (Phase 3)
 | 19.1 | Complete executable notebook and Django source code | `notebooks/`, Django apps | ⬜ |
 | 19.2 | Complete notebook before Django integration | phase order (3 before 4) | ⬜ |
 | 19.3 | Only freely available datasets and pretrained models | `docs/DATASETS.md` | ⬜ |
-| 19.4 | Two user roles: Admin and Student | `accounts/models.py` | ⬜ |
+| 19.4 | Two user roles: Admin and Student | `accounts/models.py` | ✅ |
 | 19.5 | Every essential functional requirement implemented | this checklist | ⬜ |
 | 19.6 | Reusable Python functions for recommendations and inference | `ml_core/` | ✅ |
-| 19.7 | No retraining in Django | `ml_core/artifacts.py` (load only) | ⬜ |
+| 19.7 | No retraining in Django | `ml_core/artifacts.py` (load only) | ✅ |
 | 19.8 | No fabricated datasets, performance or predictions | whole project | ⬜ |
 | 19.9 | Consistent model input features between training and inference | `artifacts/config/feature_schema.json` + Pipeline | ✅ |
 | 19.10 | Deterministic fallback when LLM unavailable | `ml_core/llm_extract.py` | ✅ |
 | 19.11 | Django migrations, requirements.txt, README | repo root | 🟨 requirements.txt done |
 | 19.12 | Windows-compatible local demonstration | README, offline vendored assets | 🟨 assets vendored, no CDN |
-| 19.13 | No integration with official government portal | scope | ⬜ |
-| 19.14 | No internship allocation, payments, or employer recruitment modules | scope | ⬜ |
+| 19.13 | No integration with official government portal | scope | ✅ no portal integration |
+| 19.14 | No internship allocation, payments, or employer recruitment modules | scope | ✅ none implemented |
 | 19.15 | All required buttons, pages, forms and features functional | Playwright E2E (Phase 6) | ⬜ |
 
 ### Final project goal
@@ -375,6 +375,13 @@ Last updated: 2026-11-24 (Phase 3)
 - [x] Real metrics at Phase 3 (test n=374): DT 0.8396 / 0.8604; RF 0.8904 / 0.9107. **Current, after the D-022 retrain (test n=330): Decision Tree acc 0.8030 / macro-F1 0.8048; Random Forest acc 0.8485 / macro-F1 0.8787 (best)**
 - [x] `scripts/setup_sentence_model.py` re-creates the git-ignored sentence model and verifies it byte-for-byte against the manifest (D-020)
 - [ ] Live LLM output in notebook §3.5: PENDING – Ollama (model pull still running)
+
+### Phase 4 — Django backend
+- [x] `python manage.py check` → 0 issues; `makemigrations --check` → no changes; `migrate` applied
+- [x] `load_internships` → 8,207 real postings (0 text-hash mismatches); `seed_demo` → 3 DEMO students + 3 DEMO assessments
+- [x] `pytest tests` → 311 passed, 1 skipped (live-Ollama test, model still downloading)
+- [x] End-to-end smoke through the real views + real artifacts (rolled back): DEMO CS exam 80% Qualified, duplicate submit rejected, 10 recommendations in ~3.7 s, job role Artificial Intelligence 95% confident, all admin pages 200
+- [x] D-022 career-skills fix applied end to end (multi-select from feature_schema.json, prediction uses only career skills, DEMO CS confident + test)
 
 ## PENDING – Ollama (tracker)
 Items that need a live Ollama. Everything else goes ahead without it, because the project never depends on Ollama and the rule-based fallback always works.
