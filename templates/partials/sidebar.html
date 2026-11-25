@@ -1,0 +1,14 @@
+{% load eligo_ui %}
+<aside class="app-sidebar" id="app-sidebar" aria-label="Admin navigation">
+  <div class="app-sidebar__brand">{% include "partials/wordmark.html" with dark=True %}<div class="app-sidebar__role">Admin console</div></div>
+  <nav>
+    <a class="side-link" href="{% url 'adminpanel:dashboard' %}"{% current 'adminpanel:dashboard' %}><i class="bi bi-speedometer2" aria-hidden="true"></i>Dashboard</a>
+    <a class="side-link" href="{% url 'adminpanel:students' %}"{% current 'adminpanel:students' 'adminpanel:student_detail' %}><i class="bi bi-people" aria-hidden="true"></i>Students</a>
+    <a class="side-link" href="{% url 'internships:admin_list' %}"{% current 'internships:admin_list' 'internships:admin_add' 'internships:admin_edit' %}><i class="bi bi-briefcase" aria-hidden="true"></i>Internships</a>
+    <a class="side-link" href="{% url 'assessments:admin_list' %}"{% current 'assessments:admin_list' 'assessments:admin_add' 'assessments:admin_edit' 'assessments:questions' 'assessments:question_add' 'assessments:question_edit' %}><i class="bi bi-ui-checks" aria-hidden="true"></i>Assessments</a>
+    <a class="side-link" href="{% url 'adminpanel:results' %}"{% current 'adminpanel:results' %}><i class="bi bi-clipboard-data" aria-hidden="true"></i>Results</a>
+    <a class="side-link" href="{% url 'adminpanel:recommendations' %}"{% current 'adminpanel:recommendations' 'adminpanel:recommendation_run' 'adminpanel:recommendation_detail' %}><i class="bi bi-stars" aria-hidden="true"></i>Recommendations</a>
+    <a class="side-link" href="{% url 'adminpanel:ml' %}"{% current 'adminpanel:ml' %}><i class="bi bi-cpu" aria-hidden="true"></i>ML models</a>
+  </nav>
+  <div class="app-sidebar__foot">Independent academic prototype</div>
+</aside>

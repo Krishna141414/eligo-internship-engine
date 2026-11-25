@@ -1,4 +1,5 @@
-<div class="alert alert-warning" role="status" data-testid="ai-banner">
-  <strong>AI engine unavailable.</strong> Profiles, internships and assessments still work.
-  {% if user.is_admin_user %}<span class="d-block small mt-1">{{ ai_message }}</span>{% else %}Ask the admin to run the notebook.{% endif %}
+<div class="alert alert-warning d-flex gap-2" role="status" data-testid="ai-banner">
+  <i class="bi bi-exclamation-triangle" aria-hidden="true"></i>
+  <div><strong>AI engine unavailable.</strong> Profiles, internships and assessments still work.
+  {% if user.is_admin_user %}<span class="d-block small mt-1">{{ ai_message }}</span>{% else %}Ask the admin to run the notebook.{% endif %}</div>
 </div>

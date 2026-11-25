@@ -4,20 +4,54 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>{% block title %}Eligo{% endblock %} · Eligo</title>
+  <meta name="description" content="Eligo: eligibility-first, explainable internship matching. An independent academic prototype.">
+  <link rel="icon" href="{% static 'img/favicon.svg' %}" type="image/svg+xml">
   <link rel="stylesheet" href="{% static 'vendor/fonts/fonts.css' %}">
   <link rel="stylesheet" href="{% static 'vendor/bootstrap/css/bootstrap.min.css' %}">
   <link rel="stylesheet" href="{% static 'vendor/bootstrap-icons/bootstrap-icons.min.css' %}">
+  <link rel="stylesheet" href="{% static 'css/theme.css' %}">
+  <script>document.documentElement.classList.add("js");</script>
   {% block extra_head %}{% endblock %}
 </head>
-<body class="d-flex flex-column min-vh-100">
-  {% block navbar %}{% include "partials/navbar.html" %}{% endblock %}
-  <main class="flex-grow-1 container py-4" id="main">
-    {% if user.is_authenticated and not ai_ok %}{% include "partials/ai_banner.html" %}{% endif %}
-    {% include "partials/messages.html" %}
-    {% block content %}{% endblock %}
-  </main>
-  {% include "partials/footer.html" %}
-  <script src="{% static 'vendor/bootstrap/js/bootstrap.bundle.min.js' %}"></script>
-  {% block extra_js %}{% endblock %}
+<body>
+<a class="skip-link" href="#main">Skip to content</a>
+{% if user.is_authenticated and user.is_admin_user %}
+<div class="admin-layout">
+  {% include "partials/sidebar.html" %}
+  <div class="admin-main">
+    <header class="admin-topbar">
+      <button class="btn btn-outline-secondary btn-sm sidebar-toggle" type="button" aria-controls="app-sidebar" aria-expanded="false" data-sidebar-toggle>
+        <i class="bi bi-list" aria-hidden="true"></i><span class="visually-hidden">Open menu</span></button>
+      <nav aria-label="Breadcrumb"><ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{% url 'adminpanel:dashboard' %}">Admin</a></li>
+        <li class="breadcrumb-item active" aria-current="page">{% block crumb %}Dashboard{% endblock %}</li>
+      </ol></nav>
+      <div class="app-user">
+        <span class="app-user__name">{{ user.name }}</span>
+        <a class="btn btn-link btn-sm" href="{% url 'accounts:password_change' %}">Change password</a>
+        <form method="post" action="{% url 'accounts:logout' %}" class="m-0">{% csrf_token %}<button type="submit" class="btn btn-outline-secondary btn-sm">Log out</button></form>
+      </div>
+    </header>
+    <main class="admin-content" id="main" tabindex="-1">
+{% else %}
+<div class="app-shell">
+  {% if user.is_authenticated %}{% include "partials/navbar.html" %}{% else %}
+  <header class="app-topbar"><div class="app-topbar__inner">{% include "partials/wordmark.html" %}</div></header>{% endif %}
+  <main class="app-main" id="main" tabindex="-1">
+{% endif %}
+      {% if user.is_authenticated and not ai_ok %}{% include "partials/ai_banner.html" %}{% endif %}
+      {% include "partials/messages.html" %}
+      {% block content %}{% endblock %}
+    </main>
+    {% include "partials/footer.html" %}
+{% if user.is_authenticated and user.is_admin_user %}
+  </div>
+</div>
+{% else %}
+</div>
+{% endif %}
+<script src="{% static 'vendor/bootstrap/js/bootstrap.bundle.min.js' %}"></script>
+<script src="{% static 'js/ui.js' %}"></script>
+{% block extra_js %}{% endblock %}
 </body>
 </html>
