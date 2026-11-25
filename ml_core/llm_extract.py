@@ -8,6 +8,7 @@ No RAG, no vector database: one prompt, one JSON-schema-constrained answer.
 from __future__ import annotations
 
 import json
+import time
 from dataclasses import asdict, dataclass
 from pathlib import Path
 from typing import Annotated, Iterable, Literal
@@ -91,11 +92,13 @@ def warm_up(config: LLMConfig, keep_alive: str = "30m", timeout_s: float = 120.0
     if not ollama_available(config):
         return WarmResult(False, 0.0, f"Ollama isn't running or {config.model} isn't installed; nothing to warm.")
     try:
+        start = time.perf_counter()
         resp = requests.post(f"{config.base_url}/api/chat",
                              json={"model": config.model, "messages": [], "keep_alive": keep_alive},
                              timeout=timeout_s)
         resp.raise_for_status()
-        seconds = float(resp.json().get("load_duration", 0)) / 1e9
+        resp.json()
+        seconds = time.perf_counter() - start   # a load-only reply carries no load_duration field
     except requests.Timeout:
         return WarmResult(False, 0.0, f"Loading {config.model} timed out after {timeout_s:.0f} s.")
     except (requests.RequestException, ValueError) as exc:

@@ -153,9 +153,12 @@ def test_warm_up_skips_when_model_missing():
 def test_warm_up_loads_model_with_keep_alive():
     loaded = MagicMock()
     loaded.raise_for_status.return_value = None
-    loaded.json.return_value = {"model": "qwen3:4b", "done": True, "done_reason": "load", "load_duration": 2_600_000_000}
+    # mirror of Ollama's real load-only reply: no load_duration field, so wall time is measured
+    loaded.json.return_value = {"model": "qwen3:4b", "created_at": "2026-11-25T10:29:57Z",
+                                "message": {"role": "assistant", "content": ""}, "done": True, "done_reason": "load"}
     with patch("ml_core.llm_extract.requests.get", return_value=_tags("qwen3:4b")), \
-         patch("ml_core.llm_extract.requests.post", return_value=loaded) as post:
+         patch("ml_core.llm_extract.requests.post", return_value=loaded) as post, \
+         patch("ml_core.llm_extract.time.perf_counter", side_effect=[10.0, 12.6]):
         r = warm_up(CFG, keep_alive="30m")
     body = post.call_args.kwargs["json"]
     assert body == {"model": "qwen3:4b", "messages": [], "keep_alive": "30m"}
