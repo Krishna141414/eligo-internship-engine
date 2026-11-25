@@ -1,0 +1,23 @@
+{% load static %}<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}Eligo{% endblock %} · Eligo</title>
+  <link rel="stylesheet" href="{% static 'vendor/fonts/fonts.css' %}">
+  <link rel="stylesheet" href="{% static 'vendor/bootstrap/css/bootstrap.min.css' %}">
+  <link rel="stylesheet" href="{% static 'vendor/bootstrap-icons/bootstrap-icons.min.css' %}">
+  {% block extra_head %}{% endblock %}
+</head>
+<body class="d-flex flex-column min-vh-100">
+  {% block navbar %}{% include "partials/navbar.html" %}{% endblock %}
+  <main class="flex-grow-1 container py-4" id="main">
+    {% if user.is_authenticated and not ai_ok %}{% include "partials/ai_banner.html" %}{% endif %}
+    {% include "partials/messages.html" %}
+    {% block content %}{% endblock %}
+  </main>
+  {% include "partials/footer.html" %}
+  <script src="{% static 'vendor/bootstrap/js/bootstrap.bundle.min.js' %}"></script>
+  {% block extra_js %}{% endblock %}
+</body>
+</html>
