@@ -93,6 +93,17 @@ def _ask_llm(text: str, config: LLMConfig) -> SkillList:
     return SkillList.model_validate_json(response.json()["message"]["content"])
 
 
+def llm_items_to_vocab(items: Iterable[str], vocab: SkillVocab) -> list[str]:
+    """Map LLM output to canonical skills. Small models often return phrases ("clean data in Python")
+    instead of bare names, so each item is matched exactly first, then searched with the
+    deterministic phrase matcher. Anything outside the vocabulary is dropped."""
+    out: set[str] = set()
+    for item in items:
+        direct = normalise_skills([item], vocab)
+        out.update(direct if direct else extract_skills_rule_based(item, vocab))
+    return sorted(out)
+
+
 def extract_skills(text: str, *, vocab: SkillVocab, config: LLMConfig, use_llm: bool = True) -> ExtractionResult:
     """LLM extraction (one retry on invalid output) -> normalised to the vocabulary; else rule-based."""
     def fallback(reason: str) -> ExtractionResult:
@@ -107,7 +118,7 @@ def extract_skills(text: str, *, vocab: SkillVocab, config: LLMConfig, use_llm: 
             return fallback(f"Ollama not reachable ({type(exc).__name__}); used rule-based extraction.")
         except (ValidationError, ValueError, KeyError, TypeError):
             continue
-        return ExtractionResult(normalise_skills(parsed.skills, vocab), "llm",
+        return ExtractionResult(llm_items_to_vocab(parsed.skills, vocab), "llm",
                                 f"Extracted by {config.model} (prompt v{config.prompt_version}).")
     return fallback("LLM returned invalid JSON twice; used rule-based extraction.")
 

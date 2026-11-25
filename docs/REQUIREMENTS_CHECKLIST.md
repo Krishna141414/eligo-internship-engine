@@ -63,9 +63,9 @@ Last updated: 2026-11-25 (Phase 4)
 ### 5. LLM-based skill analysis
 | ID | Requirement | Where implemented | Status |
 |---|---|---|---|
-| 5.1 | Optional local LLM via Ollama (small instruct model) | `ml_core/llm_extract.py` | ⬜ PENDING – Ollama (install + model pull); model decided in Phase 1 |
-| 5.2 | Extract student skills | `ml_core/llm_extract.py` `extract_skills` | 🟨 code + tests done; live LLM run PENDING – Ollama (model pull in progress) |
-| 5.3 | Extract internship-required skills | `ml_core/llm_extract.py` `extract_skills` / `analyse_gap` | 🟨 code + tests done; live run PENDING – Ollama |
+| 5.1 | Optional local LLM via Ollama (small instruct model) | `ml_core/llm_extract.py`, Ollama 0.40.18 + `qwen3:4b` | ✅ live: `tests/test_ml_core_llm_live.py` passes (2026-11-25) |
+| 5.2 | Extract student skills | `ml_core/llm_extract.py` `extract_skills` | ✅ live LLM + fallback |
+| 5.3 | Extract internship-required skills | `ml_core/llm_extract.py` `extract_skills` / `analyse_gap` | ✅ live LLM + fallback |
 | 5.4 | Normalise skill names | `ml_core/skills.py` + `normalise_skills` on LLM output | ✅ |
 | 5.5 | Compare student and internship requirements | `ml_core/llm_extract.py` `analyse_gap` | ✅ (rule-based path live; LLM path tested with a mocked Ollama response) |
 | 5.6 | Identify skill gaps | `ml_core/llm_extract.py` `analyse_gap` | ✅ |
@@ -126,7 +126,7 @@ Last updated: 2026-11-25 (Phase 4)
 | 9.3 | Database: SQLite | `config/settings.py` (SQLite) | ✅ |
 | 9.4 | ML: scikit-learn, Joblib | `ml_core/`, joblib loads in `ml_core.artifacts` | ✅ |
 | 9.5 | AI recommendation: TF-IDF, Sentence Transformers, cosine similarity | `recommendations/services.py` → `ml_core.recommender` | ✅ |
-| 9.6 | LLM: optional Ollama | `ml_core/llm_extract.py`, `recommendations/services.py` (D-024) | 🟨 integrated with fallback; live LLM PENDING – Ollama (model pull) |
+| 9.6 | LLM: optional Ollama | `ml_core/llm_extract.py`, `recommendations/services.py` (D-024) | ✅ live in the web app (top 3 per run; method shown) |
 | 9.7 | XAI: feature-based recommendation explanations | `ml_core/explain.py`, recommendation detail pages | ✅ |
 | 9.8 | Visualisation: Chart.js | `static/vendor/chartjs/` (charts in Phase 5) | 🟨 vendored; charts built in Phase 5 |
 
@@ -233,7 +233,7 @@ Last updated: 2026-11-25 (Phase 4)
 | 13.5 | Import reusable hybrid recommendation functions | `recommendations/services.py` imports `ml_core` | ✅ |
 | 13.6 | Mandatory eligibility checks | `ml_core/eligibility.py` (incl. per-internship gate date) | ✅ |
 | 13.7 | Similarity scores and ranked results | `ml_core/recommender.py` | ✅ |
-| 13.8 | Optional LLM skill extraction integrated | `recommendations/services.py` (D-024) | 🟨 integrated + tested with mocked Ollama; live run PENDING – Ollama |
+| 13.8 | Optional LLM skill extraction integrated | `recommendations/services.py` (D-024) | ✅ live: top 3 results marked 'LLM (local Ollama)', rest rule-based |
 | 13.9 | Explainable recommendations | `ml_core/explain.py` → stored `explanation` | ✅ |
 | 13.10 | Save predictions and recommendations to SQLite | `recommendations/services.py` (append-only runs) | ✅ |
 | 13.11 | Do not retrain models inside Django | load-only artifacts; `test_new_internship_scored_without_refit` | ✅ |
@@ -294,7 +294,7 @@ Last updated: 2026-11-25 (Phase 4)
 | 17.5 | SQLite | bundled with Python | ✅ |
 | 17.6 | Chrome / Edge | Krishna's machine; Playwright for tests | ✅ Edge ships with Windows 11 |
 | 17.7 | numpy, pandas, scikit-learn, scipy, joblib, matplotlib, seaborn, sentence-transformers, torch, django, openpyxl | `requirements.txt` | ✅ installed + pinned |
-| 17.8 | Optional: Ollama + small local LLM | system install | ⬜ PENDING – Ollama (installer downloading); model decided in Phase 1 |
+| 17.8 | Optional: Ollama + small local LLM | Ollama 0.40.18 + `qwen3:4b` (2.5 GB) | ✅ installed and verified (`ollama list`, live test) |
 | 17.9 | Optional: pydantic | `requirements.txt` | ✅ 2.14.4 |
 | 17.10 | Optional: shap | `requirements.txt` | ✅ 0.54.1 |
 | 17.11 | No RAG, LangChain, ChromaDB, FAISS, cloud deploy, paid APIs | `requirements.txt` has none | ✅ (re-checked each phase) |
@@ -361,7 +361,7 @@ Last updated: 2026-11-25 (Phase 4)
 - [x] DATASETS.md complete: name, URL, licence, rows/cols, column descriptions, synthetic yes/no, why chosen, rejected candidates
 - [x] Raw data present in `data/raw/`: Student Career (SHA-256 verified against Mendeley) + Kaggle `merged_internships_dataset.csv` (8,483 × 13, size matches Kaggle, profiled 2026-11-24)
 - [x] All decisions logged: D-005 datasets A, D-006 dataset B, D-007 qualification fields, D-008 assessment feature, D-009 Ollama model, D-010 UI kit, D-011 SQLite locking
-- [ ] Step 6 `ollama pull qwen3:4b`: PENDING – Ollama (needs install first, then Krishna's approval)
+- [x] Step 6 `ollama pull qwen3:4b`: done 2026-11-25 (Krishna approved)
 
 ### Phase 2 — Plan
 - [x] Brainstorming → design `docs/superpowers/specs/2026-11-24-eligo-design.md` (approaches + decisions D-012…D-019)
@@ -374,12 +374,12 @@ Last updated: 2026-11-25 (Phase 4)
 - [x] Every spec §8 artifact saved + `manifest.json` (SHA-256); restart-safe reload test passes (same ranking, nothing retrained)
 - [x] Real metrics at Phase 3 (test n=374): DT 0.8396 / 0.8604; RF 0.8904 / 0.9107. **Current, after the D-022 retrain (test n=330): Decision Tree acc 0.8030 / macro-F1 0.8048; Random Forest acc 0.8485 / macro-F1 0.8787 (best)**
 - [x] `scripts/setup_sentence_model.py` re-creates the git-ignored sentence model and verifies it byte-for-byte against the manifest (D-020)
-- [ ] Live LLM output in notebook §3.5: PENDING – Ollama (model pull still running)
+- [x] Live LLM output in notebook §3.5 (re-run 2026-11-25 with `qwen3:4b`)
 
 ### Phase 4 — Django backend
 - [x] `python manage.py check` → 0 issues; `makemigrations --check` → no changes; `migrate` applied
 - [x] `load_internships` → 8,207 real postings (0 text-hash mismatches); `seed_demo` → 3 DEMO students + 3 DEMO assessments
-- [x] `pytest tests` → 311 passed, 1 skipped (live-Ollama test, model still downloading)
+- [x] `pytest tests` → 311 passed, 1 skipped at the phase commit; after the model finished: 313 passed, 0 skipped
 - [x] End-to-end smoke through the real views + real artifacts (rolled back): DEMO CS exam 80% Qualified, duplicate submit rejected, 10 recommendations in ~3.7 s, job role Artificial Intelligence 95% confident, all admin pages 200
 - [x] D-022 career-skills fix applied end to end (multi-select from feature_schema.json, prediction uses only career skills, DEMO CS confident + test)
 
@@ -389,5 +389,5 @@ Items that need a live Ollama. Everything else goes ahead without it, because th
 | Item | What waits | Status |
 |---|---|---|
 | Phase 0 step 8 | Install Ollama + `ollama --version` | ✅ 2026-11-24: Ollama 0.40.18 installed (signed installer, Krishna clicked Yes), server answers on :11434 |
-| Phase 1 step 6 | `ollama pull qwen3:4b` (~2.5 GB; DECIDED in D-009) | 🟨 Krishna approved 2026-11-24, pull running |
-| Phase 3.5 | Live LLM test of `ml_core/llm_extract.py` (`tests/test_ml_core_llm_live.py`, auto-skips until the model exists) + live output in notebook §3.5 | PENDING – Ollama (code, mocked tests and fallback all done) |
+| Phase 1 step 6 | `ollama pull qwen3:4b` (~2.5 GB; DECIDED in D-009) | ✅ 2026-11-25: pulled, SHA-256 digest verified by Ollama |
+| Phase 3.5 | Live LLM test + live output in notebook §3.5 | ✅ 2026-11-25: live test passes; notebook re-run; web app uses the LLM for the top 3 (two bugs found and fixed on the way, see DECISIONS D-009) |

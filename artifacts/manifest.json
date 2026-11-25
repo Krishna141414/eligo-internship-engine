@@ -1,5 +1,5 @@
 {
-  "created": "2026-11-24T11:03:16+00:00",
+  "created": "2026-11-25T10:21:51+00:00",
   "best_model": {
     "name": "RandomForestClassifier",
     "version": "1"
@@ -156,7 +156,7 @@
       "bytes": 618
     },
     "vectorizers/tfidf.joblib": {
-      "sha256": "906a91ffee4d9c3ae0f037b3dc236a260f6b0876bb798f69a64dc8610047daac",
+      "sha256": "85dbc83a8fc7f197c7dd78675cb3fd8f8bb46a0084a549f4f0b0ecf659aa5df6",
       "bytes": 363819
     }
   },

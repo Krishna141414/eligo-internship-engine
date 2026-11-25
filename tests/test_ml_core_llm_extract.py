@@ -81,6 +81,14 @@ def test_request_body(vocab):
     assert TEXT in body["messages"][-1]["content"]
 
 
+def test_llm_skill_phrases_mapped_to_vocab(vocab):
+    # real qwen3:4b output for a posting: task phrases rather than bare skill names
+    content = '{"skills": ["clean data in Python", "write SQL queries", "build simple machine learning models"]}'
+    with patch("ml_core.llm_extract.requests.post", return_value=_response(content)):
+        r = extract_skills(TEXT, vocab=vocab, config=CFG)
+    assert r.method == "llm" and r.skills == ["machine learning", "python", "sql"]
+
+
 def test_llm_skills_outside_vocab_dropped(vocab):
     with patch("ml_core.llm_extract.requests.post",
                return_value=_response('{"skills": ["Underwater basket weaving"]}')):
