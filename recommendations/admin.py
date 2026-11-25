@@ -1,3 +1,5 @@
 from django.contrib import admin
 
-# Register your models here.
+from recommendations.models import InternshipRecommendation, JobRolePrediction
+
+admin.site.register([InternshipRecommendation, JobRolePrediction])
