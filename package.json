@@ -2,7 +2,7 @@
   "name": "eligo",
   "version": "1.0.0",
   "private": true,
-  "description": "Used only to fetch frontend libraries that are copied into static/vendor/. There is no JS build step and the Django app never reads node_modules/.",
+  "description": "dependencies: frontend libraries fetched once and copied into static/vendor/. devDependencies: dev-only tools (puppeteer-core for the design-audit render step, D-029). No JS build step; the Django app never reads node_modules/.",
   "license": "MIT",
   "dependencies": {
     "@fontsource/inter": "5.3.0",
@@ -10,5 +10,8 @@
     "bootstrap": "5.3.9",
     "bootstrap-icons": "1.13.2",
     "chart.js": "4.6.1"
+  },
+  "devDependencies": {
+    "puppeteer-core": "25.17.0"
   }
 }

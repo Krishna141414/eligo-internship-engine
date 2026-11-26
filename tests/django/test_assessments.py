@@ -72,6 +72,14 @@ def test_exam_page_has_no_correct_answers(student_client, profile, assessment):
     assert html.count(f"{SECRET} q0") == 1
 
 
+def test_exam_page_is_never_cached(student_client, profile, assessment):
+    """Back after submitting must ask the server (which redirects to the result), never show a stale,
+    live-looking exam from the browser cache (found in the Phase 6 E2E run)."""
+    url = student_client.post(reverse("assessments:start", args=[assessment.pk])).url
+    cache_control = student_client.get(url)["Cache-Control"]
+    assert "no-store" in cache_control and "no-cache" in cache_control
+
+
 def test_resume_returns_same_attempt_and_server_remaining_time(student_client, profile, assessment):
     first = student_client.post(reverse("assessments:start", args=[assessment.pk])).url
     second = student_client.post(reverse("assessments:start", args=[assessment.pk])).url

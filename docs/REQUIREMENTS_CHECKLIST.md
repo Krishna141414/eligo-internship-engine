@@ -302,20 +302,20 @@ Last updated: 2026-11-25 (Phase 4)
 ### 18. Testing requirements
 | ID | Requirement | Where implemented | Status |
 |---|---|---|---|
-| 18.1 | Student registration and login | `tests/` | ⬜ |
-| 18.2 | Admin internship management | `tests/` | ⬜ |
-| 18.3 | Qualification-based assessment | `tests/` | ⬜ |
-| 18.4 | Automatic assessment evaluation | `tests/` | ⬜ |
-| 18.5 | Score above 60% eligibility (boundary: 60.00 → Not_Qualified) | `tests/` | ⬜ |
-| 18.6 | Qualification eligibility checking | `tests/test_ml_core_eligibility.py` | ⬜ |
-| 18.7 | Content-based internship matching | `tests/test_ml_core_recommender.py` | ⬜ |
-| 18.8 | Semantic similarity matching | `tests/test_ml_core_recommender.py` | ⬜ |
-| 18.9 | Hybrid recommendation ranking | `tests/test_ml_core_recommender.py` | ⬜ |
-| 18.10 | Matched skills and skill-gap explanation | `tests/test_ml_core_explain.py` | ⬜ |
-| 18.11 | Job-role prediction | `tests/test_ml_core_job_role.py` | ⬜ |
-| 18.12 | Saved model integration | `tests/` | ⬜ |
-| 18.13 | Missing model and invalid input handling | `tests/` | ⬜ |
-| 18.14 | Actual data for evaluation; illustrative test profiles clearly labelled, never presented as training data | DEMO labels in data/UI/README | ⬜ |
+| 18.1 | Student registration and login | `tests/django/test_accounts.py` (`test_register_*`, `test_login_by_email`, `test_inactive_*`, admin pages forbidden to students) + E2E register/login (`docs/E2E.md`) | ✅ |
+| 18.2 | Admin internship management | `tests/django/test_internships.py` (`test_admin_add_*`, `test_admin_update_internship`, `test_toggle_is_post_only`, inactive hidden from students) | ✅ |
+| 18.3 | Qualification-based assessment | `tests/django/test_assessments.py` (`test_students_only_see_matching_qualification_assessments`, `test_cannot_start_assessment_for_other_qualification`) | ✅ |
+| 18.4 | Automatic assessment evaluation | `test_grading_decimal_and_threshold`, `test_unanswered_count_as_zero`, `test_duplicate_submission_rejected`, `test_late_submission_auto_submitted_uses_saved_answers_only`, `test_expired_attempt_finalised_on_page_load`, `tests/django/test_concurrency.py` (D-027) + E2E timer auto-submit | ✅ |
+| 18.5 | Score above 60% eligibility (boundary: 60.00 → Not_Qualified) | `test_is_qualified_boundary` (60.00 → NQ, 60.01 → Q, 100, 0), `test_tiny_margin_above_sixty_qualifies_even_if_display_rounds_to_60`, `test_result_ring_marks_the_60_percent_threshold` + E2E DEMO B.Sc at exactly 60.00% → Not qualified | ✅ |
+| 18.6 | Qualification eligibility checking | `tests/test_ml_core_eligibility.py` (`test_qualification_hierarchy`, gate tests), `test_detail_shows_failed_gate_reason` | ✅ |
+| 18.7 | Content-based internship matching | `test_content_similarity_prefers_relevant`, `test_content_similarity_does_not_refit` | ✅ |
+| 18.8 | Semantic similarity matching | `test_semantic_in_range`, `test_semantic_normalises_unnormalised_vectors`, `tests/test_integration_artifacts.py::test_semantic_ordering_real_model` (real all-MiniLM-L6-v2) | ✅ |
+| 18.9 | Hybrid recommendation ranking | `test_hybrid_weights_applied`, `test_recommend_excludes_ineligible_even_if_most_similar`, `test_rank_tie_break_by_skill`, `test_load_hybrid_config_*` | ✅ |
+| 18.10 | Matched skills and skill-gap explanation | `tests/test_ml_core_explain.py`, `tests/test_ml_core_skills.py`, `test_detail_shows_explanation_from_stored_values`, `test_recommendation_card_parts` | ✅ |
+| 18.11 | Job-role prediction | `tests/test_ml_core_job_role.py`, `test_prediction_uses_only_career_skills`, `test_prediction_without_career_skills_asks_for_them`, `test_demo_cs_profile_confident_and_correct` (real model) | ✅ |
+| 18.12 | Saved model integration | `tests/test_ml_core_artifacts.py` (manifest, tamper detection), `tests/test_integration_artifacts.py` (`test_real_bundle_loads_and_predicts`, `test_saved_embeddings_match_saved_model_and_data`) | ✅ |
+| 18.13 | Missing model and invalid input handling | `test_load_bundle_tampered_returns_none`, `test_recommendations_page_without_artifacts_shows_banner`, `test_ml_page_without_artifacts_shows_message`, `test_invalid_option_or_foreign_question_rejected`, `test_career_skills_reject_value_not_in_model_vocab`, form validation tests | ✅ |
+| 18.14 | Actual data for evaluation; illustrative test profiles clearly labelled, never presented as training data | `tests/django/test_seed_demo.py::test_all_demo_objects_labelled`, `tests/test_ml_core_demo.py`, `test_reset_demo_*`; metrics from the real Kaggle/Mendeley data (notebook) | ✅ |
 
 ### 19. Final development instructions
 | ID | Requirement | Where implemented | Status |
@@ -390,6 +390,15 @@ Last updated: 2026-11-25 (Phase 4)
 - [x] Playwright screenshots of every page at 1440 and 390 px → `docs/screenshots/` (real flows: DEMO CS 80.00% Qualified, DEMO B.Sc exactly 60.00% Not qualified)
 - [x] Audit loop: sloplint static tier clean apart from recorded waivers (render tier needs puppeteer-core, not installed); screenshot-review fixes applied and re-shot
 - [x] `pytest tests` → all pass; the strict xfail on middle-dot meta strings is removed and the test passes
+
+### Phase 6 — Testing
+- [x] Every spec §18 scenario mapped to real tests (rows 18.1–18.14)
+- [x] New: `tests/django/test_concurrency.py` (two threads, real SQLite file). It found a real bug, fixed by SQLite IMMEDIATE transactions (D-027); passes 10/10, fails 3/3 without the fix
+- [x] New: `tests/test_integration_artifacts.py` checks the real bundle, embeddings vs model and data, and real semantic ordering
+- [x] New: `python manage.py reset_demo` (D-028) with `test_reset_demo_never_touches_non_demo_data` (field-by-field snapshot; mutation-checked)
+- [x] `puppeteer-core` 25.17.0 dev dependency (D-029); sloplint render tier now runs and found a field-contrast issue (fixed)
+- [x] Playwright E2E per BUILD_PROMPT Phase 6.2 and the README viva script, recorded in `docs/E2E.md` (all steps PASS; found a stale-exam-after-Back bug, fixed with `@never_cache` + `test_exam_page_is_never_cached`)
+- [x] Notebook re-executed with `nbconvert` (exit 0)
 
 ## PENDING – Ollama (tracker)
 Items that need a live Ollama. Everything else goes ahead without it, because the project never depends on Ollama and the rule-based fallback always works.

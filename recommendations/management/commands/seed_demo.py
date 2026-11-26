@@ -20,6 +20,15 @@ from students.models import StudentProfile
 
 DEFAULT_PASSWORD = "Eligo-DEMO-2026!"
 
+
+def demo_email(key: str) -> str:
+    """The login of the DEMO student for DEMO_PROFILES[key]. This is what makes an account DEMO."""
+    return f"demo.{key}@eligo.local"
+
+
+def demo_password() -> str:
+    return os.environ.get("ELIGO_DEMO_PASSWORD", DEFAULT_PASSWORD)
+
 #: (question, A, B, C, D, correct). Illustrative questions; answers checked by hand.
 BTECH = [
     ("Time complexity of binary search on a sorted array of n items?", "O(n)", "O(log n)", "O(n log n)", "O(1)", "B"),
@@ -73,11 +82,11 @@ class Command(BaseCommand):
                 a.status = Assessment.Status.ACTIVE
                 a.save(update_fields=["status"])
 
-        password = os.environ.get("ELIGO_DEMO_PASSWORD", DEFAULT_PASSWORD)
+        password = demo_password()
         vocab = skill_vocab()
         accounts = []
         for key, p in DEMO_PROFILES.items():
-            email = f"demo.{key}@eligo.local"
+            email = demo_email(key)
             user = User.objects.filter(email=email).first()
             if user is None:
                 user = User.objects.create_user(email=email, password=password, name=p.label, mobile_number="9000000000")

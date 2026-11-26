@@ -69,7 +69,9 @@ DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.sqlite3",
         "NAME": BASE_DIR / "db.sqlite3",
-        "OPTIONS": {"timeout": 20},
+        # IMMEDIATE: a transaction takes the write lock at BEGIN, so a second writer waits (up to
+        # `timeout`) instead of failing with "database is locked" on a lock upgrade (D-027).
+        "OPTIONS": {"timeout": 20, "transaction_mode": "IMMEDIATE"},
     }
 }
 

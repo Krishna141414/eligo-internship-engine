@@ -3,6 +3,15 @@ folder (AI engine unavailable). Tests opt in with the `fake_artifacts` or `ai_bu
 import pytest
 
 
+@pytest.fixture(scope="session")
+def django_db_modify_db_settings(tmp_path_factory):
+    """Test DB is a real SQLite FILE (not shared-cache memory), so threaded tests see the same
+    file locking as the running app (D-011 concurrency test)."""
+    from django.conf import settings
+
+    settings.DATABASES["default"].setdefault("TEST", {})["NAME"] = str(tmp_path_factory.mktemp("db") / "test.sqlite3")
+
+
 @pytest.fixture(autouse=True)
 def _fast_password_hashing(settings):
     # Tests only: production keeps Django's default PBKDF2 hasher (hard rule: secure password storage).
