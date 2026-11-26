@@ -63,7 +63,7 @@ DEMO password for every DEMO student: `Eligo-DEMO-2026!` (or `ELIGO_DEMO_PASSWOR
 3. On card #1 open "Explain this match": part scores × weights = the final score, plus every eligibility check. Click the title for the full explanation page.
 
 **3. Job role (about 30 seconds)**
-- Job role → Predict my job role. The DEMO CS profile is predicted as Artificial Intelligence with high confidence (95% on the current model), with the probability chart and the skills that weigh most.
+- Job role → Predict my job role. The DEMO CS profile is predicted as Artificial Intelligence with high confidence (96% on the current model), with the probability chart and the skills that weigh most.
 
 **4. B.Sc student at exactly 60% is not qualified (about 1 minute)**
 1. Log out, then log in as `demo.bsc@eligo.local`.
