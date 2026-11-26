@@ -1,7 +1,7 @@
 # Eligo — design (Phase 2)
 
-Date: 2026-11-24 · Inputs: `docs/PROJECT_SPEC.md` (source of truth), `CLAUDE.md` (hard rules), `BUILD_PROMPT.md` (phases), `docs/DECISIONS.md` D-001…D-011, `docs/DATASETS.md`.
-The plan built from this design is `docs/PLAN.md`.
+Date: 2026-11-24 · Inputs: `docs/PROJECT_SPEC.md` (source of truth), the project rulebook (hard rules) and build brief (phases), both kept private, `docs/DECISIONS.md` D-001…D-011, `docs/DATASETS.md`.
+The plan built from this design is kept in the private working copy (not published).
 
 ## 1. Intent
 
@@ -29,7 +29,7 @@ The selling point is in the tagline: **eligibility-first, explainable**. Gates c
 
 ## 3. Constraints
 
-All 19 hard rules in `CLAUDE.md`, plus these from the Phase 1 findings:
+All 19 hard rules in the project rulebook (not published), plus these from the Phase 1 findings:
 - Job-role model input = **skills only** (D-005, D-008). Academic fields feed the gates, not the model.
 - Internship text is composed from the posting's own fields (no description column) and flagged (D-007).
 - The deadline gate uses `REFERENCE_DATE` = 2025-09-28 for imported postings (D-007).

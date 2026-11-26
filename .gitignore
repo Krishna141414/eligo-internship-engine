@@ -23,7 +23,7 @@ artifacts/models/sentence_model/
 # Secrets
 .env
 
-# Claude Code: local settings + third-party project skills (reinstall from skills-lock.json)
+# Claude Code: local settings + third-party project skills (pinned in the private skills lock file)
 .claude/settings.local.json
 .claude/skills/
 .agents/
@@ -39,3 +39,10 @@ artifacts/models/sentence_model/
 
 # Phase 6.5 check shots (temporary, local only)
 docs/check/
+
+# Private build files: kept on the author's laptop, never published
+CLAUDE.md
+BUILD_PROMPT.md
+docs/PLAN.md
+docs/RESEARCH.md
+skills-lock.json

@@ -1,14 +1,14 @@
 # Decisions log — Eligo
 
 Every choice the spec leaves open is recorded here: what was chosen, the alternatives considered, and why.
-Criteria, in priority order (from `CLAUDE.md`): **spec compliance > correctness > offline/Windows-friendly > looks professional > simplicity.**
+Criteria, in priority order (from the project rulebook, not published): **spec compliance > correctness > offline/Windows-friendly > looks professional > simplicity.**
 
 | # | Date | Phase | Decision |
 |---|---|---|---|
 | D-001 | 2026-11-22 | 0 | Install Python 3.12 per-user with winget |
 | D-002 | 2026-11-22 | 0 | Vendored file set (minified + source maps, Chart.js UMD) |
 | D-003 | 2026-11-22 | 0 | Font subsets: latin + latin-ext, woff2 only |
-| D-004 | 2026-11-22 | 0 | Third-party project skills are git-ignored and pinned via `skills-lock.json` |
+| D-004 | 2026-11-22 | 0 | Third-party project skills are git-ignored and pinned via a skills lock file (kept private since Phase 7) |
 | D-005 | 2026-11-24 | 1 | Job-role training data: Student Career Dataset (Mendeley 4spj4mbpjr v2) |
 | D-006 | 2026-11-24 | 1 | Internship listings: Internship Opportunities in India (2025) (Kaggle) |
 | D-007 | 2026-11-24 | 1 | Qualification fields: derive from `Education` by documented rule, neutral defaults otherwise |
@@ -61,10 +61,10 @@ Criteria, in priority order (from `CLAUDE.md`): **spec compliance > correctness 
 
 ## D-004 — Third-party project skills are git-ignored
 - **Date:** 2026-11-22 · **Phase:** 0, step 5
-- **Context:** `npx skills add kjnez/claude-code-django` (the repo has moved to `waldencui/claude-code-django`) copied 15 skills into `.claude/skills/` and wrote `skills-lock.json` (commit `ef057aa…` + per-skill hashes). One upstream skill (`ticket`) was skipped by the installer because of a YAML error in its own file, which doesn't affect us. Of the 15, the ones relevant to this project are `django-models`, `django-forms`, `django-templates`, `pytest-django-patterns` and `systematic-debugging`. `celery-patterns` and `htmx-patterns` are not used (no Celery; the spec fixes the frontend to vanilla JS).
+- **Context:** `npx skills add kjnez/claude-code-django` (the repo has moved to `waldencui/claude-code-django`) copied 15 skills into `.claude/skills/` and wrote a skills lock file (commit `ef057aa…` + per-skill hashes). One upstream skill (`ticket`) was skipped by the installer because of a YAML error in its own file, which doesn't affect us. Of the 15, the ones relevant to this project are `django-models`, `django-forms`, `django-templates`, `pytest-django-patterns` and `systematic-debugging`. `celery-patterns` and `htmx-patterns` are not used (no Celery; the spec fixes the frontend to vanilla JS).
 - **Options:**
   1. Commit `.claude/skills/`: a fresh clone has them, but it puts third-party dev tooling inside a repo that goes public in Phase 7.
-  2. Git-ignore `.claude/skills/`, commit `skills-lock.json` (pins source + commit + hashes so they can be reinstalled exactly).
+  2. Git-ignore `.claude/skills/`, keep a skills lock file (pins source + commit + hashes so they can be reinstalled exactly). Since Phase 7 the lock file stays in the private working copy and is not published.
 - **Chosen:** Option 2. Skills are developer tooling, not part of the deliverable, and the lock file keeps them reproducible.
 
 ## D-005 — Job-role training data: Student Career Dataset

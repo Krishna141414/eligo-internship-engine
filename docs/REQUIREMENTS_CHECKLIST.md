@@ -356,8 +356,8 @@ Last updated: 2026-11-25 (Phase 4)
 - [x] Step 11: session restarted, new skills loaded (2026-11-24)
 
 ### Phase 1 — Research and decisions
-- [x] Last30days on all 4 topics + web supplements → `docs/RESEARCH.md` (2026-11-24; thin 30-day signal stated honestly)
-- [x] Context7 docs: Django 5.2, sentence-transformers, scikit-learn 1.9, Chart.js 4, Bootstrap 5.3, Ollama `/api/chat` → `docs/RESEARCH.md` §5
+- [x] Last30days on all 4 topics + web supplements → research notes (private working copy, not published; 2026-11-24; thin 30-day signal stated honestly)
+- [x] Context7 docs: Django 5.2, sentence-transformers, scikit-learn 1.9, Chart.js 4, Bootstrap 5.3, Ollama `/api/chat` → research notes §5 (not published)
 - [x] DATASETS.md complete: name, URL, licence, rows/cols, column descriptions, synthetic yes/no, why chosen, rejected candidates
 - [x] Raw data present in `data/raw/`: Student Career (SHA-256 verified against Mendeley) + Kaggle `merged_internships_dataset.csv` (8,483 × 13, size matches Kaggle, profiled 2026-11-24)
 - [x] All decisions logged: D-005 datasets A, D-006 dataset B, D-007 qualification fields, D-008 assessment feature, D-009 Ollama model, D-010 UI kit, D-011 SQLite locking
@@ -365,7 +365,7 @@ Last updated: 2026-11-25 (Phase 4)
 
 ### Phase 2 — Plan
 - [x] Brainstorming → design `docs/superpowers/specs/2026-11-24-eligo-design.md` (approaches + decisions D-012…D-019)
-- [x] writing-plans → `docs/PLAN.md`: 23 tasks for Phases 3–7, file list, data flow (notebook → artifacts → `ml_core.artifacts` → Django services → SQLite; `load_internships`; saved TF-IDF + sentence model for admin-added internships with the D-014 cache), typed `ml_core` public API, test plan mapped to every spec §18 scenario
+- [x] writing-plans → the build plan (private working copy, not published): 23 tasks for Phases 3–7, file list, data flow (notebook → artifacts → `ml_core.artifacts` → Django services → SQLite; `load_internships`; saved TF-IDF + sentence model for admin-added internships with the D-014 cache), typed `ml_core` public API, test plan mapped to every spec §18 scenario
 - [x] Self-review: spec coverage, type consistency, Review Focus tests placed in their owning tasks
 
 ### Phase 3 — Notebook + ml_core
