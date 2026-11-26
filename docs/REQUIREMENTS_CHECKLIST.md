@@ -18,7 +18,7 @@ Last updated: 2026-11-25 (Phase 4)
 | 1.2 | Free public dataset: job roles and career-related attributes | `docs/DATASETS.md` A | ✅ Student Career `Career` label, 6 classes (downloaded, SHA-256 verified) |
 | 1.3 | Free public dataset: internship opportunities, descriptions, qualifications, required skills | `docs/DATASETS.md` B, `data/raw/kaggle_internships_2025/` | ✅ Internship Opportunities in India (2025), 8,483 real postings with skills + education (D-006). No description column → composed from the posting's own fields + flagged (D-007) |
 | 1.4 | Assessment-related features where supported by the dataset | `docs/DECISIONS.md` D-008 | ✅ Decided: not supported by the training data → assessment is an eligibility gate only (stated on the prediction page) |
-| 1.5 | Provide dataset download URLs and column descriptions | `docs/DATASETS.md`, README | 🟨 DATASETS.md done; Kaggle column contents confirmed at load (Phase 3); README in Phase 7 |
+| 1.5 | Provide dataset download URLs and column descriptions | `docs/DATASETS.md` (URLs, licences, every column), README “Datasets” table | ✅ |
 | 1.6 | Do not fabricate training data, labels or evaluation results | Whole project; DATASETS.md rejected list | ✅ for Part A: 3 synthetic/no-signal candidates rejected on real checks; labels kept as published; every metric printed by the notebook run |
 
 ### 2. Data preprocessing
@@ -266,7 +266,7 @@ Last updated: 2026-11-25 (Phase 4)
 | 15.7 | Recommendation cards with match scores | `templates/recommendations/list.html` (score ring, breakdown bar, chips, explain section, async AI second opinion) | ✅ |
 | 15.8 | Matched and missing skills visualisation | matched (solid green) and missing (dashed orange) chips, breakdown bar | ✅ |
 | 15.9 | Job-role prediction result page | `recommendations:job_role` (hero or scope state, probability + feature charts, related internships) | ✅ |
-| 15.10 | User-friendly validation and error messages | forms + messages, empty states | 🟨 specific messages in place; final copy pass in Phase 7 |
+| 15.10 | User-friendly validation and error messages | forms + messages (each error says what to do next), inline field errors with the first invalid field focused, empty states, curly-quote copy pass (`docs/AUDIT.md`, `tests/django/test_guidelines.py`) | ✅ |
 | 15.11 | Avoid unnecessary animations, complex dashboards, decorative elements | `theme.css` (150 ms colour/shadow + 2 px lift only, off under reduced motion), Chart.js animation off | ✅ |
 
 ### 16. Security and validation
@@ -320,28 +320,28 @@ Last updated: 2026-11-25 (Phase 4)
 ### 19. Final development instructions
 | ID | Requirement | Where implemented | Status |
 |---|---|---|---|
-| 19.1 | Complete executable notebook and Django source code | `notebooks/`, Django apps | ⬜ |
-| 19.2 | Complete notebook before Django integration | phase order (3 before 4) | ⬜ |
-| 19.3 | Only freely available datasets and pretrained models | `docs/DATASETS.md` | ⬜ |
+| 19.1 | Complete executable notebook and Django source code | `notebooks/eligo_engine.ipynb` re-executed with `nbconvert` (exit 0, Phase 6.5); Django apps; fresh clone ran the app and 450 tests (Phase 7) | ✅ |
+| 19.2 | Complete notebook before Django integration | git history: `a5afa66 Phase 3: ml_core + notebook + artifacts` precedes `ed4d5ef Phase 4: Django backend` | ✅ |
+| 19.3 | Only freely available datasets and pretrained models | `docs/DATASETS.md`: Student Career Dataset (CC BY 4.0), Kaggle internships (MIT); `all-MiniLM-L6-v2` (Apache 2.0, pinned revision); optional `qwen3:4b` via Ollama (Apache 2.0) | ✅ |
 | 19.4 | Two user roles: Admin and Student | `accounts/models.py` | ✅ |
-| 19.5 | Every essential functional requirement implemented | this checklist | ⬜ |
+| 19.5 | Every essential functional requirement implemented | this checklist: every row ✅ with its file, test or evidence | ✅ |
 | 19.6 | Reusable Python functions for recommendations and inference | `ml_core/` | ✅ |
 | 19.7 | No retraining in Django | `ml_core/artifacts.py` (load only) | ✅ |
-| 19.8 | No fabricated datasets, performance or predictions | whole project | ⬜ |
+| 19.8 | No fabricated datasets, performance or predictions | real public data only; every metric from the notebook run (`artifacts/metrics/metrics.json`); charts drawn from stored values (`test_job_role_chart_data_from_prediction`, `test_ml_comparison_chart_from_saved_metrics`); DEMO data labelled (`test_all_demo_objects_labelled`) | ✅ |
 | 19.9 | Consistent model input features between training and inference | `artifacts/config/feature_schema.json` + Pipeline | ✅ |
 | 19.10 | Deterministic fallback when LLM unavailable | `ml_core/llm_extract.py` | ✅ |
-| 19.11 | Django migrations, requirements.txt, README | repo root | 🟨 requirements.txt done |
-| 19.12 | Windows-compatible local demonstration | README, offline vendored assets | 🟨 assets vendored, no CDN |
+| 19.11 | Django migrations, requirements.txt, README | migrations (`makemigrations --check`: no changes), `requirements.txt` with exact pins incl. the packages that shape the saved model (`test_packages_that_shape_the_saved_model_are_pinned_exactly`), full `README.md`, `LICENSE` | ✅ |
+| 19.12 | Windows-compatible local demonstration | Phase 7 fresh-clone test on Windows 11 in PowerShell, following the README exactly; then the app ran with all outbound HTTP(S) routed to a dead proxy and Hugging Face offline: full flow worked, 0 external requests | ✅ |
 | 19.13 | No integration with official government portal | scope | ✅ no portal integration |
 | 19.14 | No internship allocation, payments, or employer recruitment modules | scope | ✅ none implemented |
-| 19.15 | All required buttons, pages, forms and features functional | Playwright E2E (Phase 6) | ⬜ |
+| 19.15 | All required buttons, pages, forms and features functional | Playwright E2E (`docs/E2E.md`), Phase 6.5 check shots, Phase 7 fresh-clone click-through, final screenshots | ✅ |
 
 ### Final project goal
 | ID | Requirement | Where implemented | Status |
 |---|---|---|---|
-| G.1 | Flow: Profile → Assessment → Evaluation → Eligibility → Hybrid recommendation → Explanations → Job-role prediction | end-to-end app | ⬜ |
-| G.2 | Demonstrates qualification-aware recommendation, content + semantic matching, optional LLM, XAI, supervised job-role prediction | whole project | ⬜ |
-| G.3 | Independent academic prototype, no claim of official allocation or integration (disclaimer) | footer + README | ⬜ |
+| G.1 | Flow: Profile → Assessment → Evaluation → Eligibility → Hybrid recommendation → Explanations → Job-role prediction | end-to-end app; walked in `docs/E2E.md` and the README viva script | ✅ |
+| G.2 | Demonstrates qualification-aware recommendation, content + semantic matching, optional LLM, XAI, supervised job-role prediction | gates (`ml_core/eligibility.py`), hybrid scoring (`ml_core/recommender.py`), async LLM second opinion (D-025), explanations (`ml_core/explain.py`), RF vs DT (`notebooks/`) | ✅ |
+| G.3 | Independent academic prototype, no claim of official allocation or integration (disclaimer) | footer on every page (`test_pages_have_title_suffix_and_disclaimer`, `test_*_pages_shell`) + README | ✅ |
 
 ---
 
@@ -408,6 +408,14 @@ Last updated: 2026-11-25 (Phase 4)
 - [x] Polish: "Not specified" minimum %, separate start date, qualification badge, chart labels + "Not enough data yet", wide figures + full-size view, warning-coloured ring when not qualified, "m:ss left" timer, row-action baseline, "Change password", match % tooltip
 - [x] Found while checking: stale browser-cached JS/CSS → content-hash `{% asset %}` URLs; "No minimum academic percentage is specified."
 - [x] `pytest` all green; notebook re-executed; check shots in `docs/check/` (local only, git-ignored)
+
+### Phase 7 — Polish, docs and verification
+- [x] `/favicon.ico` route and register-form `autocomplete` tokens (tests in `tests/django/test_accounts.py`)
+- [x] Vercel Web Interface Guidelines audit → 16 findings fixed, each tested (`docs/AUDIT.md`, `tests/django/test_guidelines.py`)
+- [x] README rewritten (architecture diagram from Diagram Design in `docs/img/`, datasets + licences, Windows setup, real metrics, limitations, viva script), Humanizer pass, `LICENSE`
+- [x] Fresh-clone test (Windows, PowerShell, README steps): found and fixed an unpinned `transformers` that broke the sentence-model hash check; found the Windows long-path limit (README note); then 450 tests passed in the clone and the full flow ran with the internet blocked (0 external requests)
+- [x] Final 15 screenshots in `docs/screenshots/` after `reset_demo` (see its README)
+- [x] Every row of this checklist ✅
 
 ## PENDING – Ollama (tracker)
 Items that need a live Ollama. Everything else goes ahead without it, because the project never depends on Ollama and the rule-based fallback always works.

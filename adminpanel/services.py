@@ -82,11 +82,12 @@ def _png_size(path: Path) -> tuple[int, int] | None:
 
 
 def figure_entries() -> list[dict]:
-    """Listed figures with a `wide` flag: multi-panel figures (wider than 1.6:1) span the full row."""
+    """Listed figures with a `wide` flag: multi-panel figures (wider than 2.5:1) span the full row.
+    Ordinary single charts in the notebook are 2.03:1 or narrower; the multi-panel ones are 2.9:1 and up."""
     out = []
     for name in listed_figures():
         size = _png_size(artifacts_dir() / "figures" / name)
-        out.append({"name": name, "wide": bool(size and size[1] and size[0] / size[1] > 1.6),
+        out.append({"name": name, "wide": bool(size and size[1] and size[0] / size[1] > 2.5),
                     "width": size[0] if size else None, "height": size[1] if size else None})
     return out
 
