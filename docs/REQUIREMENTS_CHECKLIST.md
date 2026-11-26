@@ -257,7 +257,7 @@ Last updated: 2026-11-25 (Phase 4)
 ### 15. User interface requirements
 | ID | Requirement | Where implemented | Status |
 |---|---|---|---|
-| 15.1 | Attractive academic and career-themed design | `static/css/theme.css` (CLAUDE.md tokens, D-023), `docs/screenshots/` | ✅ |
+| 15.1 | Attractive academic and career-themed design | `static/css/theme.css` (Eligo design tokens, D-023), `docs/screenshots/` | ✅ |
 | 15.2 | Responsive Bootstrap layouts | templates; every page shot at 1440 and 390 px in `docs/screenshots/` | ✅ |
 | 15.3 | Separate admin and student dashboards | student top bar + journey + stat band; admin navy sidebar + stat band + charts | ✅ |
 | 15.4 | Simple forms and navigation | `partials/form.html`, active-tab navigation, admin breadcrumbs | ✅ |
@@ -356,16 +356,16 @@ Last updated: 2026-11-25 (Phase 4)
 - [x] Step 11: session restarted, new skills loaded (2026-11-24)
 
 ### Phase 1 — Research and decisions
-- [x] Last30days on all 4 topics + web supplements → research notes (private working copy, not published; 2026-11-24; thin 30-day signal stated honestly)
-- [x] Context7 docs: Django 5.2, sentence-transformers, scikit-learn 1.9, Chart.js 4, Bootstrap 5.3, Ollama `/api/chat` → research notes §5 (not published)
+- [x] Last30days research on all 4 topics, plus web supplements (2026-11-24; the 30-day signal was thin, and that is stated as found)
+- [x] Context7 docs: Django 5.2, sentence-transformers, scikit-learn 1.9, Chart.js 4, Bootstrap 5.3, Ollama `/api/chat`, checked before writing code against each
 - [x] DATASETS.md complete: name, URL, licence, rows/cols, column descriptions, synthetic yes/no, why chosen, rejected candidates
 - [x] Raw data present in `data/raw/`: Student Career (SHA-256 verified against Mendeley) + Kaggle `merged_internships_dataset.csv` (8,483 × 13, size matches Kaggle, profiled 2026-11-24)
 - [x] All decisions logged: D-005 datasets A, D-006 dataset B, D-007 qualification fields, D-008 assessment feature, D-009 Ollama model, D-010 UI kit, D-011 SQLite locking
 - [x] Step 6 `ollama pull qwen3:4b`: done 2026-11-25 (Krishna approved)
 
 ### Phase 2 — Plan
-- [x] Brainstorming → design `docs/superpowers/specs/2026-11-24-eligo-design.md` (approaches + decisions D-012…D-019)
-- [x] writing-plans → the build plan (private working copy, not published): 23 tasks for Phases 3–7, file list, data flow (notebook → artifacts → `ml_core.artifacts` → Django services → SQLite; `load_internships`; saved TF-IDF + sentence model for admin-added internships with the D-014 cache), typed `ml_core` public API, test plan mapped to every spec §18 scenario
+- [x] Brainstorming → design `docs/design/specs/2026-11-24-eligo-design.md` (approaches + decisions D-012…D-019)
+- [x] writing-plans: 23 tasks for Phases 3–7, file list, data flow (notebook → artifacts → `ml_core.artifacts` → Django services → SQLite; `load_internships`; saved TF-IDF + sentence model for admin-added internships with the D-014 cache), typed `ml_core` public API, test plan mapped to every spec §18 scenario
 - [x] Self-review: spec coverage, type consistency, Review Focus tests placed in their owning tasks
 
 ### Phase 3 — Notebook + ml_core
@@ -397,7 +397,7 @@ Last updated: 2026-11-25 (Phase 4)
 - [x] New: `tests/test_integration_artifacts.py` checks the real bundle, embeddings vs model and data, and real semantic ordering
 - [x] New: `python manage.py reset_demo` (D-028) with `test_reset_demo_never_touches_non_demo_data` (field-by-field snapshot; mutation-checked)
 - [x] `puppeteer-core` 25.17.0 dev dependency (D-029); sloplint render tier now runs and found a field-contrast issue (fixed)
-- [x] Playwright E2E per BUILD_PROMPT Phase 6.2 and the README viva script, recorded in `docs/E2E.md` (all steps PASS; found a stale-exam-after-Back bug, fixed with `@never_cache` + `test_exam_page_is_never_cached`)
+- [x] Playwright E2E of the register-to-job-role flow, the timer expiry and the README viva script, recorded in `docs/E2E.md` (all steps PASS; found a stale-exam-after-Back bug, fixed with `@never_cache` + `test_exam_page_is_never_cached`)
 - [x] Notebook re-executed with `nbconvert` (exit 0)
 
 ### Phase 6.5 — Review fixes (Krishna, 2026-11-26)

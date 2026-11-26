@@ -1,7 +1,7 @@
 # Eligo — design (Phase 2)
 
-Date: 2026-11-24 · Inputs: `docs/PROJECT_SPEC.md` (source of truth), the project rulebook (hard rules) and build brief (phases), both kept private, `docs/DECISIONS.md` D-001…D-011, `docs/DATASETS.md`.
-The plan built from this design is kept in the private working copy (not published).
+Date: 2026-11-24 · Inputs: `docs/PROJECT_SPEC.md` (source of truth), `docs/DECISIONS.md` D-001…D-011, `docs/DATASETS.md`.
+Phases 3 to 7 were built task by task from this design.
 
 ## 1. Intent
 
@@ -16,7 +16,7 @@ The selling point is in the tagline: **eligibility-first, explainable**. Gates c
 - Every bullet in spec §§1–19 implemented, tested and mapped in `REQUIREMENTS_CHECKLIST.md`.
 - The notebook and Django share one `ml_core/` package. Django only loads artifacts and runs inference.
 - A demo that works with Wi-Fi off, with or without Ollama.
-- Looks like a calm, professional govt-tech portal (CLAUDE.md design system).
+- Looks like a calm, professional govt-tech portal (navy and white, one amber accent for scores).
 
 **Non-goals (spec §19 / rule 17):** government portal integration, real allocation, payments, employer recruitment, cloud deploy, recommendation-accuracy claims (no relevance labels exist).
 
@@ -29,7 +29,7 @@ The selling point is in the tagline: **eligibility-first, explainable**. Gates c
 
 ## 3. Constraints
 
-All 19 hard rules in the project rulebook (not published), plus these from the Phase 1 findings:
+The project’s 19 hard rules (among them: eligibility strictly above 60%, gates before ranking, no retraining inside Django, a server-enforced timer, no answers sent to the browser, and fully offline), plus these from the Phase 1 findings:
 - Job-role model input = **skills only** (D-005, D-008). Academic fields feed the gates, not the model.
 - Internship text is composed from the posting's own fields (no description column) and flagged (D-007).
 - The deadline gate uses `REFERENCE_DATE` = 2025-09-28 for imported postings (D-007).
@@ -81,7 +81,7 @@ Profile qualification choices come from this map, so the inputs line up with the
 - **A. pytest + pytest-django with plain fixture functions in `tests/conftest.py`** (factory helpers written by hand). `unittest.mock` stands in for Ollama and HTTP. **← chosen**
 - B. Add factory-boy + pytest-mock: nicer syntax, but adds dependencies beyond the locked stack for little gain.
 
-### 4.8 Exam layout (D-019, the BUILD_PROMPT 5.4 DECIDE, settled now because it shapes the views)
+### 4.8 Exam layout (D-019, an open design choice, settled now because it shapes the views)
 - **A. One question per view inside a single page** (all questions in the form, JS shows one at a time; palette grid jumps between them; without JS everything shows as a scrollable list). Autosave posts each answer. **← chosen**: matches the palette design, needs one server round-trip per answer save rather than per question view, and degrades gracefully.
 - B. A server page per question: more requests, and back-button edge cases with the timer.
 - C. Scroll-only list: the palette loses its meaning.
@@ -174,11 +174,11 @@ def verify_manifest(artifacts_dir: Path) -> ArtifactStatus
 def load_bundle(artifacts_dir: Path | None = None) -> tuple[ArtifactBundle | None, ArtifactStatus]  # never raises
 ```
 
-### 5.2 Django apps (BUILD_PROMPT folder structure, unchanged)
+### 5.2 Django apps (folder structure as planned, unchanged)
 `accounts` (User, auth, role decorators, `create_admin`) · `students` (StudentProfile, dashboard, profile forms) · `internships` (Internship CRUD/search, `load_internships`) · `assessments` (Assessment, Question, Attempt, Answer, grading service, timer API) · `recommendations` (InternshipRecommendation, JobRolePrediction, services, `seed_demo`) · `adminpanel` (dashboard + monitoring views).
 
-## 6. Decided by the spec / BUILD_PROMPT (not reopened)
-Stack and versions; the 19 hard rules; folder structure; model list (DT + RF, best by macro-F1); evaluation metrics; artifact list; DB tables + BUILD_PROMPT additions; admin/student page lists; design tokens and signature components; test scenarios; phase order.
+## 6. Already decided (not reopened)
+Stack and versions; the 19 hard rules; folder structure; model list (DT + RF, best by macro-F1); evaluation metrics; artifact list; DB tables + the planned additions; admin/student page lists; design tokens and signature components; test scenarios; phase order.
 
 ## 7. Left to the builder (settled during implementation, logged when made)
 - Hybrid weights: default 0.35 / 0.40 / 0.25, final in Phase 3 with a sensitivity table on DEMO profiles.

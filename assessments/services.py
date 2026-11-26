@@ -1,6 +1,6 @@
 """Assessment engine: server-enforced timing, grading with Decimal, no duplicate submissions.
 
-Rules enforced here (CLAUDE.md): score % = obtained / total × 100 with Decimal, strictly > 60 qualifies
+Rules enforced here: score % = obtained / total × 100 with Decimal, strictly > 60 qualifies
 (1, 2); correct answers never reach the exam page (8); the deadline is enforced on the server, the JS
 timer is display only (9); duplicate submissions are rejected with an atomic conditional UPDATE, which
 is what actually serialises on SQLite where select_for_update() is a no-op (10, D-011); attempts are

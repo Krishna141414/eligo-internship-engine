@@ -29,10 +29,10 @@ Icon-only buttons have labels; decorative icons are `aria-hidden`; every input h
 
 ## Not applied, with reasons
 
-- **Title Case for headings and buttons:** the project’s copy rules (BUILD_PROMPT 5.6) require sentence case, and the spec wins.
+- **Title Case for headings and buttons:** the project’s copy rules require sentence case for headings and buttons, and they take precedence.
 - **`Intl.DateTimeFormat` / `Intl.NumberFormat`:** dates and numbers are formatted on the server by Django (`date`, `intcomma`), the same for every visitor; no JavaScript formats a date.
 - **List virtualisation:** lists are paginated at 20 rows; the 188 career-skill checkboxes are static and cheap.
 - **`preconnect`:** there are no CDN or third-party origins (everything is vendored, hard rule 19).
-- **Dark mode:** the design is light-only by choice (CLAUDE.md palette); `color-scheme: light` stops browsers from half-darkening form controls.
+- **Dark mode:** the design is light-only by choice (white + navy palette); `color-scheme: light` stops browsers from half-darkening form controls.
 - **Hydration rules:** there is no client-side framework.
 - **The loading message** “Analysing your profile… checking 7,566 internships” keeps Krishna’s wording rather than ending on a second ellipsis.

@@ -19,7 +19,7 @@ Run on 2026-11-26 with the Playwright MCP browser against `runserver` on the dev
 | Admin dashboard | Outcomes: Qualified 1, Not qualified 1, Not attempted 1 | PASS ([08](e2e/08-admin-dashboard.png)) |
 | Admin results / ML page | 2 result rows; both models listed | PASS |
 
-## 2. New student, register to job role (BUILD_PROMPT Phase 6.2)
+## 2. New student, register to job role
 
 | Step | Check | Result |
 |---|---|---|

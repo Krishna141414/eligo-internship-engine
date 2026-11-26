@@ -1,7 +1,7 @@
-/* Hallmark · shape: app screen · genre: modern-minimal · theme: locked system (CLAUDE.md tokens, D-023) · posture: restrained · signature: the explained recommendation card · v2.0.0
+/* Hallmark · shape: app screen · genre: modern-minimal · theme: locked system (Eligo design tokens, D-023) · posture: restrained · signature: the explained recommendation card · v2.0.0
  * critique: a calm navy-and-white portal where amber marks only scores and the current step; density and real numbers over decoration
- * waive: 7a (white cards are part of the locked CLAUDE.md system) · 48 (vendored Bootstrap carries its own literal colours; every Eligo rule below uses tokens)
- * waive: 7b (pure white surface is the locked CLAUDE.md "white + navy" palette)
+ * waive: 7a (white cards are part of the locked Eligo design system) · 48 (vendored Bootstrap carries its own literal colours; every Eligo rule below uses tokens)
+ * waive: 7b (pure white surface is part of the locked white + navy palette)
  * waive: 24b on .app-topbar .nav-link only (20px/17px centres a link with a 3px underline in the 64px bar)
  * waive: 56 (.app-topbar is the student layout and .app-sidebar the admin layout; base.html renders one or the other, never both)
  * answered: F7 (one card recipe on purpose: a single radius and border per nesting level across the app, F15)

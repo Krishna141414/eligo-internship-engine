@@ -1,14 +1,14 @@
 # Decisions log — Eligo
 
 Every choice the spec leaves open is recorded here: what was chosen, the alternatives considered, and why.
-Criteria, in priority order (from the project rulebook, not published): **spec compliance > correctness > offline/Windows-friendly > looks professional > simplicity.**
+Criteria, in priority order: **spec compliance > correctness > offline/Windows-friendly > looks professional > simplicity.**
 
 | # | Date | Phase | Decision |
 |---|---|---|---|
 | D-001 | 2026-11-22 | 0 | Install Python 3.12 per-user with winget |
 | D-002 | 2026-11-22 | 0 | Vendored file set (minified + source maps, Chart.js UMD) |
 | D-003 | 2026-11-22 | 0 | Font subsets: latin + latin-ext, woff2 only |
-| D-004 | 2026-11-22 | 0 | Third-party project skills are git-ignored and pinned via a skills lock file (kept private since Phase 7) |
+| D-004 | 2026-11-22 | 0 | Third-party developer skills are git-ignored: tooling, not part of the deliverable |
 | D-005 | 2026-11-24 | 1 | Job-role training data: Student Career Dataset (Mendeley 4spj4mbpjr v2) |
 | D-006 | 2026-11-24 | 1 | Internship listings: Internship Opportunities in India (2025) (Kaggle) |
 | D-007 | 2026-11-24 | 1 | Qualification fields: derive from `Education` by documented rule, neutral defaults otherwise |
@@ -27,7 +27,7 @@ Criteria, in priority order (from the project rulebook, not published): **spec c
 | D-020 | 2026-11-24 | 2 | Sentence model kept out of git; one-command pinned-revision setup script verified against the manifest |
 | D-021 | 2026-11-24 | 2 | Job-role prediction shows confidence; scope status confident / low_confidence / out_of_scope |
 | D-022 | 2026-11-24 | 4 | Career skills: cleaned survey vocabulary, profile multi-select from the model's vocabulary, crosswalk suggestions |
-| D-023 | 2026-11-25 | 5 | Hallmark study: app-screen principles for Eligo's UI; four resolved conflicts with BUILD_PROMPT |
+| D-023 | 2026-11-25 | 5 | Hallmark study: app-screen principles for Eligo's UI; four conflicts with the initial design resolved |
 | D-024 | 2026-11-25 | 4 | Optional LLM in the web app: skill-gap cross-check for the top 3 results; matched/missing stay deterministic |
 | D-025 | 2026-11-25 | 5 | LLM warm-up + asynchronous AI second opinion (Krishna's Phase 5 requests) |
 
@@ -52,7 +52,7 @@ Criteria, in priority order (from the project rulebook, not published): **spec c
 
 ## D-003 — Font subsets: latin + latin-ext, woff2 only
 - **Date:** 2026-11-22 · **Phase:** 0, step 7
-- **Context:** BUILD_PROMPT asks for woff2 at weights 400/500/600/700. Stipends will be shown in rupees, and the **₹ sign (U+20B9) is in the `latin-ext` subset**, not `latin` (confirmed from `@fontsource/*/unicode.json`).
+- **Context:** the design calls for woff2 at weights 400/500/600/700. Stipends will be shown in rupees, and the **₹ sign (U+20B9) is in the `latin-ext` subset**, not `latin` (confirmed from `@fontsource/*/unicode.json`).
 - **Options:**
   1. latin only: smallest, but ₹ would fall back to a system font and look mismatched next to the digits.
   2. latin + latin-ext, each declared with its `unicode-range` in a generated `static/vendor/fonts/fonts.css`: the browser downloads the latin-ext file only on pages that actually contain one of its characters.
@@ -61,11 +61,11 @@ Criteria, in priority order (from the project rulebook, not published): **spec c
 
 ## D-004 — Third-party project skills are git-ignored
 - **Date:** 2026-11-22 · **Phase:** 0, step 5
-- **Context:** `npx skills add kjnez/claude-code-django` (the repo has moved to `waldencui/claude-code-django`) copied 15 skills into `.claude/skills/` and wrote a skills lock file (commit `ef057aa…` + per-skill hashes). One upstream skill (`ticket`) was skipped by the installer because of a YAML error in its own file, which doesn't affect us. Of the 15, the ones relevant to this project are `django-models`, `django-forms`, `django-templates`, `pytest-django-patterns` and `systematic-debugging`. `celery-patterns` and `htmx-patterns` are not used (no Celery; the spec fixes the frontend to vanilla JS).
+- **Context:** `npx skills add kjnez/claude-code-django` (the repo has moved to `waldencui/claude-code-django`) copied 15 skills into `.claude/skills/` and recorded the source commit `ef057aa…` with per-skill hashes. One upstream skill (`ticket`) was skipped by the installer because of a YAML error in its own file, which doesn't affect us. Of the 15, the ones relevant to this project are `django-models`, `django-forms`, `django-templates`, `pytest-django-patterns` and `systematic-debugging`. `celery-patterns` and `htmx-patterns` are not used (no Celery; the spec fixes the frontend to vanilla JS).
 - **Options:**
   1. Commit `.claude/skills/`: a fresh clone has them, but it puts third-party dev tooling inside a repo that goes public in Phase 7.
-  2. Git-ignore `.claude/skills/`, keep a skills lock file (pins source + commit + hashes so they can be reinstalled exactly). Since Phase 7 the lock file stays in the private working copy and is not published.
-- **Chosen:** Option 2. Skills are developer tooling, not part of the deliverable, and the lock file keeps them reproducible.
+  2. Git-ignore `.claude/skills/` and keep the pinned source, commit and per-skill hashes so the skills can be reinstalled exactly.
+- **Chosen:** Option 2. Skills are developer tooling, not part of the deliverable, and the pinned hashes keep them reproducible.
 
 ## D-005 — Job-role training data: Student Career Dataset
 - **Date:** 2026-11-24 · **Phase:** 1, step 3A
@@ -106,7 +106,7 @@ Criteria, in priority order (from the project rulebook, not published): **spec c
 
 ## D-008 — Assessment score: eligibility gate only
 - **Date:** 2026-11-24 · **Phase:** 1, step 5
-- **Rule (BUILD_PROMPT):** use assessment score as a model feature only if the training data has a comparable column.
+- **Rule:** use assessment score as a model feature only if the training data has a comparable column.
 - **Finding:** the Student Career Dataset has only `Skill` and `Career`. No assessment or test-score column exists.
 - **Chosen:** the assessment (score strictly > 60%) is an **eligibility gate for recommendations only**. The job-role model uses skills only. The prediction page says: "This model was trained on skills only. Your assessment score controls internship eligibility but is not a model input, because the public training data has no comparable score."
 
@@ -142,7 +142,7 @@ Criteria, in priority order (from the project rulebook, not published): **spec c
 - **Chosen:** option 2. Hard rule 10 is still met (atomic status check + `select_for_update`), and it's actually correct on SQLite. A concurrency test in Phase 6 proves it.
 
 ## D-012 … D-019 — Phase 2 design decisions
-- **Date:** 2026-11-24 · **Phase:** 2. The full alternatives and reasoning for each are in `docs/superpowers/specs/2026-11-24-eligo-design.md` §4. Summary:
+- **Date:** 2026-11-24 · **Phase:** 2. The full alternatives and reasoning for each are in `docs/design/specs/2026-11-24-eligo-design.md` §4. Summary:
 
 | # | Chosen | Main alternative(s) rejected | Deciding criterion |
 |---|---|---|---|
@@ -160,7 +160,7 @@ Criteria, in priority order (from the project rulebook, not published): **spec c
 - **Options:** (1) commit the ~90 MB model with Git LFS: rejected by Krishna (LFS bandwidth quotas, an extra tool for anyone cloning); (2) commit it as a normal blob: under GitHub's 100 MB hard limit but bloats every clone and the history; (3) **git-ignore `artifacts/models/sentence_model/`** and provide a setup step.
 - **Chosen:** option 3 with two ways to get the model: run the notebook (it saves the model), or run `.\.venv\Scripts\python.exe scripts\setup_sentence_model.py`. The script downloads `sentence-transformers/all-MiniLM-L6-v2` at a **pinned Hugging Face revision** (commit hash in `ml_core/config.py`), saves it with `create_model_card=False`, and verifies every file against the SHA-256 hashes in `artifacts/manifest.json`. Internet is needed once; after that everything runs offline.
 - **Safety:** rule 14 still holds. Django loads the model only from `artifacts/`, and only if the manifest check passes. If the folder is missing, the banner names the setup command instead of crashing. If a fresh download isn't byte-identical to the notebook's save (checked in Phase 3), the manifest hashes only the weight and config files and this note gets updated.
-- **README:** setup step added (PLAN Task 23).
+- **README:** setup step added (Phase 7).
 - **Phase 3 finding (2026-11-24):** the first check failed only on `tokenizer.json`. `SentenceTransformer.encode()` writes runtime padding/truncation state into the tokenizer, so a model saved *after* encoding isn't byte-identical to a fresh download (weights and every other file were identical). Fix: the notebook saves the pristine pinned model first, then reloads it from disk and encodes with that copy. Embeddings now come from exactly the files Django loads, and `setup_sentence_model.py` reproduces the folder byte-for-byte (verified: "Sentence model verified against manifest.json").
 
 ## D-021 — Job-role confidence and model scope
@@ -230,19 +230,19 @@ Criteria, in priority order (from the project rulebook, not published): **spec c
 
 ## D-023 — Hallmark study: design principles for Eligo's screens
 - **Date:** 2026-11-25 · **Phase:** 5, step 5.1.1 (`hallmark` skill; "study" isn't one of its verbs, so the study read its Floor, its **App screens** branch, `craft.md` and `data-viz.md`)
-- **Classification:** app screens (behind a sign-in, tables/forms/controls) on a **locked system** (the CLAUDE.md tokens). So there's no theme deal and no marketing-page rules (hero, fold, word budget); the Floor and gates still bind. Lint with `sloplint --scope app`.
+- **Classification:** app screens (behind a sign-in, tables/forms/controls) on a **locked system** (the fixed Eligo design tokens). So there's no theme deal and no marketing-page rules (hero, fold, word budget); the Floor and gates still bind. Lint with `sloplint --scope app`.
 - **Principles adopted:**
-  1. Every colour and font goes through a `:root` token (the CLAUDE.md palette). `overflow-x: clip` on `html` and `body`. A visible `:focus-visible` on every control.
+  1. Every colour and font goes through a `:root` token (the Eligo palette). `overflow-x: clip` on `html` and `body`. A visible `:focus-visible` on every control.
   2. Labels, table heads, chips and nav are sentence case, untracked, never uppercase. No eyebrows. No `·`-joined meta strings (they become separate elements or plain sentences).
   3. Restrained colour: amber marks scores and the current state only; navy carries chrome (sidebar, stat band); one filled primary button per screen.
   4. Density: controls 32–40 px with 44 px hit targets; tables before cards; tabular numerals on every compared figure; type scale ratio about 1.2.
   5. Every data region has its states: loading, empty (what's missing and the one action that fills it), error, full.
-  6. Motion is state, not decoration: 150 ms colour/shadow transitions and the 2 px card lift (CLAUDE.md), `transform`/`opacity` only, nothing under `prefers-reduced-motion`.
+  6. Motion is state, not decoration: 150 ms colour/shadow transitions and the 2 px card lift (the project’s motion rules), `transform`/`opacity` only, nothing under `prefers-reduced-motion`.
   7. Charts: one series argues in amber or navy and the rest stay neutral, baselines at zero, real numbers only.
-  8. A sidebar is earned by more than about 7 destinations. The admin has 7, and BUILD_PROMPT asks for one, so it stays and collapses to a menu under 60rem. Students get a top bar.
-- **Conflicts with BUILD_PROMPT, resolved by CLAUDE.md order (spec > Krishna > guidance):**
+  8. A sidebar is earned by more than about 7 destinations. The admin has 7, and the admin design calls for one, so it stays and collapses to a menu under 60rem. Students get a top bar.
+- **Conflicts between the initial design and Hallmark, resolved in priority order (spec > Krishna > guidance):**
 
-  | Point | BUILD_PROMPT | Hallmark | Chosen |
+  | Point | Initial design | Hallmark | Chosen |
   |---|---|---|---|
   | Admin pass/fail chart | donut | parts of a whole → stacked horizontal bar, never donut/gauge | stacked bar (not spec-mandated; reads better) |
   | Chart library | Chart.js | inline SVG preferred | Chart.js (spec §9 names it), styled to Hallmark's chart rules |
@@ -257,8 +257,8 @@ Criteria, in priority order (from the project rulebook, not published): **spec c
 
 ## D-026 — Phase 5 UI choices
 - **Date:** 2026-11-26 · **Phase:** 5
-- **Exam layout (BUILD_PROMPT 5.4.5 DECIDE): one question per view.** Options: (a) one question per view with a palette and Previous/Next, (b) one scrollable list. Chose (a): the palette always shows where the student is, the timer pill and the current question stay in view on a phone, and the confirm modal reports the unanswered count. Without scripting every question is shown in one list and the palette links jump to them, so (b) is the no-JS fallback. Every answer autosaves; grading is unchanged.
-- **Skill suggestions.** BUILD_PROMPT 5.4.10 names the feature_schema vocabulary. Since D-022 Eligo has two skill inputs: the career-skill picker (job-role model) uses exactly the feature_schema vocabulary; the free-text skills box feeds internship matching, so its tag input suggests from the internship skill vocabulary (`skills_vocab.json`, 934 canonical skills, one-letter tokens hidden). Suggesting model-only skills there would invite entries the matching vocabulary rejects.
+- **Exam layout (an open design choice): one question per view.** Options: (a) one question per view with a palette and Previous/Next, (b) one scrollable list. Chose (a): the palette always shows where the student is, the timer pill and the current question stay in view on a phone, and the confirm modal reports the unanswered count. Without scripting every question is shown in one list and the palette links jump to them, so (b) is the no-JS fallback. Every answer autosaves; grading is unchanged.
+- **Skill suggestions.** The initial design named the feature_schema vocabulary. Since D-022 Eligo has two skill inputs: the career-skill picker (job-role model) uses exactly the feature_schema vocabulary; the free-text skills box feeds internship matching, so its tag input suggests from the internship skill vocabulary (`skills_vocab.json`, 934 canonical skills, one-letter tokens hidden). Suggesting model-only skills there would invite entries the matching vocabulary rejects.
 - **Loading message** uses the real active-internship count ("checking 8,207 internships"), not a rounded "8,000+".
 - **Admin outcome chart:** a stacked horizontal bar (qualified / not qualified / not attempted) instead of the donut (D-023, Hallmark); **stat bands** have no icons (D-023). Recommendations-per-internship is a Chart.js bar from stored rows; the ML page adds an accuracy/macro-F1 bar from `metrics.json` beside the notebook figures.
 - **DEMO label:** "DEMO – B.Sc (scored 55%)" became "DEMO – B.Sc (science)". The 55% is the notebook's fixed DEMO score; in the web app DEMO students take real assessments, so a name stating a score was false as soon as they sat one. The notebook keeps its DEMO score in its own column. **Correction (Phase 6):** the claim "no artifact depends on it" was wrong for the notebook code: one cell looked the B.Sc profile up by its literal label, so the Phase 6 `nbconvert` run failed with a `KeyError` after `tfidf.joblib` and `metrics.json` had been rewritten but before the manifest was. All eight literal-label lookups now go through the shared definition (`_DEMO["cs" | "bba" | "bsc"].label`), and the notebook was re-executed end to end.
@@ -278,7 +278,7 @@ Criteria, in priority order (from the project rulebook, not published): **spec c
 
 ## D-029 — Design-audit render step: puppeteer-core as a dev dependency
 - **Date:** 2026-11-26 · **Phase:** 6 (Krishna's request)
-- **Options:** (a) `puppeteer-core` in `devDependencies` of the existing `package.json` (Phase 0, which records the vendored libraries in `dependencies`), pinned exactly, `node_modules/` git-ignored; (b) `npm install -g`. Chose (a): it is recorded and reproducible, sloplint resolves it from the project root, and it is never used at runtime. It is not a frontend build step (CLAUDE.md rule 18): nothing is bundled and no app file comes from it.
+- **Options:** (a) `puppeteer-core` in `devDependencies` of the existing `package.json` (Phase 0, which records the vendored libraries in `dependencies`), pinned exactly, `node_modules/` git-ignored; (b) `npm install -g`. Chose (a): it is recorded and reproducible, sloplint resolves it from the project root, and it is never used at runtime. It is not a frontend build step, which the project rules out: nothing is bundled and no app file comes from it.
 - **Version:** `puppeteer-core` 25.17.0 (released 2026-11-10, the newest release at least two weeks old), installed with `--ignore-scripts`; `npm install` reports 0 vulnerabilities.
 - **Browser:** puppeteer-core downloads none. Edge failed to launch headless (its launcher hands off to a running Edge), so the audit uses the Chromium that Playwright already installed. Run it as `CHROME_PATH=<ms-playwright chromium>/chrome-win64/chrome.exe node <hallmark>/scripts/sloplint.mjs static/css/theme.css --scope app --render --url http://127.0.0.1:8000/login/`.
 - **First result:** the render tier found that form-field borders were 1.52:1 against white (WCAG 1.4.11 asks for 3:1). Fixed with a `--field-border` token, `#808A9C` (3.48:1 on white, 3.27:1 on the page background), on inputs, selects, checkboxes, outline buttons, the tag input and palette buttons. Decorative lines keep the lighter `--border-strong`.

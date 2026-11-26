@@ -1,4 +1,4 @@
-"""Signature components render from real values (BUILD_PROMPT 5.4; D-023). Fixtures only."""
+"""Signature components render from real values (D-023). Fixtures only."""
 import json
 import re
 from datetime import timedelta
