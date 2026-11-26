@@ -86,6 +86,21 @@ def test_not_eligible_preview_shows_skill_sharing_internships_with_reasons(stude
         ("MBA Strategy Intern", ["Requires MBA; your qualification is B.Tech."])]
 
 
+def test_not_eligible_preview_groups_repeated_listings(student_client, student, ai_bundle):
+    """Phase 6.5: the same title at the same company with the same reasons is shown once, with a count."""
+    _profile(student, skills=["python", "sql", "excel"])
+    _qualify(student)
+    mba = Internship.objects.get(internship_title="MBA Strategy Intern")
+    for city in ("Pune", "Delhi"):
+        mba.pk, mba.source_id, mba.location = None, f"COPY-{city}", city   # dataset rows, like real repeats
+        mba.save()
+    preview, n_failing = services.ineligible_preview_for(student)
+    assert n_failing == 3
+    assert [(i.internship_title, i.similar_listings) for i, _ in preview] == [("MBA Strategy Intern", 3)]
+    page = student_client.get(reverse("recommendations:list")).content.decode()
+    assert page.count("MBA Strategy Intern") == 1 and "3 listings" in page
+
+
 def test_rerun_keeps_previous_run(student, ai_bundle):
     _profile(student)
     _qualify(student)
@@ -120,6 +135,31 @@ def test_detail_shows_explanation_from_stored_values(student_client, student, ai
     rec = InternshipRecommendation.objects.filter(run_id=run.run_id, recommendation_rank=1).get()
     page = student_client.get(reverse("recommendations:detail", args=[rec.pk])).content.decode()
     assert rec.recommendation_reason in html.unescape(page) and "72.50%" in page
+
+
+def test_detail_lists_each_eligibility_check_once(student_client, student, ai_bundle):
+    """Phase 6.5: the assessment gate was listed twice (6 lines vs "All 5 checks passed" on the card)."""
+    _profile(student)
+    _qualify(student)
+    run = services.generate_recommendations(student)
+    rec = InternshipRecommendation.objects.filter(run_id=run.run_id, recommendation_rank=1).get()
+    n_gates = len(rec.explanation["gates"])
+    card = student_client.get(reverse("recommendations:list")).content.decode()
+    assert f"All {n_gates} eligibility checks passed" in card
+    page = student_client.get(reverse("recommendations:detail", args=[rec.pk])).content.decode()
+    gate_list = page.split('<ul class="gate-list">', 1)[1].split("</ul>", 1)[0]
+    assert gate_list.count("<li") == n_gates
+
+
+def test_llm_detail_reads_as_one_sentence(student_client, student, ai_bundle, monkeypatch):
+    _llm_on(monkeypatch)
+    _profile(student)
+    _qualify(student)
+    run = services.generate_recommendations(student)
+    rec = InternshipRecommendation.objects.filter(run_id=run.run_id, recommendation_rank=1).get()
+    student_client.post(reverse("recommendations:second_opinion", args=[rec.pk]))
+    page = html.unescape(student_client.get(reverse("recommendations:detail", args=[rec.pk])).content.decode())
+    assert "Checked by local LLM (qwen3:4b, prompt v1)." in page and ".)." not in page and "Extracted by" not in page
 
 
 # --- D-014 embedding cache --------------------------------------------------------------------------------
@@ -230,7 +270,7 @@ def _llm_on(monkeypatch, gap=None):
     def fake_gap(*args, **kwargs):
         calls.append(kwargs.get("use_llm"))
         if kwargs.get("use_llm"):
-            return gap or GapResult(["python"], ["git"], "llm", "Extracted by qwen3:4b (prompt v1).")
+            return gap or GapResult(["python"], ["git"], "llm", "Checked by local LLM (qwen3:4b, prompt v1).")
         return GapResult(["python"], [], "rule_based", "Rule-based extraction (LLM not used).")
     monkeypatch.setattr(services, "ollama_available", lambda cfg, timeout_s=2.0: True)
     monkeypatch.setattr(services, "analyse_gap", fake_gap)

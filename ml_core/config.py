@@ -62,3 +62,7 @@ def load_hybrid_config(path: Path) -> HybridConfig:
         top_n=int(data["top_n"]),
         version=str(data["version"]),
     )
+
+#: Skill overlap = matched / max(required, SKILL_OVERLAP_MIN_DENOMINATOR) (D-030). Listings that name only
+#: one or two skills can no longer reach 1.00 by matching that one skill and outrank broader matches.
+SKILL_OVERLAP_MIN_DENOMINATOR: int = 3

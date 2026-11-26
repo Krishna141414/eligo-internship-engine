@@ -49,10 +49,45 @@ def student_outcomes(counts: dict) -> list[dict]:
 
 
 def recommendations_per_internship(limit: int = 8) -> list[tuple[str, int]]:
-    """Internships that appear most often in stored recommendation rows: [(title, rows)], highest first."""
-    rows = (InternshipRecommendation.objects.values("internship_id", "internship__internship_title")
-            .annotate(n=Count("id")).order_by("-n", "internship__internship_title")[:limit])
-    return [(r["internship__internship_title"], r["n"]) for r in rows]
+    """Internships that appear most often in stored recommendation rows: [("Title @ Company", rows)],
+    highest first. The company is part of the label because many listings share a title."""
+    rows = (InternshipRecommendation.objects
+            .values("internship_id", "internship__internship_title", "internship__company_name")
+            .annotate(n=Count("id")).order_by("-n", "internship__internship_title", "internship__company_name")[:limit])
+    return [(f'{r["internship__internship_title"]} @ {r["internship__company_name"]}', r["n"]) for r in rows]
+
+
+MIN_RUNS_FOR_CHART = 3
+
+
+def recommendations_chart(per_internship: list[tuple[str, int]], runs: int) -> dict | None:
+    """Chart data, or None when it would say nothing: fewer than MIN_RUNS_FOR_CHART runs, or every
+    internship recommended equally often (Phase 6.5)."""
+    counts = [n for _, n in per_internship]
+    if runs < MIN_RUNS_FOR_CHART or len(set(counts)) <= 1:
+        return None
+    return {"labels": [t for t, _ in per_internship], "values": counts}
+
+
+def _png_size(path: Path) -> tuple[int, int] | None:
+    """Width and height from a PNG's IHDR chunk (no image library needed)."""
+    try:
+        with open(path, "rb") as f:
+            head = f.read(24)
+    except OSError:
+        return None
+    if head[:8] != b"\x89PNG\r\n\x1a\n" or head[12:16] != b"IHDR":
+        return None
+    return int.from_bytes(head[16:20], "big"), int.from_bytes(head[20:24], "big")
+
+
+def figure_entries() -> list[dict]:
+    """Listed figures with a `wide` flag: multi-panel figures (wider than 1.6:1) span the full row."""
+    out = []
+    for name in listed_figures():
+        size = _png_size(artifacts_dir() / "figures" / name)
+        out.append({"name": name, "wide": bool(size and size[1] and size[0] / size[1] > 1.6)})
+    return out
 
 
 def model_comparison(metrics: dict | None) -> dict | None:

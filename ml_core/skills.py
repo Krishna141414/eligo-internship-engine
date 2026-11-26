@@ -69,8 +69,8 @@ SURVEY_SYNONYMS: dict[str, str] = {
     "web based project develop": "web development", "web based project developing": "web development",
     "web based projectdevelop": "web development", "web based projects develop": "web development",
     "web basedproject develop": "web development",
-    "website build": "website development", "website builders": "website development",
-    "website building": "website development",
+    "website build": "web development", "website builders": "web development",
+    "website building": "web development",
     "systems design": "system design",
     "api testers": "api testing", "api testings": "api testing",
     # data / AI
@@ -128,6 +128,24 @@ SURVEY_SYNONYMS: dict[str, str] = {
     "working with technology and new idea generate": "innovation",
     "working with technology and new idea generation": "innovation",
     "working with technology": "technology",
+    # Phase 6.5 (D-031): near-duplicates still left in the 215-skill model vocabulary
+    "adaptibility": "adaptability",
+    "api tester": "api testing", "apitesting": "api testing",
+    "android": "android app development", "android apps develop": "android app development",
+    "mobile application develop": "mobile app development",
+    # the survey sometimes splits "Big Data Technologies" with a stray comma: "..., Big, Data Technologies, ..."
+    "big data technations": "big data technologies", "big": "big data technologies",
+    "data technologies": "big data technologies",
+    "data enginer": "data engineering", "data scienc": "data science",
+    "databasedevelopment": "database development", "webdevelopment": "web development",
+    "website development": "web development", "web based project developed": "web development",
+    "web basedproject developing": "web development", "webbasedproject develop": "web development",
+    "deeplearning.net": "deep learning",
+    "graphic design & editing": "graphic design", "graphic design and editing": "graphic design",
+    "network securities": "network security",
+    "operating system and networking": "operating systems and networking",
+    "problemsolving and analytical": "problem solving",
+    "video editing and annotation": "video editing", "digital art and design": "digital art",
 }
 BASE_SYNONYMS.update(SURVEY_SYNONYMS)
 
@@ -150,6 +168,10 @@ SPLIT_MAP: dict[str, tuple[str, ...]] = {
     "data analysis and visualization": ("data analysis", "data visualization"),
     "data analysis andvisualization": ("data analysis", "data visualization"),
     "data analysis and visualisation": ("data analysis", "data visualization"),
+    # Phase 6.5 (D-031): two skills glued together in the survey
+    "artificial intelligence (ai) andmachine learning": ("artificial intelligence", "machine learning"),
+    "operating systems and networking big data technologies": (
+        "operating systems and networking", "big data technologies"),
 }
 
 

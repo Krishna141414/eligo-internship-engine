@@ -40,15 +40,15 @@
 <h2 class="section-title mt-4">Your attempts</h2>
 {% if history %}
 <div class="table-wrap">
-<table class="table mb-0">
+<table class="table table-stack mb-0">
   <thead><tr><th scope="col">Assessment</th><th scope="col">Submitted</th><th scope="col">Score</th><th scope="col">Result</th><th scope="col"><span class="visually-hidden">Actions</span></th></tr></thead>
   <tbody>
   {% for at in history %}
-  <tr><td>{{ at.assessment }}</td>
-    <td>{{ at.submission_time|date:"d M Y, H:i" }}{% if at.status == "AUTO_SUBMITTED" %}<span class="cell-sub">Auto-submitted</span>{% endif %}</td>
-    <td class="num">{{ at.score_percentage|floatformat:2 }}%</td>
-    <td><span class="badge-status {% if at.result == 'QUALIFIED' %}badge-status--ok{% else %}badge-status--no{% endif %}">{{ at.get_result_display }}</span></td>
-    <td><a href="{% url 'assessments:result' at.pk %}">View result</a></td></tr>
+  <tr><td data-label="Assessment">{{ at.assessment }}</td>
+    <td data-label="Submitted">{{ at.submission_time|date:"d M Y, H:i" }}{% if at.status == "AUTO_SUBMITTED" %}<span class="cell-sub">Auto-submitted</span>{% endif %}</td>
+    <td class="num" data-label="Score">{{ at.score_percentage|floatformat:2 }}%</td>
+    <td data-label="Result"><span class="badge-status {% if at.result == 'QUALIFIED' %}badge-status--ok{% else %}badge-status--no{% endif %}">{{ at.get_result_display }}</span></td>
+    <td data-label=""><a href="{% url 'assessments:result' at.pk %}">View result</a></td></tr>
   {% endfor %}
   </tbody>
 </table>

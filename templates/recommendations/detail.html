@@ -46,8 +46,6 @@
       <li class="{% if g.passed %}is-pass{% else %}is-fail{% endif %}"><i class="bi {% if g.passed %}bi-check-circle-fill{% else %}bi-x-circle-fill{% endif %}" aria-hidden="true"></i>
         <span><span class="visually-hidden">{% if g.passed %}Passed:{% else %}Not met:{% endif %} </span>{{ g.reason }}</span></li>
       {% endfor %}
-      <li class="{% if x.assessment.passed %}is-pass{% else %}is-fail{% endif %}"><i class="bi {% if x.assessment.passed %}bi-check-circle-fill{% else %}bi-x-circle-fill{% endif %}" aria-hidden="true"></i>
-        <span>Assessment score {{ x.assessment.score }}, which must be above {{ x.assessment.threshold }}.</span></li>
     </ul>
   </section>
 </div>
@@ -66,7 +64,7 @@
       {% else %}<p class="text-muted mb-0">You have every listed skill.</p>{% endif %}
     </div>
   </div>
-  <p class="small-note">Skill-gap check method: {{ rec.get_analysis_method_display }}{% if rec.analysis_detail %} ({{ rec.analysis_detail }}){% endif %}.
+  <p class="small-note">Skill-gap check method: {{ rec.get_analysis_method_display }}.{% if rec.analysis_detail %} {{ rec.analysis_detail }}{% endif %}
   {% if x.llm_gap %}The local LLM also read the description and found missing: {{ x.llm_gap.missing|join:", "|default:"none" }}.{% endif %}</p>
 </section>
 {% endblock %}

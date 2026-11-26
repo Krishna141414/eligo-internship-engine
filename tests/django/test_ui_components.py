@@ -135,8 +135,9 @@ def test_recommendations_per_internship_chart_counts_rows(admin_client_, student
     services.generate_recommendations(student)                 # second run: every count doubles
     expected = recommendations_per_internship()
     assert expected and all(n == 2 for _, n in expected)
-    data = _chart(admin_client_.get(reverse("adminpanel:dashboard")).content.decode(), "recs-chart-data")
-    assert data == {"labels": [t for t, _ in expected], "values": [n for _, n in expected]}
+    assert all(" @ " in label for label, _ in expected)        # "Title @ Company" (Phase 6.5)
+    html = admin_client_.get(reverse("adminpanel:dashboard")).content.decode()
+    assert _chart(html, "recs-chart-data") is None and "Not enough data yet" in html   # 2 runs, equal counts
 
 
 def test_ml_comparison_chart_from_saved_metrics(admin_client_, fake_artifacts):

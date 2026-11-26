@@ -1,10 +1,12 @@
 """Import the cleaned public internship dataset written by the notebook.
 
     python manage.py load_internships            # create missing rows only (safe to re-run)
-    python manage.py load_internships --refresh  # also refresh source fields of existing rows
+    python manage.py load_internships --refresh  # also refresh source fields of existing rows, and retire
+                                                 # dataset rows the notebook no longer produces
 
-Refuses to run unless artifacts/manifest.json verifies (hard rule 14). Never changes an
-existing row's status, so internships an admin deactivated stay deactivated.
+Refuses to run unless artifacts/manifest.json verifies (hard rule 14). Never re-activates a row, so
+internships an admin deactivated stay deactivated. Retired rows (e.g. duplicates the notebook now
+drops) are deactivated, not deleted: stored recommendations still point at them.
 """
 import json
 from datetime import date
@@ -21,7 +23,7 @@ from ml_core.artifacts import verify_manifest
 SOURCE_FIELDS = ["company_name", "internship_title", "job_role", "description", "description_derived",
                  "required_qualification", "specialization", "minimum_academic_percentage", "required_skills",
                  "location", "work_mode", "stipend", "stipend_min", "stipend_max", "duration", "duration_months",
-                 "eligibility_criteria", "application_deadline", "derived_fields", "embedding_row",
+                 "eligibility_criteria", "start_date", "application_deadline", "derived_fields", "embedding_row",
                  "embedding_text_hash"]
 
 
@@ -64,7 +66,7 @@ class Command(BaseCommand):
                 stipend_max=int(float(r["stipend_max"])) if _nz(r["stipend_max"]) is not None else None,
                 duration=_nz(r["duration_text"], ""),
                 duration_months=float(r["duration_months"]) if _nz(r["duration_months"]) is not None else None,
-                eligibility_criteria=_nz(r["eligibility_criteria"], ""),
+                eligibility_criteria=_nz(r["eligibility_criteria"], ""), start_date=_nz(r.get("start_date"), ""),
                 application_deadline=date.fromisoformat(deadline) if deadline else None,
                 derived_fields=json.loads(r["derived_fields"] or "[]"),
                 embedding_row=meta.get("row"), embedding_text_hash=meta.get("text_hash", ""),
@@ -73,7 +75,7 @@ class Command(BaseCommand):
         new = [o for o in objs if o.source_id not in existing]
         with transaction.atomic():
             Internship.objects.bulk_create(new, batch_size=500)
-            updated = 0
+            updated = retired = 0
             if refresh:
                 old = [o for o in objs if o.source_id in existing]
                 by_sid = {i.source_id: i for i in Internship.objects.filter(source_id__in=[o.source_id for o in old])}
@@ -83,5 +85,10 @@ class Command(BaseCommand):
                         setattr(target, f, getattr(o, f))
                 Internship.objects.bulk_update(list(by_sid.values()), SOURCE_FIELDS, batch_size=500)
                 updated = len(old)
+                if not limit:      # a --limit run sees only part of the dataset, so it never retires anything
+                    retired = (Internship.objects.filter(source_id__isnull=False)
+                               .exclude(source_id__in=df["source_id"].tolist())
+                               .update(status=Internship.Status.INACTIVE, embedding_row=None, embedding_text_hash=""))
         self.stdout.write(self.style.SUCCESS(
-            f"Internships: {len(new)} created, {updated} refreshed, {len(existing) - updated} left unchanged."))
+            f"Internships: {len(new)} created, {updated} refreshed, {len(existing) - updated} left unchanged, "
+            f"{retired} retired (no longer in the cleaned dataset)."))

@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% load static humanize %}
+{% load static humanize eligo_ui %}
 {% block title %}Admin dashboard{% endblock %}
 {% block crumb %}Dashboard{% endblock %}
 {% block content %}
@@ -33,8 +33,11 @@
     <div class="chart-box"><canvas id="recs-chart" role="img" aria-label="Recommendation rows per internship"></canvas></div>
     {{ recs_chart|json_script:"recs-chart-data" }}
     <details class="mt-2"><summary>Show the numbers</summary>
-      <table class="table table-sm xai-table mt-2"><thead><tr><th scope="col">Internship</th><th scope="col">Times recommended</th></tr></thead><tbody>
-      {% for title, n in recs_rows %}<tr><td>{{ title }}</td><td class="num">{{ n }}</td></tr>{% endfor %}</tbody></table></details>
+      <table class="table table-stack table-sm xai-table mt-2"><thead><tr><th scope="col">Internship</th><th scope="col">Times recommended</th></tr></thead><tbody>
+      {% for title, n in recs_rows %}<tr><td data-label="Internship">{{ title }}</td><td class="num" data-label="Times recommended">{{ n }}</td></tr>{% endfor %}</tbody></table></details>
+    {% elif recs_rows %}
+    <p class="text-muted mb-0">Not enough data yet. The chart appears once students have generated at least {{ min_runs }}
+      recommendation runs and some internships come up more often than others.</p>
     {% else %}
     <p class="text-muted mb-0">No recommendations generated yet.</p>
     {% endif %}
@@ -44,13 +47,13 @@
 <section class="mt-4" aria-labelledby="recent-h">
   <h2 class="section-title" id="recent-h">Recent assessment results</h2>
   {% if recent_attempts %}
-  <div class="table-wrap"><table class="table mb-0">
+  <div class="table-wrap"><table class="table table-stack mb-0">
     <thead><tr><th scope="col">Student</th><th scope="col">Assessment</th><th scope="col">Submitted</th><th scope="col">Score</th><th scope="col">Result</th></tr></thead>
     <tbody>
     {% for a in recent_attempts %}
-    <tr><td><a href="{% url 'adminpanel:student_detail' a.student_id %}">{{ a.student.name }}</a></td><td>{{ a.assessment }}</td>
-      <td>{{ a.submission_time|date:"d M Y, H:i" }}</td><td class="num">{{ a.score_percentage|floatformat:2 }}%</td>
-      <td><span class="badge-status {% if a.result == 'QUALIFIED' %}badge-status--ok{% else %}badge-status--no{% endif %}">{{ a.get_result_display }}</span></td></tr>
+    <tr><td data-label="Student"><a href="{% url 'adminpanel:student_detail' a.student_id %}">{{ a.student.name }}</a></td><td data-label="Assessment">{{ a.assessment }}</td>
+      <td data-label="Submitted">{{ a.submission_time|date:"d M Y, H:i" }}</td><td class="num" data-label="Score">{{ a.score_percentage|floatformat:2 }}%</td>
+      <td data-label="Result"><span class="badge-status {% if a.result == 'QUALIFIED' %}badge-status--ok{% else %}badge-status--no{% endif %}">{{ a.get_result_display }}</span></td></tr>
     {% endfor %}
     </tbody></table></div>
   {% else %}
@@ -59,5 +62,5 @@
 </section>
 {% endblock %}
 {% block extra_js %}
-{% if recs_chart %}<script src="{% static 'vendor/chartjs/chart.umd.min.js' %}"></script><script src="{% static 'js/charts.js' %}"></script>{% endif %}
+{% if recs_chart %}<script src="{% static 'vendor/chartjs/chart.umd.min.js' %}"></script><script src="{% asset 'js/charts.js' %}"></script>{% endif %}
 {% endblock %}

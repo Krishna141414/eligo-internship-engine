@@ -22,9 +22,8 @@ def dashboard(request):
     per_internship = services.recommendations_per_internship()
     return render(request, "adminpanel/dashboard.html", {
         "c": counts, "recent_attempts": recent, "outcomes": services.student_outcomes(counts),
-        "recs_chart": {"labels": [t for t, _ in per_internship], "values": [n for _, n in per_internship]}
-        if per_internship else None,
-        "recs_rows": per_internship})
+        "recs_chart": services.recommendations_chart(per_internship, counts["recommendation_runs"]),
+        "recs_rows": per_internship, "min_runs": services.MIN_RUNS_FOR_CHART})
 
 
 @admin_required
@@ -110,7 +109,7 @@ def ml(request):
     metrics = services.read_metrics()
     manifest = services.read_manifest()
     return render(request, "adminpanel/ml.html", {
-        "metrics": metrics, "manifest": manifest, "figures": services.listed_figures(), "status": ai_status(),
+        "metrics": metrics, "manifest": manifest, "figures": services.figure_entries(), "status": ai_status(),
         "ml_chart": services.model_comparison(metrics),
         "predictions": JobRolePrediction.objects.select_related("student")[:50]})
 

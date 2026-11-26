@@ -10,13 +10,13 @@
     <option value="QUALIFIED" {% if result == "QUALIFIED" %}selected{% endif %}>Qualified</option><option value="NOT_QUALIFIED" {% if result == "NOT_QUALIFIED" %}selected{% endif %}>Not qualified</option></select></div>
   <div class="toolbar__actions"><button class="btn btn-outline-primary" type="submit">Filter</button></div>
 </form>
-<div class="table-wrap"><table class="table mb-0">
+<div class="table-wrap"><table class="table table-stack mb-0">
   <thead><tr><th scope="col">Student</th><th scope="col">Assessment</th><th scope="col">Submitted</th><th scope="col">Marks</th><th scope="col">Score</th><th scope="col">Result</th></tr></thead>
   <tbody>
-  {% for a in page.object_list %}<tr><td><a href="{% url 'adminpanel:student_detail' a.student_id %}">{{ a.student.name }}</a><span class="cell-sub">{{ a.student.email }}</span></td><td>{{ a.assessment }}</td>
-    <td>{{ a.submission_time|date:"d M Y, H:i" }}{% if a.status == "AUTO_SUBMITTED" %}<span class="cell-sub">Auto-submitted</span>{% endif %}</td>
-    <td class="num">{{ a.obtained_marks|floatformat }} of {{ a.total_marks|floatformat }}</td><td class="num">{{ a.score_percentage|floatformat:2 }}%</td>
-    <td><span class="badge-status {% if a.result == 'QUALIFIED' %}badge-status--ok{% else %}badge-status--no{% endif %}">{{ a.get_result_display }}</span></td></tr>
+  {% for a in page.object_list %}<tr><td data-label="Student"><a href="{% url 'adminpanel:student_detail' a.student_id %}">{{ a.student.name }}</a><span class="cell-sub">{{ a.student.email }}</span></td><td data-label="Assessment">{{ a.assessment }}</td>
+    <td data-label="Submitted">{{ a.submission_time|date:"d M Y, H:i" }}{% if a.status == "AUTO_SUBMITTED" %}<span class="cell-sub">Auto-submitted</span>{% endif %}</td>
+    <td class="num" data-label="Marks">{{ a.obtained_marks|floatformat }} of {{ a.total_marks|floatformat }}</td><td class="num" data-label="Score">{{ a.score_percentage|floatformat:2 }}%</td>
+    <td data-label="Result"><span class="badge-status {% if a.result == 'QUALIFIED' %}badge-status--ok{% else %}badge-status--no{% endif %}">{{ a.get_result_display }}</span></td></tr>
   {% empty %}<tr><td colspan="6" class="text-muted">No results match.</td></tr>{% endfor %}
   </tbody>
 </table></div>

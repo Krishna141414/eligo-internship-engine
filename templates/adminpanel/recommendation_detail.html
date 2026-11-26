@@ -30,13 +30,12 @@
     <h2 class="panel__title" id="gates-h">Eligibility checks</h2>
     <ul class="gate-list">
       {% for g in x.gates %}<li class="{% if g.passed %}is-pass{% else %}is-fail{% endif %}"><i class="bi {% if g.passed %}bi-check-circle-fill{% else %}bi-x-circle-fill{% endif %}" aria-hidden="true"></i><span>{{ g.reason }}</span></li>{% endfor %}
-      <li class="{% if x.assessment.passed %}is-pass{% else %}is-fail{% endif %}"><i class="bi {% if x.assessment.passed %}bi-check-circle-fill{% else %}bi-x-circle-fill{% endif %}" aria-hidden="true"></i><span>Assessment score {{ x.assessment.score }}, which must be above {{ x.assessment.threshold }}.</span></li>
     </ul>
     <p class="rec-card__group-label mt-3">Matched skills</p>
     {% if x.matched_skills %}<ul class="chips">{% for k in x.matched_skills %}<li class="chip chip--matched"><i class="bi bi-check2" aria-hidden="true"></i>{{ k }}</li>{% endfor %}</ul>{% else %}<p class="text-muted">None.</p>{% endif %}
     <p class="rec-card__group-label mt-3">Missing skills</p>
     {% if x.missing_skills %}<ul class="chips">{% for k in x.missing_skills %}<li class="chip chip--missing"><span class="visually-hidden">Missing: </span>{{ k }}</li>{% endfor %}</ul>{% else %}<p class="text-muted">None.</p>{% endif %}
-    <p class="small-note">Skill-gap check: {{ rec.get_analysis_method_display }}{% if rec.analysis_detail %} ({{ rec.analysis_detail }}){% endif %}.</p>
+    <p class="small-note">Skill-gap check: {{ rec.get_analysis_method_display }}.{% if rec.analysis_detail %} {{ rec.analysis_detail }}{% endif %}</p>
   </section>
 </div>
 {% endblock %}

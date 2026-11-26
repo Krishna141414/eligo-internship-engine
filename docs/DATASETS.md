@@ -125,3 +125,6 @@ The three rejected Mendeley files remain in `data/raw/` (git-ignored) so the che
 ## Demo / illustrative data
 
 Demo student profiles and sample MCQs are created by `seed_demo` and labelled **DEMO** in the data, UI and README. They are never used as training data.
+
+## Cleaning update (Phase 6.5, D-031)
+Repeated listings (same title, company, location, stipend and skills) are kept once: 8,483 raw rows → 7,566 clean (207 without a title, 69 with shifted columns, 641 repeats). The listed start date is its own column (`start_date`) instead of part of the eligibility criteria.

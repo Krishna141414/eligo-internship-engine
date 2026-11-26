@@ -32,7 +32,9 @@
         {% if i.stipend %}<li>{{ i.stipend }}</li>{% endif %}
       </ul>
     </div>
-    <span class="chip chip--neutral">Requires {{ i.required_qualification }}{% if i.specialization %} ({{ i.specialization }}){% endif %}</span>
+    {% if i.required_qualification != "Any Graduate" or i.specialization %}
+    <span class="chip chip--neutral qual-badge"><span class="visually-hidden">Requires </span><span class="qual-badge__part">{{ i.required_qualification }}</span>{% if i.specialization %}<span class="qual-badge__part">{{ i.specialization }}</span>{% endif %}</span>
+    {% endif %}
   </li>
   {% endfor %}
 </ul>

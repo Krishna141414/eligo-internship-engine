@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% load static %}
+{% load static eligo_ui %}
 {% block title %}ML monitoring{% endblock %}
 {% block crumb %}ML monitoring{% endblock %}
 {% block content %}
@@ -18,11 +18,11 @@
   <section class="panel" aria-labelledby="eval-h">
     <h2 class="panel__title" id="eval-h">Saved model evaluation (test split)</h2>
     <p>Best model: <strong>{{ metrics.best_model }}</strong>{% if metrics.selection_rule %}, chosen by {{ metrics.selection_rule }}{% endif %}.</p>
-    <div class="table-wrap"><table class="table mb-0">
+    <div class="table-wrap"><table class="table table-stack mb-0">
       <thead><tr><th scope="col">Model</th><th scope="col">Accuracy</th><th scope="col">Precision (macro)</th><th scope="col">Recall (macro)</th><th scope="col">F1 (macro)</th><th scope="col">F1 (weighted)</th></tr></thead>
-      <tbody>{% for name, m in metrics.models.items %}<tr><td>{{ name }}{% if name == metrics.best_model %} <span class="badge-status badge-status--ok">Best</span>{% endif %}</td>
-        <td class="num">{{ m.accuracy|floatformat:4 }}</td><td class="num">{{ m.precision_macro|floatformat:4 }}</td><td class="num">{{ m.recall_macro|floatformat:4 }}</td>
-        <td class="num">{{ m.f1_macro|floatformat:4 }}</td><td class="num">{{ m.f1_weighted|floatformat:4 }}</td></tr>{% endfor %}</tbody>
+      <tbody>{% for name, m in metrics.models.items %}<tr><td data-label="Model">{{ name }}{% if name == metrics.best_model %} <span class="badge-status badge-status--ok">Best</span>{% endif %}</td>
+        <td class="num" data-label="Accuracy">{{ m.accuracy|floatformat:4 }}</td><td class="num" data-label="Precision (macro)">{{ m.precision_macro|floatformat:4 }}</td><td class="num" data-label="Recall (macro)">{{ m.recall_macro|floatformat:4 }}</td>
+        <td class="num" data-label="F1 (macro)">{{ m.f1_macro|floatformat:4 }}</td><td class="num" data-label="F1 (weighted)">{{ m.f1_weighted|floatformat:4 }}</td></tr>{% endfor %}</tbody>
     </table></div>
     {% if metrics.dataset %}
     <ul class="meta-list mt-3">
@@ -46,21 +46,32 @@
 
 {% if figures %}
 <h2 class="section-title mt-4">Figures from the notebook</h2>
-<div class="figure-grid">{% for f in figures %}<figure><img src="{% url 'adminpanel:figure' f %}" alt="Notebook figure: {{ f }}" loading="lazy"><figcaption>{{ f }}</figcaption></figure>{% endfor %}</div>
+<p class="small-note mt-0">Select a figure to see it full size.</p>
+<div class="figure-grid">{% for f in figures %}<figure class="{% if f.wide %}figure--wide{% endif %}">
+  <a href="{% url 'adminpanel:figure' f.name %}" data-enlarge data-caption="{{ f.name }}"><img src="{% url 'adminpanel:figure' f.name %}" alt="Notebook figure: {{ f.name }}" loading="lazy"></a>
+  <figcaption>{{ f.name }}</figcaption></figure>{% endfor %}</div>
+<div class="modal figure-modal" id="figure-modal" tabindex="-1" aria-labelledby="figure-modal-h" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered"><div class="modal-content">
+    <div class="modal-header"><h2 class="modal-title h6" id="figure-modal-h">Figure</h2>
+      <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button></div>
+    <div class="modal-body"><img src="" alt=""></div>
+  </div></div>
+</div>
 {% endif %}
 
 <h2 class="section-title mt-4">Student job-role predictions</h2>
-<div class="table-wrap"><table class="table mb-0">
+<div class="table-wrap"><table class="table table-stack mb-0">
   <thead><tr><th scope="col">Student</th><th scope="col">Prediction</th><th scope="col">Confidence</th><th scope="col">Scope</th><th scope="col">Model</th><th scope="col">Date</th></tr></thead>
   <tbody>
-  {% for p in predictions %}<tr><td>{{ p.student.name }}</td><td>{{ p.predicted_job_role|default:"None" }}</td>
-    <td class="num">{% if p.probability is not None %}{% widthratio p.probability 1 100 %}%{% else %}None{% endif %}</td>
-    <td><span class="badge-status {% if p.scope_status == 'confident' %}badge-status--ok{% else %}badge-status--warn{% endif %}">{{ p.get_scope_status_display }}</span></td>
-    <td>{{ p.model_name }} v{{ p.model_version }}</td><td>{{ p.predicted_date|date:"d M Y" }}</td></tr>
+  {% for p in predictions %}<tr><td data-label="Student">{{ p.student.name }}</td><td data-label="Prediction">{{ p.predicted_job_role|default:"None" }}</td>
+    <td class="num" data-label="Confidence">{% if p.probability is not None %}{% widthratio p.probability 1 100 %}%{% else %}None{% endif %}</td>
+    <td data-label="Scope"><span class="badge-status {% if p.scope_status == 'confident' %}badge-status--ok{% else %}badge-status--warn{% endif %}">{{ p.get_scope_status_display }}</span></td>
+    <td data-label="Model">{{ p.model_name }} v{{ p.model_version }}</td><td data-label="Date">{{ p.predicted_date|date:"d M Y" }}</td></tr>
   {% empty %}<tr><td colspan="6" class="text-muted">No predictions yet.</td></tr>{% endfor %}
   </tbody>
 </table></div>
 {% endblock %}
 {% block extra_js %}
-{% if ml_chart %}<script src="{% static 'vendor/chartjs/chart.umd.min.js' %}"></script><script src="{% static 'js/charts.js' %}"></script>{% endif %}
+{% if ml_chart %}<script src="{% static 'vendor/chartjs/chart.umd.min.js' %}"></script><script src="{% asset 'js/charts.js' %}"></script>{% endif %}
+<script src="{% asset 'js/figures.js' %}"></script>
 {% endblock %}

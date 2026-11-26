@@ -71,7 +71,7 @@ CLEAN_COLUMNS = ["source_id", "company_name", "internship_title", "job_role", "d
                  "required_qualification", "specialization", "minimum_academic_percentage", "required_skills",
                  "required_skills_text", "location", "work_mode", "stipend_text", "stipend_min", "stipend_max",
                  "duration_text", "duration_months", "application_deadline", "eligibility_criteria",
-                 "derived_fields", "text"]
+                 "start_date", "derived_fields", "text"]
 
 
 def fixture_internship_row(source_id, title="Data Science", company="Acme Analytics (fixture)",
@@ -86,7 +86,7 @@ def fixture_internship_row(source_id, title="Data Science", company="Acme Analyt
             "required_skills": json.dumps(list(skills)), "required_skills_text": ", ".join(skills),
             "location": location, "work_mode": "Remote" if location == "Work from home" else "On-site",
             "stipend_text": stipend, "stipend_min": 10000.0, "stipend_max": 15000.0, "duration_text": "3 Months",
-            "duration_months": 3.0, "application_deadline": deadline, "eligibility_criteria": "Start: Immediately",
+            "duration_months": 3.0, "application_deadline": deadline, "eligibility_criteria": "", "start_date": "Immediately",
             "derived_fields": json.dumps(["description", "minimum_academic_percentage", "required_qualification"]),
             "text": build_internship_text(title, title, list(skills), "", "", description)}
 

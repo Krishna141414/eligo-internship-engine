@@ -52,13 +52,13 @@ Last updated: 2026-11-25 (Phase 4)
 | 4.1 | Student profile and skill analysis | `ml_core/skills.py`, `ml_core/preprocessing.py` `build_student_text` | ✅ |
 | 4.2 | Assessment eligibility check (score strictly above 60%) | `ml_core/eligibility.py` `check_assessment`/`is_qualified` | ✅ boundary tests: 60.00 → Not_Qualified, 60.01/60.004 → Qualified |
 | 4.3 | Mandatory internship qualification check | `ml_core/eligibility.py` `check_qualification` (D-017 hierarchy) | ✅ |
-| 4.4 | Content-based filtering: TF-IDF + cosine similarity | `ml_core/recommender.py` `content_similarity`, `artifacts/vectorizers/tfidf.joblib` | ✅ fitted on 8,207 internships in the notebook; transform-only afterwards (tested) |
+| 4.4 | Content-based filtering: TF-IDF + cosine similarity | `ml_core/recommender.py` `content_similarity`, `artifacts/vectorizers/tfidf.joblib` | ✅ fitted on 7,566 internships (after D-031 dedup) in the notebook; transform-only afterwards (tested) |
 | 4.5 | Semantic matching with Sentence Transformers | `ml_core/recommender.py` `semantic_similarity`, `artifacts/embeddings/internships.npy` | ✅ all-MiniLM-L6-v2, pinned revision, cosine clipped to [0,1] |
 | 4.6 | Hybrid recommendation score calculation | `ml_core/recommender.py` `hybrid_score`, `artifacts/config/hybrid_config.json` | ✅ 0.35 / 0.40 / 0.25 + sensitivity table on DEMO profiles |
 | 4.7 | Ranking of eligible internships | `ml_core/recommender.py` `recommend` | ✅ gates first, ineligible never ranked (mutation-checked test) |
 | 4.8 | Matched and missing skill identification | `ml_core/skills.py` `compare_skills` | ✅ |
 | 4.9 | Use a lightweight Sentence Transformer (all-MiniLM-L6-v2) | `ml_core/config.py` `SENTENCE_MODEL_NAME/REVISION` | ✅ |
-| 4.10 | Use actual internship records and reusable Python functions | `artifacts/data/internships_clean.csv` (8,207 real postings), `ml_core/` | ✅ |
+| 4.10 | Use actual internship records and reusable Python functions | `artifacts/data/internships_clean.csv` (7,566 real postings after D-031 dedup), `ml_core/` | ✅ |
 
 ### 5. LLM-based skill analysis
 | ID | Requirement | Where implemented | Status |
@@ -109,7 +109,7 @@ Last updated: 2026-11-25 (Phase 4)
 | 8.9 | LLM extraction configuration and fallback functions | `artifacts/config/llm_config.json`, `ml_core/llm_extract.py` | ✅ |
 | 8.10 | Model evaluation metrics | `artifacts/metrics/` | ✅ |
 | 8.11 | Visualisation images | `artifacts/figures/` (12 PNGs) | ✅ |
-| 8.12 | Cleaned internship dataset | `artifacts/data/internships_clean.csv` | ✅ 8,207 rows |
+| 8.12 | Cleaned internship dataset | `artifacts/data/internships_clean.csv` | ✅ 7,566 rows (641 repeated listings removed, D-031) |
 | 8.13 | Required model metadata | `artifacts/manifest.json` | ✅ SHA-256 per file, versions, best model, pinned revision |
 | 8.14 | Sample inference functions proving reload without retraining | `notebooks/eligo_engine.ipynb` §3.7 | ✅ restart-safe reload through `load_bundle()`; same top-5 ranking asserted |
 | 8.15 | **Deliverable:** complete executable notebook with all of the above | `notebooks/eligo_engine.ipynb` | ✅ executes top to bottom with nbconvert (exit 0) |
@@ -372,13 +372,13 @@ Last updated: 2026-11-25 (Phase 4)
 - [x] `ml_core/` built test-first (9 modules): `pytest tests` → 172 passed, 1 skipped (the live-Ollama test, which skips until the model is installed)
 - [x] `jupyter nbconvert --to notebook --execute notebooks/eligo_engine.ipynb` → exit 0 (final run 2026-11-24)
 - [x] Every spec §8 artifact saved + `manifest.json` (SHA-256); restart-safe reload test passes (same ranking, nothing retrained)
-- [x] Real metrics at Phase 3 (test n=374): DT 0.8396 / 0.8604; RF 0.8904 / 0.9107. **Current, after the D-022 retrain (test n=330): Decision Tree acc 0.8030 / macro-F1 0.8048; Random Forest acc 0.8485 / macro-F1 0.8787 (best)**
+- [x] Real metrics at Phase 3 (test n=374): DT 0.8396 / 0.8604; RF 0.8904 / 0.9107. After the D-022 retrain (test n=330): DT 0.8030 / 0.8048; RF 0.8485 / 0.8787. **Current, after the D-031 retrain (test n=324): Decision Tree acc 0.7994 / macro-F1 0.8033; Random Forest acc 0.8642 / macro-F1 0.8670 (best)**
 - [x] `scripts/setup_sentence_model.py` re-creates the git-ignored sentence model and verifies it byte-for-byte against the manifest (D-020)
 - [x] Live LLM output in notebook §3.5 (re-run 2026-11-25 with `qwen3:4b`)
 
 ### Phase 4 — Django backend
 - [x] `python manage.py check` → 0 issues; `makemigrations --check` → no changes; `migrate` applied
-- [x] `load_internships` → 8,207 real postings (0 text-hash mismatches); `seed_demo` → 3 DEMO students + 3 DEMO assessments
+- [x] `load_internships` → 8,207 real postings (0 text-hash mismatches); after D-031 dedup: 7,566 active, 641 retired; `seed_demo` → 3 DEMO students + 3 DEMO assessments
 - [x] `pytest tests` → 311 passed, 1 skipped at the phase commit; after the model finished: 313 passed, 0 skipped
 - [x] End-to-end smoke through the real views + real artifacts (rolled back): DEMO CS exam 80% Qualified, duplicate submit rejected, 10 recommendations in ~3.7 s, job role Artificial Intelligence 95% confident, all admin pages 200
 - [x] D-022 career-skills fix applied end to end (multi-select from feature_schema.json, prediction uses only career skills, DEMO CS confident + test)
@@ -399,6 +399,15 @@ Last updated: 2026-11-25 (Phase 4)
 - [x] `puppeteer-core` 25.17.0 dev dependency (D-029); sloplint render tier now runs and found a field-contrast issue (fixed)
 - [x] Playwright E2E per BUILD_PROMPT Phase 6.2 and the README viva script, recorded in `docs/E2E.md` (all steps PASS; found a stale-exam-after-Back bug, fixed with `@never_cache` + `test_exam_page_is_never_cached`)
 - [x] Notebook re-executed with `nbconvert` (exit 0)
+
+### Phase 6.5 — Review fixes (Krishna, 2026-11-26)
+- [x] `reset_demo` also removes test accounts (RFC 2606 test domains or non-seeded "DEMO" names); admins and real students untouched (`test_reset_demo_removes_test_accounts_and_keeps_admins`)
+- [x] Layout: phone tables as stacked cards, admin account links in the ☰ menu, sticky footer, question before palette on phones, `scrollbar-gutter: stable`, aligned result stats (D-032)
+- [x] Bugs: assessment check listed once (counts match the card), "Checked by local LLM (qwen3:4b, prompt v1).", 641 repeated listings removed + retired, preview groups repeats, career-skill near-duplicates merged and the model retrained (D-031), selected career skills as chips
+- [x] Logic: skill overlap = matched / max(required, 3) (D-030), explained on the card
+- [x] Polish: "Not specified" minimum %, separate start date, qualification badge, chart labels + "Not enough data yet", wide figures + full-size view, warning-coloured ring when not qualified, "m:ss left" timer, row-action baseline, "Change password", match % tooltip
+- [x] Found while checking: stale browser-cached JS/CSS → content-hash `{% asset %}` URLs; "No minimum academic percentage is specified."
+- [x] `pytest` all green; notebook re-executed; check shots in `docs/check/` (local only, git-ignored)
 
 ## PENDING – Ollama (tracker)
 Items that need a live Ollama. Everything else goes ahead without it, because the project never depends on Ollama and the rule-based fallback always works.

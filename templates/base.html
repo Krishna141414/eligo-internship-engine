@@ -1,4 +1,4 @@
-{% load static %}<!doctype html>
+{% load static eligo_ui %}<!doctype html>
 <html lang="en">
 <head>
   <meta charset="utf-8">
@@ -9,7 +9,7 @@
   <link rel="stylesheet" href="{% static 'vendor/fonts/fonts.css' %}">
   <link rel="stylesheet" href="{% static 'vendor/bootstrap/css/bootstrap.min.css' %}">
   <link rel="stylesheet" href="{% static 'vendor/bootstrap-icons/bootstrap-icons.min.css' %}">
-  <link rel="stylesheet" href="{% static 'css/theme.css' %}">
+  <link rel="stylesheet" href="{% asset 'css/theme.css' %}">
   <script>document.documentElement.classList.add("js");</script>
   {% block extra_head %}{% endblock %}
 </head>
@@ -51,7 +51,7 @@
 </div>
 {% endif %}
 <script src="{% static 'vendor/bootstrap/js/bootstrap.bundle.min.js' %}"></script>
-<script src="{% static 'js/ui.js' %}"></script>
+<script src="{% asset 'js/ui.js' %}"></script>
 {% block extra_js %}{% endblock %}
 </body>
 </html>

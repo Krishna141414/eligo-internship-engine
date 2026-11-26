@@ -19,7 +19,8 @@
       <dt>Duration</dt><dd>{{ internship.duration|default:"Not stated" }}</dd>
       <dt>Apply by</dt><dd>{{ internship.application_deadline|date:"d M Y"|default:"No deadline listed" }}</dd>
       <dt>Qualification</dt><dd>{{ internship.required_qualification }}{% if internship.specialization %} ({{ internship.specialization }}){% endif %}</dd>
-      <dt>Minimum academic %</dt><dd>{{ internship.minimum_academic_percentage }}</dd>
+      <dt>Minimum academic %</dt><dd>{% if internship.minimum_academic_percentage %}{{ internship.minimum_academic_percentage|floatformat }}%{% else %}Not specified{% endif %}</dd>
+      {% if internship.start_date %}<dt>Starts</dt><dd>{{ internship.start_date }}</dd>{% endif %}
       {% if internship.eligibility_criteria %}<dt>Eligibility criteria</dt><dd>{{ internship.eligibility_criteria }}</dd>{% endif %}
     </dl>
     <h3 class="section-title mt-4">Required skills</h3>

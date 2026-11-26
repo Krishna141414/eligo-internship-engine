@@ -4,12 +4,12 @@
 {% block crumb %}Recommendations{% endblock %}
 {% block content %}
 <div class="page-header"><div><h1>Recommendation monitoring</h1><p>Every generated run, newest first. Open a run to see each score part.</p></div></div>
-<div class="table-wrap"><table class="table mb-0">
+<div class="table-wrap"><table class="table table-stack mb-0">
   <thead><tr><th scope="col">Student</th><th scope="col">Generated</th><th scope="col">Results</th><th scope="col">Top match</th><th scope="col">Top score</th></tr></thead>
   <tbody>
-  {% for r in page.object_list %}<tr><td>{{ r.student__name }}<span class="cell-sub">{{ r.student__email }}</span></td>
-    <td><a href="{% url 'adminpanel:recommendation_run' r.run_id %}">{{ r.generated|date:"d M Y, H:i" }}</a></td><td class="num">{{ r.n }}</td>
-    <td>{% if r.first %}<a href="{% url 'adminpanel:recommendation_detail' r.first.pk %}">{{ r.first.internship }}</a>{% endif %}</td><td class="num">{{ r.top|pct }}%</td></tr>
+  {% for r in page.object_list %}<tr><td data-label="Student">{{ r.student__name }}<span class="cell-sub">{{ r.student__email }}</span></td>
+    <td data-label="Generated"><a href="{% url 'adminpanel:recommendation_run' r.run_id %}">{{ r.generated|date:"d M Y, H:i" }}</a></td><td class="num" data-label="Results">{{ r.n }}</td>
+    <td data-label="Top match">{% if r.first %}<a href="{% url 'adminpanel:recommendation_detail' r.first.pk %}">{{ r.first.internship }}</a>{% endif %}</td><td class="num" data-label="Top score">{{ r.top|pct }}%</td></tr>
   {% empty %}<tr><td colspan="5" class="text-muted">No recommendations generated yet.</td></tr>{% endfor %}
   </tbody>
 </table></div>

@@ -103,6 +103,12 @@ def test_specialization_group_accepts_related_fields():
 
 
 # --- academic percentage ----------------------------------------------------------------
+def test_no_minimum_reads_as_not_specified():
+    """Phase 6.5: a listing without a minimum (stored as 0) says so instead of "meets the minimum 0.00%"."""
+    r = check_academic_percentage(Decimal("78"), Decimal("0"))
+    assert r.passed and r.reason == "No minimum academic percentage is specified."
+
+
 def test_academic_percentage_at_minimum_passes():
     assert check_academic_percentage(Decimal("60"), Decimal("60")).passed
     assert not check_academic_percentage(Decimal("59.99"), Decimal("60")).passed

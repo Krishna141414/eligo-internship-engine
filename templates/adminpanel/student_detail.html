@@ -45,22 +45,22 @@
 </div>
 
 <h2 class="section-title mt-4">Assessment results</h2>
-<div class="table-wrap"><table class="table mb-0">
+<div class="table-wrap"><table class="table table-stack mb-0">
   <thead><tr><th scope="col">Assessment</th><th scope="col">Status</th><th scope="col">Marks</th><th scope="col">Score</th><th scope="col">Result</th></tr></thead>
   <tbody>
-  {% for a in attempts %}<tr><td>{{ a.assessment }}</td><td>{{ a.get_status_display }}</td><td class="num">{{ a.obtained_marks|floatformat }} of {{ a.total_marks|floatformat }}</td>
-    <td class="num">{% if a.score_percentage is not None %}{{ a.score_percentage|floatformat:2 }}%{% else %}Pending{% endif %}</td>
-    <td>{% if a.result %}<span class="badge-status {% if a.result == 'QUALIFIED' %}badge-status--ok{% else %}badge-status--no{% endif %}">{{ a.get_result_display }}</span>{% else %}<span class="text-muted">Pending</span>{% endif %}</td></tr>
+  {% for a in attempts %}<tr><td data-label="Assessment">{{ a.assessment }}</td><td data-label="Status">{{ a.get_status_display }}</td><td class="num" data-label="Marks">{{ a.obtained_marks|floatformat }} of {{ a.total_marks|floatformat }}</td>
+    <td class="num" data-label="Score">{% if a.score_percentage is not None %}{{ a.score_percentage|floatformat:2 }}%{% else %}Pending{% endif %}</td>
+    <td data-label="Result">{% if a.result %}<span class="badge-status {% if a.result == 'QUALIFIED' %}badge-status--ok{% else %}badge-status--no{% endif %}">{{ a.get_result_display }}</span>{% else %}<span class="text-muted">Pending</span>{% endif %}</td></tr>
   {% empty %}<tr><td colspan="5" class="text-muted">No attempts.</td></tr>{% endfor %}
   </tbody>
 </table></div>
 
 <h2 class="section-title mt-4">Latest recommendations</h2>
-<div class="table-wrap"><table class="table mb-0">
+<div class="table-wrap"><table class="table table-stack mb-0">
   <thead><tr><th scope="col">Rank</th><th scope="col">Internship</th><th scope="col">Match</th><th scope="col">Matched skills</th><th scope="col">Missing skills</th></tr></thead>
   <tbody>
-  {% for r in recs %}<tr><td class="num">{{ r.recommendation_rank }}</td><td><a href="{% url 'adminpanel:recommendation_detail' r.pk %}">{{ r.internship }}</a></td>
-    <td class="num">{{ r.final_match_score|pct }}%</td><td>{{ r.matched_skills|join:", "|default:"None" }}</td><td>{{ r.missing_skills|join:", "|default:"None" }}</td></tr>
+  {% for r in recs %}<tr><td class="num" data-label="Rank">{{ r.recommendation_rank }}</td><td data-label="Internship"><a href="{% url 'adminpanel:recommendation_detail' r.pk %}">{{ r.internship }}</a></td>
+    <td class="num" data-label="Match">{{ r.final_match_score|pct }}%</td><td data-label="Matched skills">{{ r.matched_skills|join:", "|default:"None" }}</td><td data-label="Missing skills">{{ r.missing_skills|join:", "|default:"None" }}</td></tr>
   {% empty %}<tr><td colspan="5" class="text-muted">None yet.</td></tr>{% endfor %}
   </tbody>
 </table></div>

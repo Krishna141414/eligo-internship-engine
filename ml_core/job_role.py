@@ -144,7 +144,7 @@ CAREER_SKILL_CROSSWALK: dict[str, tuple[str, ...]] = {
     "computer vision": ("image processing",),
     "react": ("web development",), "angular": ("web development",), "node.js": ("web development",),
     "django": ("web development",), "flask": ("web development",), "php": ("web development",),
-    "wordpress": ("website development",), "bootstrap": ("web development",),
+    "wordpress": ("web development",), "bootstrap": ("web development",),
     "flutter": ("mobile app development",), "android": ("android app development",),
     "figma": ("ui/ux design",), "adobe xd": ("ui/ux design",), "adobe photoshop": ("graphic design",),
     "linux": ("operating systems and networking",), "networking": ("computer networks",),

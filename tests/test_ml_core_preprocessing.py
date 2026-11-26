@@ -47,9 +47,9 @@ def raw_sample():
              skills="Digital Marketing, Social Media Marketing", stipend="₹ 5,000 /month"),
         _row(3, profile="Nothing", company="Ghost Co", location="Not Available"),           # no title -> drop
         _row(4, start="Goldman Sachs, founded in 1869 by Marcus Goldman, is a leading global investment bank"),  # shifted -> drop
-        _row(5, duration="1 week ago"),                                                      # bad duration
+        _row(5, company="Acme Labs", duration="1 week ago"),                                 # bad duration
         _row(6, skills="Not Available", stipend="Unpaid", apply_by="Not Available"),
-        _row(7, education="1. Candidates currently enrolled in a degree/diploma in computer science/software/IT-related fields will only be hired."),
+        _row(7, company="Acme Software", education="1. Candidates currently enrolled in a degree/diploma in computer science/software/IT-related fields will only be hired."),
         _row(8, education="4. are from Mumbai only", stipend="Not Available"),
     ]
     return pd.DataFrame(rows, columns=COLS)
@@ -206,6 +206,27 @@ def test_clean_internships_parsed_fields(raw_sample, vocab):
 
 
 # --- job-role data -------------------------------------------------------------------------
+def test_clean_internships_drops_identical_listings(raw_sample, vocab):
+    """Same title + company + location + stipend + skills -> one listing (first kept); count recorded."""
+    base = clean_internships(raw_sample, vocab)
+    assert base.attrs["duplicates_removed"] == 0
+    dupes = pd.DataFrame([_row(101), _row(102, apply_by="20 Oct' 25"), _row(103, location="Pune")], columns=COLS)
+    df = clean_internships(pd.concat([raw_sample, dupes], ignore_index=True), vocab)
+    assert df.attrs["duplicates_removed"] == 2                          # 101 and 102 repeat row 1
+    assert len(df) == len(base) + 1
+    ids = set(df["source_id"])
+    assert "2025TEST0001" in ids and not {"2025TEST0101", "2025TEST0102"} & ids
+    assert "2025TEST0103" in ids                                        # different location: kept
+    key = ["internship_title", "company_name", "location", "stipend_text", "required_skills_text"]
+    assert not df.duplicated(subset=key).any()
+
+
+def test_clean_internships_start_date_is_its_own_field(raw_sample, vocab):
+    df = clean_internships(raw_sample, vocab).set_index("source_id")
+    assert df.loc["2025TEST0001", "start_date"] == "Immediately"
+    assert "Start:" not in " ".join(df["eligibility_criteria"].astype(str))
+
+
 def test_job_role_dedup_before_split(vocab):
     df = pd.DataFrame({"Career": ["Data Science", "Data Science"], "Skill": ["Python", "Python"]})
     assert len(clean_job_role_data(df, vocab)) == 1

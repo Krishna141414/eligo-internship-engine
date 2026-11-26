@@ -10,5 +10,11 @@
     <a class="side-link" href="{% url 'adminpanel:recommendations' %}"{% current 'adminpanel:recommendations' 'adminpanel:recommendation_run' 'adminpanel:recommendation_detail' %}><i class="bi bi-stars" aria-hidden="true"></i>Recommendations</a>
     <a class="side-link" href="{% url 'adminpanel:ml' %}"{% current 'adminpanel:ml' %}><i class="bi bi-cpu" aria-hidden="true"></i>ML models</a>
   </nav>
+  <div class="app-sidebar__account">
+    <div class="app-sidebar__account-name">{{ user.name }}</div>
+    <a class="side-link" href="{% url 'accounts:password_change' %}"{% current 'accounts:password_change' %}><i class="bi bi-key" aria-hidden="true"></i>Change password</a>
+    <form method="post" action="{% url 'accounts:logout' %}" class="m-0">{% csrf_token %}
+      <button type="submit" class="side-link"><i class="bi bi-box-arrow-right" aria-hidden="true"></i>Log out</button></form>
+  </div>
   <div class="app-sidebar__foot">Independent academic prototype</div>
 </aside>

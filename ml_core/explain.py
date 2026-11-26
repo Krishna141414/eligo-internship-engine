@@ -7,7 +7,7 @@ from __future__ import annotations
 
 from decimal import Decimal
 
-from ml_core.config import PASS_THRESHOLD, HybridWeights
+from ml_core.config import PASS_THRESHOLD, SKILL_OVERLAP_MIN_DENOMINATOR, HybridWeights
 from ml_core.eligibility import EligibilityResult, fmt_pct, is_qualified
 from ml_core.job_role import JobRolePrediction
 from ml_core.recommender import RankedInternship
@@ -44,6 +44,9 @@ def explain_recommendation(item: RankedInternship, weights: HybridWeights,
     if n_required:
         matched_txt = f" ({_skill_list(item.matched)})" if item.matched else ""
         parts.append(f"You match {len(item.matched)} of {n_required} required skills{matched_txt}.")
+        if n_required < SKILL_OVERLAP_MIN_DENOMINATOR:
+            parts.append(f"This listing names only {n_required} skill{'s' if n_required != 1 else ''}, so the skill "
+                         f"overlap is counted out of {SKILL_OVERLAP_MIN_DENOMINATOR} ({s.skill:.2f}).")
     else:
         parts.append("This internship lists no required skills, so the skill score is 0.")
     parts.append(f"The largest part of the score came from {top['label']} (+{top['contribution']:.2f}).")

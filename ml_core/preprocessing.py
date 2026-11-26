@@ -207,6 +207,8 @@ def clean_internships(raw: pd.DataFrame, vocab: SkillVocab) -> pd.DataFrame:
 
     Drops rows with no title (`profile == "Nothing"`) and rows whose columns are shifted
     (`Start Date` longer than 40 chars). The `Offer` column ("Nothing" on every row) is dropped.
+    Listings repeated with the same title, company, location, stipend and skills are kept once (the
+    first); the number dropped is in `df.attrs["duplicates_removed"]`.
     """
     df = raw.copy()
     df = df[df["profile"].map(clean_text) != ""]
@@ -230,7 +232,7 @@ def clean_internships(raw: pd.DataFrame, vocab: SkillVocab) -> pd.DataFrame:
             derived.append("duration")
         location = clean_text(r["Location"])
         start = clean_text(r["Start Date"])
-        criteria = "; ".join(p for p in (rule.note, f"Start: {start}" if start else "") if p)
+        criteria = rule.note                       # the start date has its own column, not "criteria"
         description = _composed_description(title, company, skills, perks, rule.note)
         records.append({
             "source_id": str(r["internship_id"]),
@@ -253,11 +255,18 @@ def clean_internships(raw: pd.DataFrame, vocab: SkillVocab) -> pd.DataFrame:
             "duration_months": months,
             "application_deadline": parse_deadline(r["Apply by Date"]),
             "eligibility_criteria": criteria,
+            "start_date": start,
             "derived_fields": derived,
             # Built only from fields Django stores, so the web app can rebuild the identical text (D-014).
             "text": build_internship_text(title, title, skills, "", "", description),
         })
-    return pd.DataFrame.from_records(records)
+    out = pd.DataFrame.from_records(records)
+    key = ["internship_title", "company_name", "location", "stipend_text", "required_skills_text"]
+    before = len(out)
+    if before:
+        out = out.drop_duplicates(subset=key, keep="first").reset_index(drop=True)
+    out.attrs["duplicates_removed"] = before - len(out)
+    return out
 
 
 def clean_job_role_data(raw: pd.DataFrame, vocab: SkillVocab) -> pd.DataFrame:

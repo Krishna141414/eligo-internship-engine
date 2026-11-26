@@ -15,13 +15,13 @@
       <option value="INACTIVE" {% if status == "INACTIVE" %}selected{% endif %}>Inactive</option></select></div>
   <div class="toolbar__actions"><button class="btn btn-outline-primary" type="submit">Filter</button></div>
 </form>
-<div class="table-wrap"><table class="table mb-0">
+<div class="table-wrap"><table class="table table-stack mb-0">
   <thead><tr><th scope="col">Title</th><th scope="col">Location</th><th scope="col">Qualification</th><th scope="col">Status</th><th scope="col"><span class="visually-hidden">Actions</span></th></tr></thead>
   <tbody>
   {% for i in page.object_list %}
-  <tr><td>{{ i.internship_title }}<span class="cell-sub">{{ i.company_name }}</span></td><td>{{ i.location }}</td><td>{{ i.required_qualification }}</td>
-    <td><span class="badge-status {% if i.status == 'ACTIVE' %}badge-status--ok{% else %}badge-status--muted{% endif %}">{{ i.get_status_display }}</span></td>
-    <td class="text-end"><span class="row-actions"><a href="{% url 'internships:admin_edit' i.pk %}">Edit</a>
+  <tr><td data-label="Title">{{ i.internship_title }}<span class="cell-sub">{{ i.company_name }}</span></td><td data-label="Location">{{ i.location }}</td><td data-label="Qualification">{{ i.required_qualification }}</td>
+    <td data-label="Status"><span class="badge-status {% if i.status == 'ACTIVE' %}badge-status--ok{% else %}badge-status--muted{% endif %}">{{ i.get_status_display }}</span></td>
+    <td class="text-end" data-label=""><span class="row-actions"><a href="{% url 'internships:admin_edit' i.pk %}">Edit</a>
       <form method="post" action="{% url 'internships:admin_toggle' i.pk %}">{% csrf_token %}
         <button class="btn btn-link btn-sm" type="submit">{% if i.status == "ACTIVE" %}Deactivate{% else %}Activate{% endif %}</button></form></span></td></tr>
   {% empty %}<tr><td colspan="5" class="text-muted">No internships yet. Run <code>python manage.py load_internships</code> or add one.</td></tr>

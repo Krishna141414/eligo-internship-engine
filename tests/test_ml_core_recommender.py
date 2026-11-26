@@ -6,7 +6,7 @@ import numpy as np
 import pytest
 from sklearn.feature_extraction.text import TfidfVectorizer
 
-from ml_core.config import REFERENCE_DATE, HybridWeights
+from ml_core.config import REFERENCE_DATE, SKILL_OVERLAP_MIN_DENOMINATOR, HybridWeights
 from ml_core.eligibility import InternshipFacts, StudentFacts
 from ml_core.recommender import (
     content_similarity,
@@ -75,6 +75,29 @@ def test_skill_match_ratio():
     assert skill_match_score(["python", "sql"], ["python", "excel", "sql", "git"]) == 0.5
 
 
+def test_skill_overlap_shrinks_short_requirement_lists():
+    """D-030: matched / max(required, 3), so 1 of 1 no longer scores a perfect 1.00."""
+    assert SKILL_OVERLAP_MIN_DENOMINATOR == 3
+    assert skill_match_score(["python"], ["python"]) == pytest.approx(1 / 3)
+    assert skill_match_score(["python", "sql"], ["python", "sql"]) == pytest.approx(2 / 3)
+    assert skill_match_score(["a", "b", "c"], ["a", "b", "c"]) == 1.0
+    assert skill_match_score(["a", "b", "c", "d"], ["a", "b", "c", "d", "e"]) == pytest.approx(0.8)
+
+
+def test_one_skill_listing_no_longer_outranks_a_broader_match():
+    """Same text and embedding: a 1-of-1 listing used to beat a 3-of-4 listing on skill overlap."""
+    vec = TfidfVectorizer().fit(["same text"])
+    narrow = _internship("narrow", "same text", ["python"])
+    broad = _internship("broad", "same text", ["python", "sql", "excel", "git"])
+    student = StudentFacts(qualification="B.Tech", specialization="CSE", academic_percentage=Decimal("75"),
+                           skills=("python", "sql", "excel"), text="same text")
+    r = recommend(student, [narrow, broad], Decimal("75"), vectorizer=vec,
+                  internship_vecs=np.vstack([_unit(0), _unit(0)]), student_vec=_unit(0),
+                  weights=HybridWeights(0.35, 0.40, 0.25), today=REFERENCE_DATE)
+    assert [x.internship_id for x in r.eligible] == ["broad", "narrow"]
+    assert r.eligible[0].scores.skill == pytest.approx(0.75) and r.eligible[1].scores.skill == pytest.approx(1 / 3)
+
+
 def test_skill_match_no_required_skills():
     assert skill_match_score(["python"], []) == 0.0
 
@@ -113,7 +136,7 @@ def test_recommend_orders_by_final_score(vec):
     assert [x.internship_id for x in r.eligible] == [2, 1]
     top = r.eligible[0]
     assert top.matched == ["python", "sql"] and top.missing == []
-    assert top.scores.skill == 1.0 and top.scores.semantic == 1.0
+    assert top.scores.skill == pytest.approx(2 / 3) and top.scores.semantic == 1.0   # 2 of 2, shrunk (D-030)
 
 
 def test_rank_tie_break_by_skill():

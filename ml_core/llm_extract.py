@@ -147,7 +147,7 @@ def extract_skills(text: str, *, vocab: SkillVocab, config: LLMConfig, use_llm: 
         except (ValidationError, ValueError, KeyError, TypeError):
             continue
         return ExtractionResult(llm_items_to_vocab(parsed.skills, vocab), "llm",
-                                f"Extracted by {config.model} (prompt v{config.prompt_version}).")
+                                f"Checked by local LLM ({config.model}, prompt v{config.prompt_version}).")
     return fallback("LLM returned invalid JSON twice; used rule-based extraction.")
 
 

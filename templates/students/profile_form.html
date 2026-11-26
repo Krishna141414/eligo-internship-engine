@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% load static %}
+{% load static eligo_ui %}
 {% block title %}Academic profile{% endblock %}
 {% block content %}
 <div class="page-header">
@@ -16,4 +16,4 @@
 </div>
 {% if skill_suggestions %}<datalist id="skill-suggestions">{% for s in skill_suggestions %}<option value="{{ s }}">{% endfor %}</datalist>{% endif %}
 {% endblock %}
-{% block extra_js %}<script src="{% static 'js/profile.js' %}"></script>{% endblock %}
+{% block extra_js %}<script src="{% asset 'js/profile.js' %}"></script>{% endblock %}

@@ -58,7 +58,7 @@ DEMO password for every DEMO student: `Eligo-DEMO-2026!` (or `ELIGO_DEMO_PASSWOR
 4. Submit assessment → the confirm dialog shows 0 unanswered → Submit now. Result: **80.00%, Qualified**, with the 60% marker on the ring.
 
 **2. Recommendations and the explanation (about 1.5 minutes)**
-1. Continue to recommendations → Generate recommendations. "Analysing your profile… checking 8,207 internships" shows while it ranks (about 3 seconds).
+1. Continue to recommendations → Generate recommendations. "Analysing your profile… checking 7,566 internships" shows while it ranks (about 3 seconds).
 2. Ten ranked cards appear. Only eligible internships are ranked. The top 3 say "AI second opinion: checking…" and fill in a few seconds later without reloading. Without Ollama they say the second opinion isn't available and the rule-based check stands.
 3. On card #1 open "Explain this match": part scores × weights = the final score, plus every eligibility check. Click the title for the full explanation page.
 

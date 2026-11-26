@@ -41,6 +41,18 @@ def test_sentence_mentions_rank_and_real_skill_counts(item):
     assert "#2" in s and "3 of 4" in s
 
 
+def test_short_skill_list_shrinkage_is_explained():
+    """D-030: 1 of 1 matched scores 0.33, and the sentence says why (numbers from the computation)."""
+    one = RankedInternship(internship_id=9, rank=1, scores=hybrid_score(0.5, 0.5, 1 / 3, W),
+                           matched=["python"], missing=[], gates=PASSED, required_skills=["python"])
+    s = explain_recommendation(one, W, Decimal("72.5"))["sentence"]
+    assert "1 of 1" in s and "counted out of 3" in s and "0.33" in s
+
+
+def test_no_shrinkage_note_for_three_or_more_skills(item):
+    assert "counted out of" not in explain_recommendation(item, W, Decimal("72.5"))["sentence"]
+
+
 def test_largest_contributor_named(item):
     s = explain_recommendation(item, W, Decimal("72.5"))["sentence"]
     assert "semantic" in s.lower() and "0.32" in s

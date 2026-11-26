@@ -45,6 +45,7 @@ def test_llm_path_normalises_output(vocab):
     with patch("ml_core.llm_extract.requests.post", return_value=_response('{"skills": ["Py", "ML"]}')):
         r = extract_skills(TEXT, vocab=vocab, config=CFG)
     assert r.method == "llm" and r.skills == ["machine learning", "python"]
+    assert r.detail == "Checked by local LLM (qwen3:4b, prompt v1)."
 
 
 def test_invalid_json_retries_once_then_falls_back(vocab):

@@ -45,6 +45,8 @@ class Internship(models.Model):
     duration = models.CharField(max_length=50, blank=True, default="")
     duration_months = models.FloatField(null=True, blank=True)
     eligibility_criteria = models.TextField(blank=True, default="")
+    start_date = models.CharField(max_length=60, blank=True, default="",
+                                  help_text="As listed, e.g. \"Immediately\" or \"15 Oct' 25\".")
     application_deadline = models.DateField(null=True, blank=True)
     status = models.CharField(max_length=10, choices=Status.choices, default=Status.ACTIVE, db_index=True)
     derived_fields = models.JSONField(default=list, blank=True)

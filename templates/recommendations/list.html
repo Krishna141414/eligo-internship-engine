@@ -33,8 +33,14 @@
       </div>
     </div>
     <div class="rec-card__body">
-      <div class="score-ring score-ring--md" style="--value: {{ r.final_match_score|pct }}" role="img" aria-label="{{ r.final_match_score|pct }}% match">
-        <span class="score-ring__inner"><span class="score-ring__value">{{ r.final_match_score|pct }}%</span><span class="score-ring__label">match</span></span>
+      <div class="score-col">
+        <div class="score-ring score-ring--md" style="--value: {{ r.final_match_score|pct }}" role="img" aria-label="{{ r.final_match_score|pct }}% match">
+          <span class="score-ring__inner"><span class="score-ring__value">{{ r.final_match_score|pct }}%</span><span class="score-ring__label">match</span></span>
+        </div>
+        <button type="button" class="info-tip" data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-animation="false"
+                data-bs-title="How well your profile fits this listing: {% for c in x.components %}{{ c.label }} × {{ c.weight }}{% if not forloop.last %}, {% endif %}{% endfor %}, added up. It is not a chance of selection."
+                aria-label="What the match % means: how well your profile fits this listing, from {% for c in x.components %}{{ c.label }} × {{ c.weight }}{% if not forloop.last %}, {% endif %}{% endfor %}. It is not a chance of selection.">
+          <i class="bi bi-info-circle" aria-hidden="true"></i><span class="visually-hidden">What the match % means</span></button>
       </div>
       <div>
         <p class="rec-card__reason">{{ r.recommendation_reason }}</p>
@@ -109,11 +115,11 @@
   <p class="text-muted">{{ not_eligible_count|intcomma }} active internship{{ not_eligible_count|pluralize }} aren't open to you right now. These ones share skills with you:</p>
   <ul class="blocked-list">
     {% for i, reasons in preview %}
-    <li><a href="{% url 'internships:detail' i.pk %}">{{ i.internship_title }}</a> <span class="text-muted">at {{ i.company_name }}</span>
+    <li><a href="{% url 'internships:detail' i.pk %}">{{ i.internship_title }}</a> <span class="text-muted">at {{ i.company_name }}{% if i.similar_listings > 1 %} ({{ i.similar_listings }} listings){% endif %}</span>
       {% for reason in reasons %}<p>{{ reason }}</p>{% endfor %}</li>
     {% endfor %}
   </ul>
   {% else %}<p class="text-muted mb-0">Nothing to show here.</p>{% endif %}
 </section>
 {% endblock %}
-{% block extra_js %}{% load static %}<script src="{% static 'js/second_opinion.js' %}"></script>{% endblock %}
+{% block extra_js %}{% load static %}<script src="{% asset 'js/second_opinion.js' %}"></script>{% endblock %}

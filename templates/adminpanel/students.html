@@ -9,16 +9,16 @@
     <option value="ACTIVE" {% if status == "ACTIVE" %}selected{% endif %}>Active</option><option value="INACTIVE" {% if status == "INACTIVE" %}selected{% endif %}>Inactive</option></select></div>
   <div class="toolbar__actions"><button class="btn btn-outline-primary" type="submit">Filter</button></div>
 </form>
-<div class="table-wrap"><table class="table mb-0">
+<div class="table-wrap"><table class="table table-stack mb-0">
   <thead><tr><th scope="col">Name</th><th scope="col">Qualification</th><th scope="col">Assessment</th><th scope="col">Status</th><th scope="col"><span class="visually-hidden">Actions</span></th></tr></thead>
   <tbody>
   {% for s in page.object_list %}
-  <tr><td><a href="{% url 'adminpanel:student_detail' s.pk %}">{{ s.name }}</a><span class="cell-sub">{{ s.email }}</span></td>
-    <td>{{ s.profile.qualification|default:"Not set" }}</td>
-    <td>{% if s.qualified %}<span class="badge-status badge-status--ok">Qualified</span>{% elif s.attempted %}<span class="badge-status badge-status--no">Not qualified</span>{% else %}<span class="badge-status badge-status--muted">Not attempted</span>{% endif %}</td>
-    <td>{{ s.get_status_display }}</td>
-    <td class="text-end"><form method="post" action="{% url 'adminpanel:student_toggle' s.pk %}" class="d-inline">{% csrf_token %}
-      <button class="btn btn-link btn-sm" type="submit">{% if s.status == "ACTIVE" %}Deactivate{% else %}Activate{% endif %}</button></form></td></tr>
+  <tr><td data-label="Name"><a href="{% url 'adminpanel:student_detail' s.pk %}">{{ s.name }}</a><span class="cell-sub">{{ s.email }}</span></td>
+    <td data-label="Qualification">{{ s.profile.qualification|default:"Not set" }}</td>
+    <td data-label="Assessment">{% if s.qualified %}<span class="badge-status badge-status--ok">Qualified</span>{% elif s.attempted %}<span class="badge-status badge-status--no">Not qualified</span>{% else %}<span class="badge-status badge-status--muted">Not attempted</span>{% endif %}</td>
+    <td data-label="Status">{{ s.get_status_display }}</td>
+    <td class="text-end" data-label=""><span class="row-actions"><form method="post" action="{% url 'adminpanel:student_toggle' s.pk %}">{% csrf_token %}
+      <button class="btn btn-link btn-sm" type="submit">{% if s.status == "ACTIVE" %}Deactivate{% else %}Activate{% endif %}</button></form></span></td></tr>
   {% empty %}<tr><td colspan="5" class="text-muted">No students match.</td></tr>
   {% endfor %}
   </tbody>

@@ -7,7 +7,7 @@
 </div>
 
 <section class="panel result-hero" aria-labelledby="result-h">
-  <div class="score-ring score-ring--lg" style="--value: {{ attempt.score_percentage|floatformat:0 }}; --mark: {{ threshold }}" role="img"
+  <div class="score-ring score-ring--lg{% if attempt.result != 'QUALIFIED' %} score-ring--warn{% endif %}" style="--value: {{ attempt.score_percentage|floatformat:0 }}; --mark: {{ threshold }}" role="img"
        aria-label="Your score is {{ attempt.score_percentage|floatformat:2 }}%. The pass mark is above {{ threshold }}%.">
     <span class="score-ring__marker" aria-hidden="true"></span>
     <span class="score-ring__inner"><span class="score-ring__value">{{ attempt.score_percentage|floatformat:2 }}%</span><span class="score-ring__label">your score</span></span>

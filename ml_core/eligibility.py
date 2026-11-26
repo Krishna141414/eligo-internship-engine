@@ -174,6 +174,8 @@ def check_specialization(student_specialization: str, required: str | None) -> G
 def check_academic_percentage(student_pct: Decimal, minimum: Decimal) -> GateResult:
     gate = "academic_percentage"
     student_pct, minimum = Decimal(student_pct), Decimal(minimum)
+    if minimum <= 0:
+        return GateResult(gate, True, "No minimum academic percentage is specified.")
     if student_pct >= minimum:
         return GateResult(gate, True, f"Your academic score {fmt_pct(student_pct)} meets the minimum {fmt_pct(minimum)}.")
     return GateResult(gate, False,

@@ -1,5 +1,5 @@
-"""reset_demo: wipes DEMO students' attempts, recommendations and predictions, restores the DEMO
-accounts, and never touches anyone else's data (D-028)."""
+"""reset_demo: wipes DEMO students' attempts, recommendations and predictions, removes test accounts
+(E2E runs, rehearsals), restores the DEMO accounts, and never touches real students or admins (D-028)."""
 from datetime import timedelta
 from decimal import Decimal
 
@@ -44,8 +44,10 @@ def _snapshot(user):
 
 
 @pytest.fixture
-def world(student, admin_user):
+def world(make_user, admin_user):
     call_command("seed_demo")
+    # a real student on a normal domain (fixture values, never contacted)
+    student = make_user(email="riya.sharma@college.ac.in", name="Riya Sharma (fixture)")
     internship = Internship.objects.create(company_name="Real Co (fixture)", internship_title="Analyst", job_role="Analyst",
                                            description="d", location="Delhi")
     real_exam = Assessment.objects.create(assessment_name="Real aptitude (fixture)", qualification="Any Graduate",
@@ -54,6 +56,14 @@ def world(student, admin_user):
                             option_d="d", correct_option="A")
     StudentProfile.objects.create(student=student, qualification="B.Sc", academic_percentage=Decimal("70"), skills=["sql"])
     _history(student, real_exam, internship)                          # a real student's history
+
+    # test accounts: the Phase 6 E2E account, a reserved .test domain, and a DEMO-named rehearsal account
+    tests = [make_user(email="e2e.check@example.com", name="DEMO – E2E check student"),
+             make_user(email="playwright@runner.test", name="Playwright runner"),
+             make_user(email="rehearsal.cs@gmail.com", name="DEMO – rehearsal")]
+    for t in tests:
+        StudentProfile.objects.create(student=t, qualification="B.Tech", academic_percentage=Decimal("70"), skills=["sql"])
+        _history(t, real_exam, internship)
 
     demo = User.objects.get(email=demo_email("cs"))
     demo_exam = Assessment.objects.get(assessment_name="DEMO – B.Tech/B.E. aptitude")
@@ -65,7 +75,8 @@ def world(student, admin_user):
     StudentProfile.objects.filter(student=demo).update(college_name="edited", skills=["excel"])
     demo_exam.status = Assessment.Status.INACTIVE
     demo_exam.save(update_fields=["status"])
-    return {"real": student, "admin": admin_user, "demo": demo, "internship": internship, "real_exam": real_exam}
+    return {"real": student, "admin": admin_user, "demo": demo, "internship": internship, "real_exam": real_exam,
+            "tests": tests}
 
 
 def test_reset_demo_never_touches_non_demo_data(world):
@@ -94,6 +105,17 @@ def test_reset_demo_leaves_demo_accounts_clean_and_ready(world, client):
     profile = StudentProfile.objects.get(student=demo)
     assert profile.college_name == DEMO_PROFILES["cs"].college_name and profile.career_skills
     assert all(a.status == "ACTIVE" for a in Assessment.objects.filter(assessment_name__startswith="DEMO"))
+
+
+def test_reset_demo_removes_test_accounts_and_keeps_admins(world):
+    call_command("reset_demo")
+    removed = [t.pk for t in world["tests"]]
+    assert not User.objects.filter(pk__in=removed).exists()
+    for model in (Attempt, InternshipRecommendation, JobRolePrediction, StudentProfile):
+        assert not model.objects.filter(student_id__in=removed).exists(), model.__name__
+    students = set(User.objects.filter(user_type=User.UserType.STUDENT).values_list("email", flat=True))
+    assert students == {demo_email(k) for k in DEMO_PROFILES} | {world["real"].email}
+    assert User.objects.filter(pk=world["admin"].pk).exists()           # admin@example.com is never removed
 
 
 def test_reset_demo_on_empty_database_just_seeds():

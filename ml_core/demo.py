@@ -39,7 +39,7 @@ DEMO_PROFILES: dict[str, DemoProfile] = {
         label="DEMO – BBA (marketing)", qualification="BBA", specialization="Management",
         college_name="DEMO College of Commerce", academic_percentage=Decimal("68"),
         skills="Digital Marketing, Social Media Marketing, Content Writing, Canva",
-        career_skills=("digital marketing", "social media management"),
+        career_skills=("digital advertising", "social media management"),
         interests="brand marketing", preferred_role="Marketing Executive", preferred_location="Mumbai",
         assessment_score=Decimal("66"), expected_career=None),
     "bsc": DemoProfile(

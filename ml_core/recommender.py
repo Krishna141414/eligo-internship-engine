@@ -15,7 +15,7 @@ from typing import Any, Iterable, Protocol, Sequence
 import numpy as np
 from sklearn.metrics.pairwise import cosine_similarity
 
-from ml_core.config import HybridWeights
+from ml_core.config import SKILL_OVERLAP_MIN_DENOMINATOR, HybridWeights
 from ml_core.eligibility import EligibilityResult, InternshipFacts, StudentFacts, evaluate_gates
 from ml_core.skills import compare_skills
 
@@ -46,11 +46,14 @@ def semantic_similarity(student_vec: np.ndarray, internship_vecs: np.ndarray) ->
 
 
 def skill_match_score(student_skills: Iterable[str], required_skills: Iterable[str]) -> float:
-    """|matched required skills| / |required skills|; 0.0 when the internship lists none."""
+    """|matched| / max(|required|, SKILL_OVERLAP_MIN_DENOMINATOR) (D-030); 0.0 when none are listed.
+
+    The floor on the denominator shrinks short skill lists: matching the only listed skill gives
+    1/3, not a perfect 1.00, so a one-skill listing can't outrank a broader, better match."""
     required = set(required_skills)
     if not required:
         return 0.0
-    return len(required & set(student_skills)) / len(required)
+    return len(required & set(student_skills)) / max(len(required), SKILL_OVERLAP_MIN_DENOMINATOR)
 
 
 @dataclass

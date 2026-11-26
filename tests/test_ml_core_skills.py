@@ -157,9 +157,37 @@ def test_binarizer_is_cloneable_and_dense_int():
     ("Problemsolving & Analyzing", "problem solving"),
     ("UX/UI Knowledge", "ui/ux design"),
     ("iot", "internet of things"),
+    # Phase 6.5: near-duplicates still left in the 215-skill model vocabulary
+    ("adaptibility", "adaptability"),
+    ("API Tester", "api testing"), ("apitesting", "api testing"),
+    ("Android", "android app development"), ("Android Apps Develop", "android app development"),
+    ("Mobile Application Develop", "mobile app development"),
+    ("Big Data Technations", "big data technologies"), ("Big", "big data technologies"),
+    ("Data Technologies", "big data technologies"),
+    ("Data Enginer", "data engineering"), ("Data Scienc", "data science"),
+    ("DatabaseDevelopment", "database development"),
+    ("WebDevelopment", "web development"), ("Website Development", "web development"),
+    ("Website Building", "web development"),
+    ("Web based project developed", "web development"), ("Web BasedProject Developing", "web development"),
+    ("WebBasedProject Develop", "web development"),
+    ("deeplearning.net", "deep learning"),
+    ("Graphic Design & Editing", "graphic design"), ("Graphic Design and Editing", "graphic design"),
+    ("Network Securities", "network security"),
+    ("Operating System and Networking", "operating systems and networking"),
+    ("Problemsolving and Analytical", "problem solving"),
+    ("Video Editing and Annotation", "video editing"), ("Digital Art and Design", "digital art"),
 ])
 def test_survey_variants_collapse(raw, canonical):
     assert normalise_skill(raw, BASE_SYNONYMS) == canonical
+
+
+def test_glued_survey_compounds_split():
+    v = SkillVocab.build([["artificial intelligence", "machine learning", "operating systems and networking",
+                           "big data technologies"]], BASE_SYNONYMS)
+    assert normalise_skills("Artificial Intelligence (AI) andMachine Learning", v) == [
+        "artificial intelligence", "machine learning"]
+    assert normalise_skills("Operating Systems and Networking Big Data Technologies", v) == [
+        "big data technologies", "operating systems and networking"]
 
 
 def test_survey_compound_splits():

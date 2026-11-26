@@ -1,12 +1,12 @@
                                                      precision    recall  f1-score   support
 
-                            Artificial Intelligence      0.776     0.776     0.776        67
-                                       Data Science      0.936     0.880     0.907        50
-                                        Development      0.779     0.914     0.841        58
-                                           Security      0.918     0.918     0.918        49
-               Software Development and Engineering      0.860     0.800     0.829       100
-User Experience (UX) and User Interface (UI) Design      1.000     1.000     1.000         6
+                            Artificial Intelligence      0.831     0.881     0.855        67
+                                       Data Science      0.891     0.837     0.863        49
+                                        Development      0.818     0.964     0.885        56
+                                           Security      0.772     0.917     0.838        48
+               Software Development and Engineering      0.975     0.788     0.872        99
+User Experience (UX) and User Interface (UI) Design      1.000     0.800     0.889         5
 
-                                           accuracy                          0.848       330
-                                          macro avg      0.878     0.881     0.879       330
-                                       weighted avg      0.852     0.848     0.849       330
+                                           accuracy                          0.864       324
+                                          macro avg      0.881     0.864     0.867       324
+                                       weighted avg      0.876     0.864     0.865       324

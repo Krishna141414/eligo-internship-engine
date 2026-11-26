@@ -4,12 +4,12 @@
 {% block content %}
 <a class="back-link" href="{% url 'adminpanel:recommendations' %}"><i class="bi bi-arrow-left" aria-hidden="true"></i>All runs</a>
 <div class="page-header"><div><h1>Recommendations for {{ student.name }}</h1><p>Generated {{ rows.0.generated_date|date:"d M Y, H:i" }}. Part scores run from 0 to 1; the final score is their weighted sum.</p></div></div>
-<div class="table-wrap"><table class="table mb-0">
+<div class="table-wrap"><table class="table table-stack mb-0">
   <thead><tr><th scope="col">Rank</th><th scope="col">Internship</th><th scope="col">Final</th><th scope="col">Content</th><th scope="col">Semantic</th><th scope="col">Skill</th><th scope="col">Matched</th><th scope="col">Missing</th><th scope="col">Method</th></tr></thead>
   <tbody>
-  {% for r in rows %}<tr><td class="num">{{ r.recommendation_rank }}</td><td><a href="{% url 'adminpanel:recommendation_detail' r.pk %}">{{ r.internship }}</a></td>
-    <td class="num"><strong>{{ r.final_match_score|floatformat:3 }}</strong></td><td class="num">{{ r.content_similarity_score|floatformat:3 }}</td><td class="num">{{ r.semantic_similarity_score|floatformat:3 }}</td><td class="num">{{ r.skill_match_score|floatformat:3 }}</td>
-    <td>{{ r.matched_skills|join:", "|default:"None" }}</td><td>{{ r.missing_skills|join:", "|default:"None" }}</td><td>{{ r.get_analysis_method_display }}</td></tr>{% endfor %}
+  {% for r in rows %}<tr><td class="num" data-label="Rank">{{ r.recommendation_rank }}</td><td data-label="Internship"><a href="{% url 'adminpanel:recommendation_detail' r.pk %}">{{ r.internship }}</a></td>
+    <td class="num" data-label="Final"><strong>{{ r.final_match_score|floatformat:3 }}</strong></td><td class="num" data-label="Content">{{ r.content_similarity_score|floatformat:3 }}</td><td class="num" data-label="Semantic">{{ r.semantic_similarity_score|floatformat:3 }}</td><td class="num" data-label="Skill">{{ r.skill_match_score|floatformat:3 }}</td>
+    <td data-label="Matched">{{ r.matched_skills|join:", "|default:"None" }}</td><td data-label="Missing">{{ r.missing_skills|join:", "|default:"None" }}</td><td data-label="Method">{{ r.get_analysis_method_display }}</td></tr>{% endfor %}
   </tbody>
 </table></div>
 {% endblock %}

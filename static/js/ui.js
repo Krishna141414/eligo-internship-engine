@@ -16,6 +16,11 @@
     input.parentNode.classList.add("form-check-label");
   });
 
+  // Bootstrap tooltips (e.g. what the match % means). The same text is in each button's aria-label.
+  if (window.bootstrap) {
+    document.querySelectorAll('[data-bs-toggle="tooltip"]').forEach(function (el) { new window.bootstrap.Tooltip(el); });
+  }
+
   var toggle = document.querySelector("[data-sidebar-toggle]");
   var sidebar = document.getElementById("app-sidebar");
   if (toggle && sidebar) {

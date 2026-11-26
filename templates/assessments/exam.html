@@ -6,8 +6,8 @@
   <h1>{{ attempt.assessment.assessment_name }}</h1>
   <span class="exam-bar__progress"><span id="answered-count">{{ answered }}</span> of {{ questions|length }} answered</span>
   <div class="timer-pill" id="timer" role="timer" aria-live="off" data-remaining="{{ remaining_seconds }}">
-    <i class="bi bi-clock" aria-hidden="true"></i><span class="visually-hidden">Time left:</span>
-    <span id="timer-value">{{ remaining_seconds|mmss }}</span>
+    <i class="bi bi-clock" id="timer-icon" aria-hidden="true"></i>
+    <span id="timer-value">{{ remaining_seconds|mmss }} left</span>
   </div>
 </div>
 <p class="visually-hidden" id="timer-announce" aria-live="assertive"></p>
@@ -69,6 +69,6 @@
 </div>
 {% endblock %}
 {% block extra_js %}
-<script src="{% static 'js/timer.js' %}"></script>
-<script src="{% static 'js/exam.js' %}"></script>
+<script src="{% asset 'js/timer.js' %}"></script>
+<script src="{% asset 'js/exam.js' %}"></script>
 {% endblock %}

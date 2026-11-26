@@ -1,5 +1,11 @@
 """Small template helpers for the Eligo UI shell."""
+import hashlib
+from functools import lru_cache
+from pathlib import Path
+
 from django import template
+from django.contrib.staticfiles import finders
+from django.templatetags.static import static
 from django.utils.safestring import mark_safe
 
 register = template.Library()
@@ -45,3 +51,18 @@ def mmss(seconds):
     except (TypeError, ValueError):
         return ""
     return f"{s // 60}:{s % 60:02d}"
+
+
+@lru_cache(maxsize=256)
+def _digest(path: str, mtime: float) -> str:          # keyed by mtime, so an edited file gets a new version
+    found = finders.find(path)
+    return hashlib.sha256(Path(found).read_bytes()).hexdigest()[:12] if found else "0"
+
+
+@register.simple_tag
+def asset(path):
+    """Static URL with a content-hash version (?v=...) so browsers never keep a stale copy of our own CSS/JS
+    after an update (found while taking the Phase 6.5 check shots)."""
+    found = finders.find(path)
+    mtime = Path(found).stat().st_mtime if found else 0.0
+    return f"{static(path)}?v={_digest(path, mtime)}"

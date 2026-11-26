@@ -210,12 +210,19 @@ def _ineligible_preview(student_facts, not_eligible, by_id, limit: int = 10):
     """'Why you can't apply yet': not-eligible internships that share required skills with the student.
     Ordered by the count of shared skills (transparent), never by the hybrid score (rule 3)."""
     skills = set(student_facts.skills)
-    scored = []
+    groups: dict[tuple, list] = {}     # same title, company and reasons -> shown once (Phase 6.5)
     for iid, res in not_eligible:
         i = by_id[iid]
         shared = len(skills & set(i.required_skills or ()))
         if shared:
-            scored.append((shared, i.internship_title, i, explain_ineligible(res)))
+            reasons = explain_ineligible(res)
+            key = (i.internship_title.casefold(), i.company_name.casefold(), tuple(reasons))
+            groups.setdefault(key, []).append((shared, i, reasons))
+    scored = []
+    for members in groups.values():
+        shared, first, reasons = max(members, key=lambda m: m[0])
+        first.similar_listings = len(members)
+        scored.append((shared, first.internship_title, first, reasons))
     scored.sort(key=lambda t: (-t[0], t[1]))
     return [(i, reasons) for _, _, i, reasons in scored[:limit]]
 

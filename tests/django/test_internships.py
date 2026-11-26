@@ -39,6 +39,34 @@ def test_load_internships_idempotent(artifacts):
     assert Internship.objects.get(source_id="T2").work_mode == "Remote"
 
 
+def test_load_keeps_start_date_out_of_eligibility_criteria(artifacts):
+    call_command("load_internships")
+    t1 = Internship.objects.get(source_id="T1")
+    assert t1.start_date == "Immediately" and "Start:" not in t1.eligibility_criteria
+
+
+def test_refresh_retires_rows_dropped_from_the_dataset(artifacts):
+    """Phase 6.5: listings removed by the notebook (e.g. duplicates) are retired, never deleted: stored
+    recommendations still point at them. Surviving rows get their new embedding row."""
+    from ml_core.artifacts import write_manifest
+    from tests.artifact_fixtures import fixture_internship_row, write_internship_rows
+
+    call_command("load_internships")
+    admin_added = _internship(internship_title="Admin-added (fixture)")
+    import pandas as pd
+    rows = pd.read_csv(artifacts / "data" / "internships_clean.csv", dtype=str, keep_default_na=False).to_dict("records")
+    kept = [r for r in rows if r["source_id"] != "T1"]              # the notebook dropped T1
+    write_internship_rows(artifacts, kept)
+    write_manifest(artifacts, best_model_name="RandomForestClassifier", model_version="1", sentence_model_revision="x")
+    call_command("load_internships", "--refresh")
+    t1 = Internship.objects.get(source_id="T1")
+    assert t1.status == "INACTIVE" and t1.embedding_row is None
+    assert [Internship.objects.get(source_id=r["source_id"]).embedding_row for r in kept] == list(range(len(kept)))
+    assert all(Internship.objects.get(source_id=r["source_id"]).status == "ACTIVE" for r in kept)
+    admin_added.refresh_from_db()
+    assert admin_added.status == "ACTIVE"
+
+
 def test_load_does_not_reactivate_deactivated_rows(artifacts):
     call_command("load_internships")
     Internship.objects.filter(source_id="T1").update(status="INACTIVE")

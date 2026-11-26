@@ -4,51 +4,51 @@
     "name": "Student Career Dataset v2 (Mendeley 10.17632/4spj4mbpjr.2)",
     "rows_raw": 4076,
     "rows_after_exact_dedup": 2176,
-    "rows_used": 1646,
-    "train": 1316,
-    "test": 330,
+    "rows_used": 1620,
+    "train": 1296,
+    "test": 324,
     "class_counts": {
-      "Software Development and Engineering": 500,
-      "Artificial Intelligence": 335,
-      "Development": 290,
-      "Data Science": 250,
+      "Software Development and Engineering": 494,
+      "Artificial Intelligence": 333,
+      "Development": 278,
+      "Data Science": 245,
       "Security": 243,
-      "User Experience (UX) and User Interface (UI) Design": 28
+      "User Experience (UX) and User Interface (UI) Design": 27
     }
   },
   "models": {
     "DecisionTreeClassifier": {
-      "accuracy": 0.803030303030303,
-      "precision_macro": 0.7965699065014133,
-      "recall_macro": 0.8218732457814141,
-      "f1_macro": 0.8048285426816945,
-      "precision_weighted": 0.8150093152661646,
-      "recall_weighted": 0.803030303030303,
-      "f1_weighted": 0.8038202777868819,
-      "cv_best_f1_macro": 0.8411178584275248,
-      "best_params": {
-        "clf__max_depth": 20,
-        "clf__min_samples_leaf": 2,
-        "skills__min_count": 1
-      },
-      "n_features": 215
-    },
-    "RandomForestClassifier": {
-      "accuracy": 0.8484848484848485,
-      "precision_macro": 0.8783806301931883,
-      "recall_macro": 0.881379975562021,
-      "f1_macro": 0.8786647716800838,
-      "precision_weighted": 0.8516239344472215,
-      "recall_weighted": 0.8484848484848485,
-      "f1_weighted": 0.8486546361820119,
-      "cv_best_f1_macro": 0.9059482558859683,
+      "accuracy": 0.7993827160493827,
+      "precision_macro": 0.7990181910070001,
+      "recall_macro": 0.8160647366137771,
+      "f1_macro": 0.8032790309106098,
+      "precision_weighted": 0.8066487855281295,
+      "recall_weighted": 0.7993827160493827,
+      "f1_weighted": 0.7979091246635107,
+      "cv_best_f1_macro": 0.8328869626328247,
       "best_params": {
         "clf__max_depth": null,
         "clf__min_samples_leaf": 1,
-        "clf__n_estimators": 200,
         "skills__min_count": 1
       },
-      "n_features": 215
+      "n_features": 188
+    },
+    "RandomForestClassifier": {
+      "accuracy": 0.8641975308641975,
+      "precision_macro": 0.8812336510103776,
+      "recall_macro": 0.8643604796056822,
+      "f1_macro": 0.866994794502783,
+      "precision_weighted": 0.8757585888229494,
+      "recall_weighted": 0.8641975308641975,
+      "f1_weighted": 0.8645392218775517,
+      "cv_best_f1_macro": 0.9024975489878946,
+      "best_params": {
+        "clf__max_depth": 20,
+        "clf__min_samples_leaf": 1,
+        "clf__n_estimators": 400,
+        "skills__min_count": 1
+      },
+      "n_features": 188
     }
   },
   "best_model": "RandomForestClassifier",
@@ -65,19 +65,19 @@
       ],
       "matrix": [
         [
-          53,
-          5,
-          5,
-          0,
+          52,
+          3,
+          3,
           4,
+          5,
           0
         ],
         [
-          6,
-          42,
-          2,
-          0,
-          0,
+          3,
+          39,
+          1,
+          3,
+          3,
           0
         ],
         [
@@ -85,32 +85,32 @@
           1,
           51,
           0,
-          5,
-          1
+          4,
+          0
         ],
         [
-          4,
           1,
+          2,
           1,
-          43,
+          44,
           0,
           0
         ],
         [
           10,
-          0,
-          13,
-          5,
-          71,
+          1,
+          8,
+          10,
+          69,
           1
         ],
         [
           0,
           0,
+          0,
           1,
           0,
-          0,
-          5
+          4
         ]
       ]
     },
@@ -125,52 +125,52 @@
       ],
       "matrix": [
         [
-          52,
+          59,
           3,
-          4,
-          1,
-          7,
+          3,
+          2,
+          0,
           0
         ],
         [
-          4,
+          6,
+          41,
+          1,
+          1,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          54,
+          0,
+          2,
+          0
+        ],
+        [
+          1,
+          2,
+          1,
           44,
-          2,
-          0,
           0,
           0
         ],
         [
+          5,
+          0,
+          7,
+          9,
+          78,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
           1,
           0,
-          53,
-          0,
-          4,
-          0
-        ],
-        [
-          2,
-          0,
-          0,
-          45,
-          2,
-          0
-        ],
-        [
-          8,
-          0,
-          9,
-          3,
-          80,
-          0
-        ],
-        [
-          0,
-          0,
-          0,
-          0,
-          0,
-          6
+          4
         ]
       ]
     }
@@ -178,163 +178,163 @@
   "feature_importance_rf_top15": [
     [
       "skill__web development",
-      0.07872771408008906
+      0.08359230439526844
     ],
     [
       "skill__cybersecurity",
-      0.07462910347967307
+      0.07447330587060741
     ],
     [
       "skill__artificial intelligence",
-      0.05884378695932971
+      0.06661347237404952
     ],
     [
       "skill__machine learning",
-      0.050120531907755714
+      0.04720836949636749
     ],
     [
       "skill__research on artificial intelligence and machine learning",
-      0.04010527489360502
+      0.03692418621998432
     ],
     [
       "skill__mobile app development",
-      0.03617945709500402
+      0.03640311237743825
     ],
     [
       "skill__network security",
-      0.03151713451875061
-    ],
-    [
-      "skill__data engineering",
-      0.0302230668215498
+      0.036307677695213716
     ],
     [
       "skill__operating systems and networking",
-      0.029253222346254923
+      0.029473531275053744
+    ],
+    [
+      "skill__data engineering",
+      0.029462996721257045
     ],
     [
       "skill__software quality assurance",
-      0.027611366308217748
-    ],
-    [
-      "skill__robotics knowledge",
-      0.026890602086019046
-    ],
-    [
-      "skill__game development",
-      0.02640864680757681
+      0.02934515854547864
     ],
     [
       "skill__data visualization",
-      0.025507162440411305
+      0.02875535286615936
     ],
     [
       "skill__project management",
-      0.025058728825010822
+      0.02838998811165823
     ],
     [
       "skill__data analysis",
-      0.024202494098338773
+      0.027672278084918712
+    ],
+    [
+      "skill__robotics knowledge",
+      0.02626879919446027
+    ],
+    [
+      "skill__game development",
+      0.025574775568953923
     ]
   ],
   "permutation_importance_top15": [
     [
-      "web development",
-      0.0736197636139541,
-      0.019246198828972137
-    ],
-    [
       "cybersecurity",
-      0.06995633817305362,
-      0.021340159913932004
+      0.10434040375775384,
+      0.029964396943940718
     ],
     [
-      "artificial intelligence",
-      0.055201171312714625,
-      0.015014897802752537
-    ],
-    [
-      "machine learning",
-      0.04552939636797911,
-      0.011341056691684543
-    ],
-    [
-      "mobile app development",
-      0.035535918732745975,
-      0.011936427935567082
-    ],
-    [
-      "research on artificial intelligence and machine learning",
-      0.033694101821761635,
-      0.013680515255744803
-    ],
-    [
-      "network security",
-      0.03022253148576024,
-      0.011821746657878898
+      "web development",
+      0.08951590231259361,
+      0.026661861011038686
     ],
     [
       "game development",
-      0.02598494250819199,
-      0.009816290354157651
+      0.05003951079396359,
+      0.011298475953080847
+    ],
+    [
+      "network security",
+      0.04407242738652879,
+      0.0158061654027363
+    ],
+    [
+      "artificial intelligence",
+      0.0394160376774759,
+      0.009860448254605211
+    ],
+    [
+      "research on artificial intelligence and machine learning",
+      0.020449651142195012,
+      0.008316476371877863
+    ],
+    [
+      "mobile app development",
+      0.018963288940200072,
+      0.01825294144252605
     ],
     [
       "data engineering",
-      0.025695909043051014,
-      0.00813236063559692
-    ],
-    [
-      "graphic design",
-      0.02177659518693731,
-      0.007378241641066245
-    ],
-    [
-      "animation",
-      0.017407767210916924,
-      0.0034566701889536594
+      0.013803231264646932,
+      0.004038155420645525
     ],
     [
       "software quality assurance",
-      0.014988968230627907,
-      0.004714082229311991
-    ],
-    [
-      "operating systems and networking",
-      0.013660913380833074,
-      0.01925872753481315
+      0.012763534914000552,
+      0.003997147497642927
     ],
     [
       "robotics knowledge",
-      0.013575303657237258,
-      0.010636582131336737
+      0.011108376816394473,
+      0.010539821601519195
     ],
     [
-      "ui/ux design",
-      0.00884680704163251,
-      0.008786873779103668
+      "android app development",
+      0.009220414344844741,
+      0.005917088348684505
+    ],
+    [
+      "data analytics",
+      0.005851270539818687,
+      0.0009474844200265658
+    ],
+    [
+      "cryptography",
+      0.004414057332736332,
+      0.003337021557402888
+    ],
+    [
+      "cloud computing",
+      0.0038404516463943494,
+      0.0018642108842643207
+    ],
+    [
+      "photography",
+      0.001347171347171361,
+      0.0040415140415140825
     ]
   ],
-  "shap": "ok (14s)",
+  "shap": "ok (11s)",
   "confidence_by_bucket": {
     "<0.4": {
-      "rows": 8,
-      "accuracy": 0.25
+      "rows": 11,
+      "accuracy": 0.2727272727272727
     },
     "0.4-0.5": {
-      "rows": 23,
-      "accuracy": 0.4782608695652174
+      "rows": 17,
+      "accuracy": 0.29411764705882354
     },
     "0.5-0.6": {
-      "rows": 34,
-      "accuracy": 0.7058823529411765
+      "rows": 38,
+      "accuracy": 0.7894736842105263
     },
     "0.6-0.8": {
-      "rows": 77,
-      "accuracy": 0.8311688311688312
+      "rows": 93,
+      "accuracy": 0.8924731182795699
     },
     ">=0.8": {
-      "rows": 188,
-      "accuracy": 0.9521276595744681
+      "rows": 165,
+      "accuracy": 0.9636363636363636
     }
   },
   "accuracy_by_known_skills": {
@@ -343,16 +343,16 @@
       "accuracy": null
     },
     "1": {
-      "rows": 9,
-      "accuracy": 0.4444444444444444
+      "rows": 5,
+      "accuracy": 0.4
     },
     "2": {
-      "rows": 24,
-      "accuracy": 0.625
+      "rows": 28,
+      "accuracy": 0.5714285714285714
     },
     "3+": {
-      "rows": 297,
-      "accuracy": 0.8787878787878788
+      "rows": 291,
+      "accuracy": 0.9003436426116839
     }
   },
   "scope_thresholds": {
