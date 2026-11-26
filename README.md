@@ -76,7 +76,7 @@ Both are real data. Cleaning keeps one copy of repeated listings, which takes th
 
 ## Setup (Windows, PowerShell)
 
-You need Python 3.12 and about 2 GB of free disk space (most of it is PyTorch).
+You need Python 3.12 and about 2 GB of free disk space (most of it is PyTorch). Clone into a short path such as `C:\dev`. Some packages install deeply nested files, and pip fails with "The filename or extension is too long" when the folder is buried several levels deep, unless Windows long paths are enabled.
 
 ```powershell
 git clone https://github.com/Krishna141414/eligo-internship-engine.git

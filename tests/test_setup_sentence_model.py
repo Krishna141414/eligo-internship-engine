@@ -54,3 +54,19 @@ def test_script_passes_pinned_revision(artifacts):
 def test_script_without_manifest_explains(tmp_path, capsys):
     assert main(["--artifacts-dir", str(tmp_path)], download=_good_download) == 1
     assert "notebook" in capsys.readouterr().out.lower()
+
+
+def test_packages_that_shape_the_saved_model_are_pinned_exactly():
+    """Fresh-clone test (Phase 7): transformers 5.24.1 was published after the model was saved with
+    5.24.0, and the version string it writes into config.json broke the SHA-256 check. Everything that
+    writes into the saved model's files must be pinned to the installed version."""
+    import re
+    from importlib.metadata import version
+    from pathlib import Path
+
+    req = (Path(__file__).resolve().parent.parent / "requirements.txt").read_text(encoding="utf-8")
+    pins = dict(re.findall(r"^([A-Za-z0-9_.-]+)==([^\s#]+)", req, flags=re.M))
+    pins = {k.lower(): v for k, v in pins.items()}
+    for pkg in ("sentence-transformers", "transformers", "tokenizers", "huggingface-hub", "safetensors", "torch"):
+        assert pkg in pins, f"{pkg} is not pinned in requirements.txt"
+        assert version(pkg).split("+")[0] == pins[pkg].split("+")[0], (pkg, version(pkg), pins[pkg])

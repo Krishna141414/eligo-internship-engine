@@ -17,6 +17,13 @@ joblib==1.6.0
 matplotlib==3.11.2
 seaborn==0.13.2
 sentence-transformers==6.3.0
+# Pinned because they write their version into the saved sentence model's config files, which
+# setup_sentence_model.py checks byte for byte against artifacts/manifest.json (found by the
+# Phase 7 fresh-clone test: transformers 5.24.1 broke the check for a model saved with 5.24.0).
+transformers==5.24.0
+tokenizers==0.23.3
+huggingface-hub==2.4.0
+safetensors==0.8.0
 openpyxl==3.1.5
 
 # --- Web ---
