@@ -26,7 +26,7 @@
       <span class="listing__title">{{ a.assessment_name }}</span>
       <ul class="meta-list">
         <li><i class="bi bi-list-ol" aria-hidden="true"></i>{{ a.n_questions }} questions</li>
-        <li><i class="bi bi-clock" aria-hidden="true"></i>{{ a.duration_minutes }} minutes</li>
+        <li><i class="bi bi-clock" aria-hidden="true"></i>{{ a.duration_minutes }} minute{{ a.duration_minutes|pluralize }}</li>
         <li>Pass mark above 60%</li>
       </ul>
     </div>

@@ -66,7 +66,7 @@
       {% for a in available_assessments %}
       <li><i class="bi bi-ui-checks" aria-hidden="true"></i>
         <div><a href="{% url 'assessments:list' %}">{{ a.assessment_name }}</a>
-          <ul class="meta-list"><li>{{ a.duration_minutes }} minutes</li><li>Pass mark above 60%</li></ul></div></li>
+          <ul class="meta-list"><li>{{ a.duration_minutes }} minute{{ a.duration_minutes|pluralize }}</li><li>Pass mark above 60%</li></ul></div></li>
       {% endfor %}
     </ul>
     {% elif missing %}

@@ -121,14 +121,14 @@ Last updated: 2026-11-25 (Phase 4)
 ### 9. Technology stack
 | ID | Requirement | Where implemented | Status |
 |---|---|---|---|
-| 9.1 | Frontend: HTML5, CSS3, JavaScript, Bootstrap 5 | `templates/`, `static/`, vendored Bootstrap 5.3.9 | 🟨 working templates; design system in Phase 5 |
+| 9.1 | Frontend: HTML5, CSS3, JavaScript, Bootstrap 5 | `templates/`, `static/css/theme.css`, `static/js/`, vendored Bootstrap 5.3.9 | ✅ |
 | 9.2 | Backend: Django 5.2 LTS | `config/`, six apps | ✅ Django 5.2.19 |
 | 9.3 | Database: SQLite | `config/settings.py` (SQLite) | ✅ |
 | 9.4 | ML: scikit-learn, Joblib | `ml_core/`, joblib loads in `ml_core.artifacts` | ✅ |
 | 9.5 | AI recommendation: TF-IDF, Sentence Transformers, cosine similarity | `recommendations/services.py` → `ml_core.recommender` | ✅ |
 | 9.6 | LLM: optional Ollama | `ml_core/llm_extract.py`, `recommendations/services.py` (D-024) | ✅ live in the web app (top 3 per run; method shown) |
 | 9.7 | XAI: feature-based recommendation explanations | `ml_core/explain.py`, recommendation detail pages | ✅ |
-| 9.8 | Visualisation: Chart.js | `static/vendor/chartjs/` (charts in Phase 5) | 🟨 vendored; charts built in Phase 5 |
+| 9.8 | Visualisation: Chart.js | `static/vendor/chartjs/`, `static/js/charts.js` (job-role probabilities + feature importance, admin recommendations per internship, model comparison) | ✅ |
 
 ### 10. Database tables
 | ID | Requirement | Where implemented | Status |
@@ -190,7 +190,7 @@ Last updated: 2026-11-25 (Phase 4)
 | 12.1.5 | Logout | `accounts:logout` | ✅ |
 | 12.2.1 | Update qualification and specialisation | `students/forms.py` `StudentProfileForm` | ✅ |
 | 12.2.2 | Update college and academic percentage | `students/forms.py` | ✅ |
-| 12.2.3 | Add / update skills | `students/forms.py` (free-text skills + career skills multi-select, D-022) | ✅ tag-style input in Phase 5 |
+| 12.2.3 | Add / update skills | `students/forms.py`, `static/js/profile.js` (tag input with suggestions, searchable career-skill picker; D-022, D-026) | ✅ |
 | 12.2.4 | Select career interests | `students/forms.py` | ✅ |
 | 12.2.5 | Select preferred job role and location | `students/forms.py` | ✅ |
 | 12.3.1 | Dashboard: available internships | `students/services.py` `dashboard_context` | ✅ |
@@ -204,7 +204,7 @@ Last updated: 2026-11-25 (Phase 4)
 | 12.5.1 | View qualification-based assessments | `assessments:list` | ✅ |
 | 12.5.2 | Select and start assessment | `assessments:start` (server deadline, resume) | ✅ |
 | 12.5.3 | Attempt MCQ questions | `assessments:exam` + autosave | ✅ |
-| 12.5.4 | View remaining time | `static/js/timer.js` (server remaining seconds) | ✅ styling in Phase 5 |
+| 12.5.4 | View remaining time | `static/js/timer.js` (server remaining seconds; pill navy → amber ≤5 min → red ≤1 min, with text labels) | ✅ |
 | 12.5.5 | Submit assessment | `assessments:submit` | ✅ |
 | 12.5.6 | Auto-submit when time expires | `timer.js` auto-submit + server lazy finalise | ✅ |
 | 12.6.1 | Result: total questions | `assessments:result` | ✅ |
@@ -216,7 +216,7 @@ Last updated: 2026-11-25 (Phase 4)
 | 12.7.2 | Analyse student skills and academic profile | `recommendations/services.py` | ✅ |
 | 12.7.3 | Match student profile with internship requirements | `recommendations/services.py` → `ml_core.recommender.recommend` | ✅ |
 | 12.7.4 | Generate hybrid AI-based recommendations | `recommendations:list` (POST generate) | ✅ |
-| 12.7.5 | View ranked internships with match scores | `recommendations:list` | ✅ cards in Phase 5 |
+| 12.7.5 | View ranked internships with match scores | `recommendations:list` (recommendation cards) | ✅ |
 | 12.7.6 | View matched and missing skills | `recommendations:list/detail` | ✅ |
 | 12.7.7 | View XAI recommendation reasons | `recommendations:detail` (gates, components, contributions) | ✅ |
 | 12.8.1 | Predict job role from academic profile + available assessment features | `recommendations/services.py` `predict_job_role` (career skills only, D-022) | ✅ |
@@ -249,7 +249,7 @@ Last updated: 2026-11-25 (Phase 4)
 | 14.5 | Score strictly above 60% satisfies assessment eligibility | `assessments/services.py`, `ml_core/eligibility.py` | ✅ |
 | 14.6 | Check mandatory qualifications and other explicit eligibility rules | `ml_core/eligibility.py` | ✅ |
 | 14.7 | Hybrid engine ranks only eligible internships | `ml_core/recommender.py` (gates first) | ✅ |
-| 14.8 | Display scores, matched skills, missing skills, explanations | recommendation templates | ✅ visual design in Phase 5 |
+| 14.8 | Display scores, matched skills, missing skills, explanations | recommendation cards, detail page, XAI table | ✅ |
 | 14.9 | ML model predicts job-role category separately | `recommendations:job_role` | ✅ |
 | 14.10 | All important results stored in the database | attempts, answers, recommendation runs, predictions in SQLite | ✅ |
 | 14.11 | Mandatory qualifications/thresholds never overridden by similarity scores | gates before scoring; tested + mutation-checked | ✅ |
@@ -257,17 +257,17 @@ Last updated: 2026-11-25 (Phase 4)
 ### 15. User interface requirements
 | ID | Requirement | Where implemented | Status |
 |---|---|---|---|
-| 15.1 | Attractive academic and career-themed design | `static/css/theme.css`, templates | ⬜ |
-| 15.2 | Responsive Bootstrap layouts | templates | ⬜ |
-| 15.3 | Separate admin and student dashboards | `adminpanel/`, `students/` | 🟨 separate dashboards work; design in Phase 5 |
-| 15.4 | Simple forms and navigation | templates | ⬜ |
-| 15.5 | Searchable internship listings | `internships:list` | 🟨 working; styling in Phase 5 |
-| 15.6 | Online MCQ interface with timer | `assessments:exam`, `timer.js`, `exam.js` | 🟨 working; signature exam screen in Phase 5 |
-| 15.7 | Recommendation cards with match scores | recommendation card partial | ⬜ |
-| 15.8 | Matched and missing skills visualisation | skill chips + chart | ⬜ |
-| 15.9 | Job-role prediction result page | `recommendations:job_role` | 🟨 working; hero card + chart in Phase 5 |
-| 15.10 | User-friendly validation and error messages | forms + messages | 🟨 specific messages in place; copy pass in Phase 5/7 |
-| 15.11 | Avoid unnecessary animations, complex dashboards, decorative elements | `theme.css` motion rules | ⬜ |
+| 15.1 | Attractive academic and career-themed design | `static/css/theme.css` (CLAUDE.md tokens, D-023), `docs/screenshots/` | ✅ |
+| 15.2 | Responsive Bootstrap layouts | templates; every page shot at 1440 and 390 px in `docs/screenshots/` | ✅ |
+| 15.3 | Separate admin and student dashboards | student top bar + journey + stat band; admin navy sidebar + stat band + charts | ✅ |
+| 15.4 | Simple forms and navigation | `partials/form.html`, active-tab navigation, admin breadcrumbs | ✅ |
+| 15.5 | Searchable internship listings | `internships:list` (filters, empty state, pagination) | ✅ |
+| 15.6 | Online MCQ interface with timer | `assessments:exam`, `timer.js`, `exam.js` (timer pill, palette, one question per view, confirm modal; D-026) | ✅ |
+| 15.7 | Recommendation cards with match scores | `templates/recommendations/list.html` (score ring, breakdown bar, chips, explain section, async AI second opinion) | ✅ |
+| 15.8 | Matched and missing skills visualisation | matched (solid green) and missing (dashed orange) chips, breakdown bar | ✅ |
+| 15.9 | Job-role prediction result page | `recommendations:job_role` (hero or scope state, probability + feature charts, related internships) | ✅ |
+| 15.10 | User-friendly validation and error messages | forms + messages, empty states | 🟨 specific messages in place; final copy pass in Phase 7 |
+| 15.11 | Avoid unnecessary animations, complex dashboards, decorative elements | `theme.css` (150 ms colour/shadow + 2 px lift only, off under reduced motion), Chart.js animation off | ✅ |
 
 ### 16. Security and validation
 | ID | Requirement | Where implemented | Status |
@@ -382,6 +382,14 @@ Last updated: 2026-11-25 (Phase 4)
 - [x] `pytest tests` → 311 passed, 1 skipped at the phase commit; after the model finished: 313 passed, 0 skipped
 - [x] End-to-end smoke through the real views + real artifacts (rolled back): DEMO CS exam 80% Qualified, duplicate submit rejected, 10 recommendations in ~3.7 s, job role Artificial Intelligence 95% confident, all admin pages 200
 - [x] D-022 career-skills fix applied end to end (multi-select from feature_schema.json, prediction uses only career skills, DEMO CS confident + test)
+
+### Phase 5 — UI and design
+- [x] Hallmark study → D-023; tokens + layouts in `static/css/theme.css`; signature components on every student and admin page (D-026)
+- [x] `warm_llm` command + non-blocking warm-up on `runserver` (D-025); documented in the README demo checklist
+- [x] Recommendations render in 3.26 s (measured in the browser, 8,207 internships); the top 3 cards show "AI second opinion: checking…" and the three LLM checks finished 6.8 s later without blocking the page
+- [x] Playwright screenshots of every page at 1440 and 390 px → `docs/screenshots/` (real flows: DEMO CS 80.00% Qualified, DEMO B.Sc exactly 60.00% Not qualified)
+- [x] Audit loop: sloplint static tier clean apart from recorded waivers (render tier needs puppeteer-core, not installed); screenshot-review fixes applied and re-shot
+- [x] `pytest tests` → all pass; the strict xfail on middle-dot meta strings is removed and the test passes
 
 ## PENDING – Ollama (tracker)
 Items that need a live Ollama. Everything else goes ahead without it, because the project never depends on Ollama and the rule-based fallback always works.

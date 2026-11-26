@@ -313,5 +313,5 @@ def related_internships(prediction, student, limit: int = 5):
         i = eligible[int(k)]
         text = f"{i.internship_title} {i.job_role} {' '.join(i.required_skills or [])}".lower()
         hit = next((kw for kw in keywords if kw in text), keywords[0])
-        out.append((i, f"Matches “{hit}”, a {prediction.predicted_job_role} keyword"))
+        out.append((i, f"Matches “{hit}”, one of the {prediction.predicted_job_role} keywords"))
     return out

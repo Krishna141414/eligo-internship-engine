@@ -30,3 +30,6 @@ artifacts/models/sentence_model/
 
 # Superpowers plan-execution scratch (ledger, briefs)
 .superpowers/
+
+# Playwright MCP scratch output
+.playwright-mcp/
