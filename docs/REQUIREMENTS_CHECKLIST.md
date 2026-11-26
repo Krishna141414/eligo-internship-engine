@@ -321,7 +321,7 @@ Last updated: 2026-11-25 (Phase 4)
 | ID | Requirement | Where implemented | Status |
 |---|---|---|---|
 | 19.1 | Complete executable notebook and Django source code | `notebooks/eligo_engine.ipynb` re-executed with `nbconvert` (exit 0, Phase 6.5); Django apps; fresh clone ran the app and 450 tests (Phase 7) | ✅ |
-| 19.2 | Complete notebook before Django integration | git history: `2c43a58 Phase 3: ml_core + notebook + artifacts` precedes `1c2ff1a Phase 4: Django backend` | ✅ |
+| 19.2 | Complete notebook before Django integration | git history: `aed2c50 Phase 3: ml_core + notebook + artifacts` precedes `3688e79 Phase 4: Django backend` | ✅ |
 | 19.3 | Only freely available datasets and pretrained models | `docs/DATASETS.md`: Student Career Dataset (CC BY 4.0), Kaggle internships (MIT); `all-MiniLM-L6-v2` (Apache 2.0, pinned revision); optional `qwen3:4b` via Ollama (Apache 2.0) | ✅ |
 | 19.4 | Two user roles: Admin and Student | `accounts/models.py` | ✅ |
 | 19.5 | Every essential functional requirement implemented | this checklist: every row ✅ with its file, test or evidence | ✅ |
