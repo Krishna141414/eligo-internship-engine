@@ -1,32 +1,67 @@
 {% extends "base.html" %}
+{% load eligo_ui %}
 {% block title %}{{ s.name }}{% endblock %}
+{% block crumb %}Students{% endblock %}
 {% block content %}
-<a class="small" href="{% url 'adminpanel:students' %}">&larr; All students</a>
-<h1 class="h3 mt-2">{{ s.name }}</h1>
-<p class="text-muted">{{ s.email }} · {{ s.mobile_number|default:"no mobile" }} · registered {{ s.registered_date|date:"d M Y" }} · {{ s.get_status_display }}</p>
-<form method="post" action="{% url 'adminpanel:student_toggle' s.pk %}">{% csrf_token %}<input type="hidden" name="next" value="{{ request.path }}">
-  <button class="btn btn-outline-secondary btn-sm" type="submit">{% if s.status == "ACTIVE" %}Deactivate student{% else %}Activate student{% endif %}</button></form>
+<a class="back-link" href="{% url 'adminpanel:students' %}"><i class="bi bi-arrow-left" aria-hidden="true"></i>All students</a>
+<div class="page-header">
+  <div><h1>{{ s.name }}</h1>
+    <ul class="meta-list mt-1"><li>{{ s.email }}</li><li>{{ s.mobile_number|default:"No mobile number" }}</li>
+      <li>Registered {{ s.registered_date|date:"d M Y" }}</li><li>{{ s.get_status_display }}</li></ul></div>
+  <form method="post" action="{% url 'adminpanel:student_toggle' s.pk %}">{% csrf_token %}<input type="hidden" name="next" value="{{ request.path }}">
+    <button class="btn btn-outline-secondary" type="submit">{% if s.status == "ACTIVE" %}Deactivate student{% else %}Activate student{% endif %}</button></form>
+</div>
 
-<h2 class="h5 mt-4">Academic profile</h2>
-{% if profile %}
-<dl class="row">
-  <dt class="col-sm-3">Qualification</dt><dd class="col-sm-9">{{ profile.qualification }}{% if profile.specialization %} ({{ profile.specialization }}){% endif %}</dd>
-  <dt class="col-sm-3">College</dt><dd class="col-sm-9">{{ profile.college_name|default:"—" }}</dd>
-  <dt class="col-sm-3">Academic %</dt><dd class="col-sm-9">{{ profile.academic_percentage|default:"—" }}</dd>
-  <dt class="col-sm-3">Skills</dt><dd class="col-sm-9">{{ profile.skills|join:", "|default:"—" }}</dd>
-  <dt class="col-sm-3">Career skills</dt><dd class="col-sm-9">{{ profile.career_skills|join:", "|default:"—" }}</dd>
-  <dt class="col-sm-3">Interests / preferred role / location</dt><dd class="col-sm-9">{{ profile.career_interests|default:"—" }} · {{ profile.preferred_job_role|default:"—" }} · {{ profile.preferred_location|default:"—" }}</dd>
-</dl>
-{% else %}<p>No profile yet.</p>{% endif %}
+<div class="split">
+  <section class="panel" aria-labelledby="prof-h">
+    <h2 class="panel__title" id="prof-h">Academic profile</h2>
+    {% if profile %}
+    <dl class="facts">
+      <dt>Qualification</dt><dd>{{ profile.qualification }}{% if profile.specialization %} ({{ profile.specialization }}){% endif %}</dd>
+      <dt>College</dt><dd>{{ profile.college_name|default:"Not given" }}</dd>
+      <dt>Academic %</dt><dd>{{ profile.academic_percentage|default:"Not given" }}</dd>
+      <dt>Career interests</dt><dd>{{ profile.career_interests|default:"Not given" }}</dd>
+      <dt>Preferred role</dt><dd>{{ profile.preferred_job_role|default:"Not given" }}</dd>
+      <dt>Preferred location</dt><dd>{{ profile.preferred_location|default:"Not given" }}</dd>
+    </dl>
+    <p class="rec-card__group-label mt-3">Skills</p>
+    {% if profile.skills %}<ul class="chips">{% for k in profile.skills %}<li class="chip chip--neutral">{{ k }}</li>{% endfor %}</ul>{% else %}<p class="text-muted">None.</p>{% endif %}
+    <p class="rec-card__group-label mt-3">Career skills</p>
+    {% if profile.career_skills %}<ul class="chips">{% for k in profile.career_skills %}<li class="chip chip--neutral">{{ k }}</li>{% endfor %}</ul>{% else %}<p class="text-muted mb-0">None.</p>{% endif %}
+    {% else %}<p class="text-muted mb-0">No profile yet.</p>{% endif %}
+  </section>
 
-<h2 class="h5">Assessment results</h2>
-<table class="table table-sm"><thead><tr><th scope="col">Assessment</th><th scope="col">Status</th><th scope="col">Marks</th><th scope="col">Score</th><th scope="col">Result</th></tr></thead><tbody>
-{% for a in attempts %}<tr><td>{{ a.assessment }}</td><td>{{ a.get_status_display }}</td><td>{{ a.obtained_marks|floatformat }} / {{ a.total_marks|floatformat }}</td><td>{% if a.score_percentage is not None %}{{ a.score_percentage|floatformat:2 }}%{% else %}—{% endif %}</td><td>{{ a.get_result_display|default:"—" }}</td></tr>
-{% empty %}<tr><td colspan="5">No attempts.</td></tr>{% endfor %}</tbody></table>
+  <section class="panel" aria-labelledby="pred-h">
+    <h2 class="panel__title" id="pred-h">Job-role predictions</h2>
+    {% if predictions %}
+    <ul class="blocked-list">
+      {% for p in predictions %}<li><strong>{{ p.predicted_job_role|default:"No prediction" }}</strong>
+        <span class="badge-status {% if p.scope_status == 'confident' %}badge-status--ok{% else %}badge-status--warn{% endif %}">{{ p.get_scope_status_display }}</span>
+        <ul class="meta-list mt-1">{% if p.probability is not None %}<li>{% widthratio p.probability 1 100 %}% confidence</li>{% endif %}
+          <li>{{ p.model_name }} v{{ p.model_version }}</li><li>{{ p.predicted_date|date:"d M Y" }}</li></ul></li>{% endfor %}
+    </ul>
+    {% else %}<p class="text-muted mb-0">None yet.</p>{% endif %}
+  </section>
+</div>
 
-<h2 class="h5">Latest recommendations</h2>
-<ol>{% for r in recs %}<li><a href="{% url 'adminpanel:recommendation_detail' r.pk %}">{{ r.internship }}</a> · {% widthratio r.final_match_score 1 100 %}% · matched {{ r.matched_skills|join:", "|default:"none" }} · missing {{ r.missing_skills|join:", "|default:"none" }}</li>{% empty %}<li class="list-unstyled">None yet.</li>{% endfor %}</ol>
+<h2 class="section-title mt-4">Assessment results</h2>
+<div class="table-wrap"><table class="table mb-0">
+  <thead><tr><th scope="col">Assessment</th><th scope="col">Status</th><th scope="col">Marks</th><th scope="col">Score</th><th scope="col">Result</th></tr></thead>
+  <tbody>
+  {% for a in attempts %}<tr><td>{{ a.assessment }}</td><td>{{ a.get_status_display }}</td><td class="num">{{ a.obtained_marks|floatformat }} of {{ a.total_marks|floatformat }}</td>
+    <td class="num">{% if a.score_percentage is not None %}{{ a.score_percentage|floatformat:2 }}%{% else %}Pending{% endif %}</td>
+    <td>{% if a.result %}<span class="badge-status {% if a.result == 'QUALIFIED' %}badge-status--ok{% else %}badge-status--no{% endif %}">{{ a.get_result_display }}</span>{% else %}<span class="text-muted">Pending</span>{% endif %}</td></tr>
+  {% empty %}<tr><td colspan="5" class="text-muted">No attempts.</td></tr>{% endfor %}
+  </tbody>
+</table></div>
 
-<h2 class="h5">Job-role predictions</h2>
-<ul>{% for p in predictions %}<li>{{ p.predicted_job_role|default:"No prediction" }} · {{ p.get_scope_status_display }}{% if p.probability is not None %} · {% widthratio p.probability 1 100 %}%{% endif %} · {{ p.model_name }} v{{ p.model_version }} · {{ p.predicted_date|date:"d M Y" }}</li>{% empty %}<li>None yet.</li>{% endfor %}</ul>
+<h2 class="section-title mt-4">Latest recommendations</h2>
+<div class="table-wrap"><table class="table mb-0">
+  <thead><tr><th scope="col">Rank</th><th scope="col">Internship</th><th scope="col">Match</th><th scope="col">Matched skills</th><th scope="col">Missing skills</th></tr></thead>
+  <tbody>
+  {% for r in recs %}<tr><td class="num">{{ r.recommendation_rank }}</td><td><a href="{% url 'adminpanel:recommendation_detail' r.pk %}">{{ r.internship }}</a></td>
+    <td class="num">{{ r.final_match_score|pct }}%</td><td>{{ r.matched_skills|join:", "|default:"None" }}</td><td>{{ r.missing_skills|join:", "|default:"None" }}</td></tr>
+  {% empty %}<tr><td colspan="5" class="text-muted">None yet.</td></tr>{% endfor %}
+  </tbody>
+</table></div>
 {% endblock %}

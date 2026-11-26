@@ -108,3 +108,43 @@ def test_internship_search_empty_state(student_client, student):
 def test_profile_career_skill_picker(student_client, student, fake_artifacts):
     html = student_client.get(reverse("students:profile_edit")).content.decode()
     assert 'data-skill-picker' in html and 'data-skill-filter' in html
+
+
+# --- admin ------------------------------------------------------------------------------------------
+def _chart(html, script_id):
+    m = re.search(rf'<script id="{script_id}" type="application/json">(.*?)</script>', html, re.S)
+    return json.loads(m.group(1)) if m else None
+
+
+def test_admin_dashboard_outcome_bar_from_counts(admin_client_, student, other_student, make_user):
+    make_user(email="third@example.com")                       # never attempted
+    _qualify(student)
+    _qualify(other_student, score="60.00")
+    Attempt.objects.filter(student=other_student).update(result="NOT_QUALIFIED")
+    html = admin_client_.get(reverse("adminpanel:dashboard")).content.decode()
+    assert 'class="stat-band"' in html
+    widths = dict(re.findall(r'outcome__seg--([\w-]+)" style="width: ([\d.]+)%"', html))
+    assert widths == {"qualified": "33.33", "not-qualified": "33.33", "not-attempted": "33.33"}
+
+
+def test_recommendations_per_internship_chart_counts_rows(admin_client_, student, ai_bundle):
+    from adminpanel.services import recommendations_per_internship
+    _profile(student)
+    _qualify(student)
+    services.generate_recommendations(student)
+    services.generate_recommendations(student)                 # second run: every count doubles
+    expected = recommendations_per_internship()
+    assert expected and all(n == 2 for _, n in expected)
+    data = _chart(admin_client_.get(reverse("adminpanel:dashboard")).content.decode(), "recs-chart-data")
+    assert data == {"labels": [t for t, _ in expected], "values": [n for _, n in expected]}
+
+
+def test_ml_comparison_chart_from_saved_metrics(admin_client_, fake_artifacts):
+    metrics = {"best_model": "RandomForestClassifier", "selection_rule": "highest macro F1",
+               "models": {"DecisionTreeClassifier": {"accuracy": 0.61, "f1_macro": 0.55},
+                          "RandomForestClassifier": {"accuracy": 0.68, "f1_macro": 0.62}}}
+    (fake_artifacts / "metrics" / "metrics.json").write_text(json.dumps(metrics))
+    services.reset_bundle_cache()
+    data = _chart(admin_client_.get(reverse("adminpanel:ml")).content.decode(), "ml-chart-data")
+    assert data == {"labels": ["DecisionTreeClassifier", "RandomForestClassifier"],
+                    "accuracy": [61.0, 68.0], "f1_macro": [55.0, 62.0]}

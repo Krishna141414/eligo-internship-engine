@@ -48,6 +48,29 @@
   }
   window.EligoCharts = { hbar: hbar, data: data };
 
+  /* Two series per model (accuracy navy, macro F1 amber), in percent. */
+  function modelComparison(canvasId, d) {
+    var canvas = document.getElementById(canvasId);
+    if (!canvas || !d || !d.labels || !d.labels.length) return null;
+    return new Chart(canvas, {
+      type: "bar",
+      data: { labels: d.labels, datasets: [
+        { label: "Accuracy", data: d.accuracy, backgroundColor: C.navy, borderRadius: 4, maxBarThickness: 40 },
+        { label: "F1 (macro)", data: d.f1_macro, backgroundColor: C.amber, borderRadius: 4, maxBarThickness: 40 }] },
+      options: {
+        scales: {
+          y: { beginAtZero: true, max: 100, grid: { color: C.border }, border: { display: false },
+               ticks: { callback: function (v) { return v + "%"; } } },
+          x: { grid: { display: false }, border: { display: false }, ticks: { color: C.text } }
+        },
+        plugins: { tooltip: { callbacks: { label: function (ctx) { return " " + ctx.dataset.label + ": " + ctx.parsed.y + "%"; } } } }
+      }
+    });
+  }
+  window.EligoCharts.modelComparison = modelComparison;
+
   hbar("role-chart", data("role-chart-data"), { max: 100, suffix: "%", highlightFirst: true });
   hbar("feature-chart", data("feature-chart-data"), { colour: C.navy600 });
+  hbar("recs-chart", data("recs-chart-data"), { colour: C.navy });
+  modelComparison("ml-chart", data("ml-chart-data"));
 })();

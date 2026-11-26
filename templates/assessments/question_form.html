@@ -1,11 +1,14 @@
 {% extends "base.html" %}
 {% block title %}{{ title }}{% endblock %}
+{% block crumb %}Assessments{% endblock %}
 {% block content %}
-<h1 class="h3">{{ title }}</h1>
-<p class="text-muted">{{ assessment.assessment_name }}</p>
-<form method="post" novalidate>{% csrf_token %}
-  {% include "partials/form.html" %}
-  <button class="btn btn-primary" type="submit">Save question</button>
-  <a class="btn btn-link" href="{% url 'assessments:questions' assessment.pk %}">Cancel</a>
-</form>
+<a class="back-link" href="{% url 'assessments:questions' assessment.pk %}"><i class="bi bi-arrow-left" aria-hidden="true"></i>{{ assessment.assessment_name }}</a>
+<div class="page-header"><div><h1>{{ title }}</h1><p>Four options, one correct answer. Students never see the answer key.</p></div></div>
+<div class="panel panel--form">
+  <form method="post" novalidate>{% csrf_token %}
+    {% include "partials/form.html" %}
+    <button class="btn btn-primary" type="submit">Save question</button>
+    <a class="btn btn-link" href="{% url 'assessments:questions' assessment.pk %}">Cancel</a>
+  </form>
+</div>
 {% endblock %}

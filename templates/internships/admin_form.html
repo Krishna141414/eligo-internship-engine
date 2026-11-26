@@ -1,10 +1,14 @@
 {% extends "base.html" %}
 {% block title %}{{ title }}{% endblock %}
+{% block crumb %}Internships{% endblock %}
 {% block content %}
-<h1 class="h3">{{ title }}</h1>
-<form method="post" novalidate>{% csrf_token %}
-  {% include "partials/form.html" %}
-  <button class="btn btn-primary" type="submit">Save internship</button>
-  <a class="btn btn-link" href="{% url 'internships:admin_list' %}">Cancel</a>
-</form>
+<a class="back-link" href="{% url 'internships:admin_list' %}"><i class="bi bi-arrow-left" aria-hidden="true"></i>All internships</a>
+<div class="page-header"><div><h1>{{ title }}</h1><p>New listings are encoded with the saved TF-IDF and sentence models. Nothing is retrained.</p></div></div>
+<div class="panel panel--form">
+  <form method="post" novalidate>{% csrf_token %}
+    {% include "partials/form.html" %}
+    <button class="btn btn-primary" type="submit">Save internship</button>
+    <a class="btn btn-link" href="{% url 'internships:admin_list' %}">Cancel</a>
+  </form>
+</div>
 {% endblock %}

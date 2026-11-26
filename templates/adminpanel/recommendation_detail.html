@@ -1,16 +1,42 @@
 {% extends "base.html" %}
+{% load eligo_ui %}
 {% block title %}Recommendation explanation{% endblock %}
+{% block crumb %}Recommendations{% endblock %}
 {% block content %}
-<a class="small" href="{% url 'adminpanel:recommendation_run' rec.run_id %}">&larr; This run</a>
-<h1 class="h3 mt-2">#{{ rec.recommendation_rank }} {{ rec.internship }} for {{ rec.student.name }}</h1>
-<p class="fs-5">{{ rec.recommendation_reason }}</p>
-<h2 class="h5">Eligibility checks</h2>
-<ul>{% for g in x.gates %}<li>{% if g.passed %}✓{% else %}✗{% endif %} {{ g.reason }}</li>{% endfor %}</ul>
-<h2 class="h5">Score breakdown</h2>
-<table class="table table-sm w-auto"><thead><tr><th scope="col">Component</th><th scope="col">Score</th><th scope="col">Weight</th><th scope="col">Contribution</th></tr></thead><tbody>
-{% for c in x.components %}<tr><td>{{ c.label }}</td><td>{{ c.score|floatformat:3 }}</td><td>{{ c.weight }}</td><td>{{ c.contribution|floatformat:3 }}</td></tr>{% endfor %}
-<tr class="fw-semibold"><td>Final</td><td colspan="2"></td><td>{{ x.final_score|floatformat:3 }}</td></tr></tbody></table>
-<p>Matched skills: {{ x.matched_skills|join:", "|default:"none" }}</p>
-<p>Missing skills: {{ x.missing_skills|join:", "|default:"none" }}</p>
-<p class="small text-muted">Assessment {{ x.assessment.score }} vs {{ x.assessment.threshold }} threshold · skill-gap check: {{ rec.get_analysis_method_display }}{% if rec.analysis_detail %} ({{ rec.analysis_detail }}){% endif %}</p>
+<a class="back-link" href="{% url 'adminpanel:recommendation_run' rec.run_id %}"><i class="bi bi-arrow-left" aria-hidden="true"></i>This run</a>
+<section class="panel rec-detail-head" aria-labelledby="rec-h">
+  <div class="score-ring score-ring--md" style="--value: {{ rec.final_match_score|pct }}" role="img" aria-label="{{ rec.final_match_score|pct }}% match">
+    <span class="score-ring__inner"><span class="score-ring__value">{{ rec.final_match_score|pct }}%</span><span class="score-ring__label">match</span></span>
+  </div>
+  <div>
+    <p class="text-muted mb-1">Rank #{{ rec.recommendation_rank }} for {{ rec.student.name }}</p>
+    <h1 id="rec-h" class="mb-2">{{ rec.internship }}</h1>
+    <p class="lead-text">{{ rec.recommendation_reason }}</p>
+  </div>
+</section>
+<div class="split mt-4">
+  <section class="panel" aria-labelledby="build-h">
+    <h2 class="panel__title" id="build-h">Score breakdown</h2>
+    <div class="breakdown mb-3"><div class="breakdown__bar" aria-hidden="true">
+      {% for c in x.components %}<div class="breakdown__seg breakdown__seg--{{ c.name }}" style="width: {{ c.contribution|as_percent_width }}%"></div>{% endfor %}</div></div>
+    <table class="table table-sm xai-table">
+      <thead><tr><th scope="col">Part</th><th scope="col">Score</th><th scope="col">Weight</th><th scope="col">Adds</th></tr></thead>
+      <tbody>{% for c in x.components %}<tr><td><span class="swatch swatch--{{ c.name }} d-inline-block me-2" aria-hidden="true"></span>{{ c.label|capfirst }}</td>
+        <td class="num">{{ c.score|floatformat:3 }}</td><td class="num">{{ c.weight }}</td><td class="num">{{ c.contribution|floatformat:3 }}</td></tr>{% endfor %}</tbody>
+      <tfoot><tr><td colspan="3">Final</td><td class="num">{{ x.final_score|floatformat:3 }}</td></tr></tfoot>
+    </table>
+  </section>
+  <section class="panel" aria-labelledby="gates-h">
+    <h2 class="panel__title" id="gates-h">Eligibility checks</h2>
+    <ul class="gate-list">
+      {% for g in x.gates %}<li class="{% if g.passed %}is-pass{% else %}is-fail{% endif %}"><i class="bi {% if g.passed %}bi-check-circle-fill{% else %}bi-x-circle-fill{% endif %}" aria-hidden="true"></i><span>{{ g.reason }}</span></li>{% endfor %}
+      <li class="{% if x.assessment.passed %}is-pass{% else %}is-fail{% endif %}"><i class="bi {% if x.assessment.passed %}bi-check-circle-fill{% else %}bi-x-circle-fill{% endif %}" aria-hidden="true"></i><span>Assessment score {{ x.assessment.score }}, which must be above {{ x.assessment.threshold }}.</span></li>
+    </ul>
+    <p class="rec-card__group-label mt-3">Matched skills</p>
+    {% if x.matched_skills %}<ul class="chips">{% for k in x.matched_skills %}<li class="chip chip--matched"><i class="bi bi-check2" aria-hidden="true"></i>{{ k }}</li>{% endfor %}</ul>{% else %}<p class="text-muted">None.</p>{% endif %}
+    <p class="rec-card__group-label mt-3">Missing skills</p>
+    {% if x.missing_skills %}<ul class="chips">{% for k in x.missing_skills %}<li class="chip chip--missing"><span class="visually-hidden">Missing: </span>{{ k }}</li>{% endfor %}</ul>{% else %}<p class="text-muted">None.</p>{% endif %}
+    <p class="small-note">Skill-gap check: {{ rec.get_analysis_method_display }}{% if rec.analysis_detail %} ({{ rec.analysis_detail }}){% endif %}.</p>
+  </section>
+</div>
 {% endblock %}

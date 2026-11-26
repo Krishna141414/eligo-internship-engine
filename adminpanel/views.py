@@ -19,7 +19,12 @@ from students.models import StudentProfile
 def dashboard(request):
     counts = services.dashboard_counts()
     recent = Attempt.objects.filter(status__in=FINISHED).select_related("student", "assessment").order_by("-submission_time")[:8]
-    return render(request, "adminpanel/dashboard.html", {"c": counts, "recent_attempts": recent})
+    per_internship = services.recommendations_per_internship()
+    return render(request, "adminpanel/dashboard.html", {
+        "c": counts, "recent_attempts": recent, "outcomes": services.student_outcomes(counts),
+        "recs_chart": {"labels": [t for t, _ in per_internship], "values": [n for _, n in per_internship]}
+        if per_internship else None,
+        "recs_rows": per_internship})
 
 
 @admin_required
@@ -106,6 +111,7 @@ def ml(request):
     manifest = services.read_manifest()
     return render(request, "adminpanel/ml.html", {
         "metrics": metrics, "manifest": manifest, "figures": services.listed_figures(), "status": ai_status(),
+        "ml_chart": services.model_comparison(metrics),
         "predictions": JobRolePrediction.objects.select_related("student")[:50]})
 
 

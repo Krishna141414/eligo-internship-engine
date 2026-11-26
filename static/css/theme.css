@@ -509,6 +509,35 @@ a.palette__btn[data-answered="true"]:hover { color: var(--on-navy); }
 .palette__submit { margin-top: var(--space-md); width: 100%; }
 .exam-nav .btn-primary { margin-left: auto; }
 
+/* admin: student outcome bar */
+.outcome__bar { display: flex; height: 16px; border-radius: 8px; overflow: hidden; background: var(--surface-2); }
+.outcome__seg--qualified, .swatch--qualified { background: var(--success); }
+.outcome__seg--not-qualified, .swatch--not-qualified { background: var(--missing); }
+.outcome__seg--not-attempted, .swatch--not-attempted { background: var(--border-strong); }
+.outcome__legend { list-style: none; padding: 0; margin: var(--space-md) 0 0; display: grid; gap: var(--space-xs); }
+.outcome__legend li { display: grid; grid-template-columns: 10px minmax(0, 1fr) auto; gap: var(--space-sm); align-items: center; }
+.outcome__legend strong { font-variant-numeric: tabular-nums; }
+
+/* admin: figures and toolbars */
+.figure-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-lg); }
+@media (max-width: 48rem) { .figure-grid { grid-template-columns: minmax(0, 1fr); } }
+.figure-grid figure { margin: 0; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-card); padding: var(--space-sm); }
+.figure-grid img { width: 100%; height: auto; display: block; }
+.figure-grid figcaption { font-size: var(--text-sm); color: var(--muted); margin-top: var(--space-xs); }
+.toolbar { display: flex; flex-wrap: wrap; align-items: flex-end; gap: var(--space-sm) var(--space-md); background: var(--surface);
+           border: 1px solid var(--border); border-radius: var(--radius-card); padding: var(--space-md) var(--space-lg); margin-bottom: var(--space-md); }
+.toolbar > div { flex: 1 1 12rem; min-width: 0; }
+.toolbar > .toolbar__wide { flex: 2 1 18rem; }
+.toolbar > .toolbar__actions { flex: 0 0 auto; }
+.row-actions { display: inline-flex; flex-wrap: wrap; align-items: center; justify-content: flex-end; gap: var(--space-2xs) var(--space-sm); }
+.row-actions form { margin: 0; }
+.row-actions .btn-link { padding: 0; min-height: 0; }
+.q-list { list-style: none; padding: 0; margin: 0; display: grid; gap: var(--space-sm); counter-reset: q; }
+.q-list > li { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-card); padding: var(--space-md) var(--space-lg);
+               display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: var(--space-sm) var(--space-lg); align-items: start; }
+.q-list__text { margin: 0 0 4px; font-weight: 600; }
+.panel--form { max-width: 48rem; }
+
 /* skill picker extras */
 .skill-picker__list .form-check.is-filtered { display: none; }
 

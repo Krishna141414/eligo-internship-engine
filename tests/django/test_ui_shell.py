@@ -88,7 +88,6 @@ def test_theme_css_floor_basics():
     assert not re.search(r"#[0-9a-fA-F]{3,8}\b", after_tokens), "literal colours must live in :root tokens"
 
 
-@pytest.mark.xfail(strict=True, reason="page templates are redesigned in PLAN Tasks 20-21; mark removed there")
 def test_no_middle_dot_meta_strings_in_templates():
     hits = []
     for f in (Path(settings.BASE_DIR) / "templates").rglob("*.html"):

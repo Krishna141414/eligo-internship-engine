@@ -1,17 +1,63 @@
 {% extends "base.html" %}
+{% load static humanize %}
 {% block title %}Admin dashboard{% endblock %}
+{% block crumb %}Dashboard{% endblock %}
 {% block content %}
-<h1 class="h3">Admin dashboard</h1>
-<dl class="row">
-  <dt class="col-sm-4">Total students</dt><dd class="col-sm-8">{{ c.total_students }} · <a href="{% url 'adminpanel:students' %}">Manage students</a></dd>
-  <dt class="col-sm-4">Total internships</dt><dd class="col-sm-8">{{ c.total_internships }} ({{ c.active_internships }} active) · <a href="{% url 'internships:admin_list' %}">Manage internships</a></dd>
-  <dt class="col-sm-4">Total assessments</dt><dd class="col-sm-8">{{ c.total_assessments }} · <a href="{% url 'assessments:admin_list' %}">Manage assessments</a></dd>
-  <dt class="col-sm-4">Qualified students</dt><dd class="col-sm-8">{{ c.qualified_students }}</dd>
-  <dt class="col-sm-4">Not qualified students</dt><dd class="col-sm-8">{{ c.not_qualified_students }} (plus {{ c.not_attempted_students }} not attempted yet)</dd>
-  <dt class="col-sm-4">Total recommendations</dt><dd class="col-sm-8">{{ c.total_recommendations }} in {{ c.recommendation_runs }} run{{ c.recommendation_runs|pluralize }} · <a href="{% url 'adminpanel:recommendations' %}">Monitor</a></dd>
-  <dt class="col-sm-4">Job-role predictions</dt><dd class="col-sm-8">{{ c.total_predictions }} · <a href="{% url 'adminpanel:ml' %}">ML monitoring</a></dd>
+<div class="page-header">
+  <div><h1>Admin dashboard</h1><p>Live counts from the database.</p></div>
+</div>
+
+<dl class="stat-band">
+  <div><dt>Total students</dt><dd>{{ c.total_students|intcomma }}</dd></div>
+  <div><dt>Active internships</dt><dd>{{ c.active_internships|intcomma }}</dd></div>
+  <div><dt>Assessments</dt><dd>{{ c.total_assessments }}</dd></div>
+  <div><dt>Recommendations</dt><dd>{{ c.total_recommendations|intcomma }}</dd></div>
+  <div><dt>Job-role predictions</dt><dd>{{ c.total_predictions|intcomma }}</dd></div>
 </dl>
-<h2 class="h5">Recent assessment results</h2>
-<ul>{% for a in recent_attempts %}<li>{{ a.student.name }} · {{ a.assessment }} · {{ a.score_percentage|floatformat:2 }}% · {{ a.get_result_display }}</li>{% empty %}<li>No results yet.</li>{% endfor %}</ul>
-<p><a href="{% url 'adminpanel:results' %}">All assessment results</a></p>
+
+<div class="split">
+  <section class="panel" aria-labelledby="outcome-h">
+    <h2 class="panel__title" id="outcome-h">Student assessment outcomes</h2>
+    <div class="outcome__bar" role="img" aria-label="{% for o in outcomes %}{{ o.label }} {{ o.n }}{% if not forloop.last %}, {% endif %}{% endfor %}">
+      {% for o in outcomes %}<div class="outcome__seg outcome__seg--{{ o.key }}" style="width: {{ o.width }}%"></div>{% endfor %}
+    </div>
+    <ul class="outcome__legend">
+      {% for o in outcomes %}<li><span class="swatch swatch--{{ o.key }}" aria-hidden="true"></span><span>{{ o.label }}</span><strong>{{ o.n }}</strong></li>{% endfor %}
+    </ul>
+    <p class="small-note">Qualified means at least one attempt above 60%, the same rule the eligibility gate uses. <a href="{% url 'adminpanel:results' %}">All results</a></p>
+  </section>
+
+  <section class="panel" aria-labelledby="recs-h">
+    <h2 class="panel__title" id="recs-h">Most recommended internships</h2>
+    {% if recs_chart %}
+    <div class="chart-box"><canvas id="recs-chart" role="img" aria-label="Recommendation rows per internship"></canvas></div>
+    {{ recs_chart|json_script:"recs-chart-data" }}
+    <details class="mt-2"><summary>Show the numbers</summary>
+      <table class="table table-sm xai-table mt-2"><thead><tr><th scope="col">Internship</th><th scope="col">Times recommended</th></tr></thead><tbody>
+      {% for title, n in recs_rows %}<tr><td>{{ title }}</td><td class="num">{{ n }}</td></tr>{% endfor %}</tbody></table></details>
+    {% else %}
+    <p class="text-muted mb-0">No recommendations generated yet.</p>
+    {% endif %}
+  </section>
+</div>
+
+<section class="mt-4" aria-labelledby="recent-h">
+  <h2 class="section-title" id="recent-h">Recent assessment results</h2>
+  {% if recent_attempts %}
+  <div class="table-wrap"><table class="table mb-0">
+    <thead><tr><th scope="col">Student</th><th scope="col">Assessment</th><th scope="col">Submitted</th><th scope="col">Score</th><th scope="col">Result</th></tr></thead>
+    <tbody>
+    {% for a in recent_attempts %}
+    <tr><td><a href="{% url 'adminpanel:student_detail' a.student_id %}">{{ a.student.name }}</a></td><td>{{ a.assessment }}</td>
+      <td>{{ a.submission_time|date:"d M Y, H:i" }}</td><td class="num">{{ a.score_percentage|floatformat:2 }}%</td>
+      <td><span class="badge-status {% if a.result == 'QUALIFIED' %}badge-status--ok{% else %}badge-status--no{% endif %}">{{ a.get_result_display }}</span></td></tr>
+    {% endfor %}
+    </tbody></table></div>
+  {% else %}
+  <div class="empty"><i class="bi bi-ui-checks" aria-hidden="true"></i><h3>No results yet</h3><p>Results appear here as students submit assessments.</p></div>
+  {% endif %}
+</section>
+{% endblock %}
+{% block extra_js %}
+{% if recs_chart %}<script src="{% static 'vendor/chartjs/chart.umd.min.js' %}"></script><script src="{% static 'js/charts.js' %}"></script>{% endif %}
 {% endblock %}

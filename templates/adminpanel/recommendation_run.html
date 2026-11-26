@@ -1,11 +1,15 @@
 {% extends "base.html" %}
 {% block title %}Recommendation run{% endblock %}
+{% block crumb %}Recommendations{% endblock %}
 {% block content %}
-<a class="small" href="{% url 'adminpanel:recommendations' %}">&larr; All runs</a>
-<h1 class="h3 mt-2">Recommendations for {{ student.name }}</h1>
-<table class="table table-sm"><thead><tr><th scope="col">Rank</th><th scope="col">Internship</th><th scope="col">Final</th><th scope="col">Content</th><th scope="col">Semantic</th><th scope="col">Skill</th><th scope="col">Matched</th><th scope="col">Missing</th><th scope="col">Method</th></tr></thead><tbody>
-{% for r in rows %}<tr><td>{{ r.recommendation_rank }}</td><td><a href="{% url 'adminpanel:recommendation_detail' r.pk %}">{{ r.internship }}</a></td>
-<td>{{ r.final_match_score|floatformat:3 }}</td><td>{{ r.content_similarity_score|floatformat:3 }}</td><td>{{ r.semantic_similarity_score|floatformat:3 }}</td><td>{{ r.skill_match_score|floatformat:3 }}</td>
-<td>{{ r.matched_skills|join:", "|default:"—" }}</td><td>{{ r.missing_skills|join:", "|default:"—" }}</td><td>{{ r.get_analysis_method_display }}</td></tr>{% endfor %}
-</tbody></table>
+<a class="back-link" href="{% url 'adminpanel:recommendations' %}"><i class="bi bi-arrow-left" aria-hidden="true"></i>All runs</a>
+<div class="page-header"><div><h1>Recommendations for {{ student.name }}</h1><p>Generated {{ rows.0.generated_date|date:"d M Y, H:i" }}. Part scores run from 0 to 1; the final score is their weighted sum.</p></div></div>
+<div class="table-wrap"><table class="table mb-0">
+  <thead><tr><th scope="col">Rank</th><th scope="col">Internship</th><th scope="col">Final</th><th scope="col">Content</th><th scope="col">Semantic</th><th scope="col">Skill</th><th scope="col">Matched</th><th scope="col">Missing</th><th scope="col">Method</th></tr></thead>
+  <tbody>
+  {% for r in rows %}<tr><td class="num">{{ r.recommendation_rank }}</td><td><a href="{% url 'adminpanel:recommendation_detail' r.pk %}">{{ r.internship }}</a></td>
+    <td class="num"><strong>{{ r.final_match_score|floatformat:3 }}</strong></td><td class="num">{{ r.content_similarity_score|floatformat:3 }}</td><td class="num">{{ r.semantic_similarity_score|floatformat:3 }}</td><td class="num">{{ r.skill_match_score|floatformat:3 }}</td>
+    <td>{{ r.matched_skills|join:", "|default:"None" }}</td><td>{{ r.missing_skills|join:", "|default:"None" }}</td><td>{{ r.get_analysis_method_display }}</td></tr>{% endfor %}
+  </tbody>
+</table></div>
 {% endblock %}

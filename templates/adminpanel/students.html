@@ -1,25 +1,27 @@
 {% extends "base.html" %}
 {% block title %}Students{% endblock %}
+{% block crumb %}Students{% endblock %}
 {% block content %}
-<h1 class="h3">Students</h1>
-<form method="get" class="row g-2 my-2">
-  <div class="col-md-6"><label class="form-label small" for="q">Search name or email</label><input class="form-control" id="q" name="q" value="{{ q }}"></div>
-  <div class="col-md-3"><label class="form-label small" for="status">Status</label><select class="form-select" id="status" name="status"><option value="">All</option>
+<div class="page-header"><div><h1>Students</h1><p>{{ page.paginator.count }} student{{ page.paginator.count|pluralize }}{% if q or status %} match these filters{% endif %}.</p></div></div>
+<form method="get" class="toolbar" role="search" aria-label="Filter students">
+  <div class="toolbar__wide"><label class="form-label" for="q">Search name or email</label><input class="form-control" id="q" name="q" value="{{ q }}"></div>
+  <div><label class="form-label" for="status">Status</label><select class="form-select" id="status" name="status"><option value="">All</option>
     <option value="ACTIVE" {% if status == "ACTIVE" %}selected{% endif %}>Active</option><option value="INACTIVE" {% if status == "INACTIVE" %}selected{% endif %}>Inactive</option></select></div>
-  <div class="col-md-3 align-self-end"><button class="btn btn-outline-primary" type="submit">Filter</button></div>
+  <div class="toolbar__actions"><button class="btn btn-outline-primary" type="submit">Filter</button></div>
 </form>
-<table class="table table-sm align-middle">
-  <thead><tr><th scope="col">Name</th><th scope="col">Email</th><th scope="col">Qualification</th><th scope="col">Assessment</th><th scope="col">Status</th><th scope="col"><span class="visually-hidden">Actions</span></th></tr></thead>
+<div class="table-wrap"><table class="table mb-0">
+  <thead><tr><th scope="col">Name</th><th scope="col">Qualification</th><th scope="col">Assessment</th><th scope="col">Status</th><th scope="col"><span class="visually-hidden">Actions</span></th></tr></thead>
   <tbody>
   {% for s in page.object_list %}
-  <tr><td><a href="{% url 'adminpanel:student_detail' s.pk %}">{{ s.name }}</a></td><td>{{ s.email }}</td>
-    <td>{{ s.profile.qualification|default:"—" }}</td><td>{% if s.qualified %}Qualified{% elif s.attempted %}Not qualified{% else %}Not attempted{% endif %}</td>
+  <tr><td><a href="{% url 'adminpanel:student_detail' s.pk %}">{{ s.name }}</a><span class="cell-sub">{{ s.email }}</span></td>
+    <td>{{ s.profile.qualification|default:"Not set" }}</td>
+    <td>{% if s.qualified %}<span class="badge-status badge-status--ok">Qualified</span>{% elif s.attempted %}<span class="badge-status badge-status--no">Not qualified</span>{% else %}<span class="badge-status badge-status--muted">Not attempted</span>{% endif %}</td>
     <td>{{ s.get_status_display }}</td>
     <td class="text-end"><form method="post" action="{% url 'adminpanel:student_toggle' s.pk %}" class="d-inline">{% csrf_token %}
       <button class="btn btn-link btn-sm" type="submit">{% if s.status == "ACTIVE" %}Deactivate{% else %}Activate{% endif %}</button></form></td></tr>
-  {% empty %}<tr><td colspan="6">No students registered yet.</td></tr>
+  {% empty %}<tr><td colspan="5" class="text-muted">No students match.</td></tr>
   {% endfor %}
   </tbody>
-</table>
-{% include "partials/pagination.html" %}
+</table></div>
+<div class="mt-3">{% include "partials/pagination.html" %}</div>
 {% endblock %}

@@ -1,21 +1,23 @@
 {% extends "base.html" %}
 {% block title %}Manage assessments{% endblock %}
+{% block crumb %}Assessments{% endblock %}
 {% block content %}
-<div class="d-flex justify-content-between align-items-center">
-  <h1 class="h3">Assessments</h1>
+<div class="page-header">
+  <div><h1>Assessments</h1><p>Students see only active assessments for their qualification. The pass mark is above 60%.</p></div>
   <a class="btn btn-primary" href="{% url 'assessments:admin_add' %}">Create assessment</a>
 </div>
-<table class="table table-sm align-middle mt-3">
+<div class="table-wrap"><table class="table mb-0">
   <thead><tr><th scope="col">Name</th><th scope="col">Qualification</th><th scope="col">Duration</th><th scope="col">Questions</th><th scope="col">Attempts</th><th scope="col">Status</th><th scope="col"><span class="visually-hidden">Actions</span></th></tr></thead>
   <tbody>
   {% for a in assessments %}
-  <tr><td>{{ a.assessment_name }}</td><td>{{ a.qualification }}{% if a.specialization %} ({{ a.specialization }}){% endif %}</td><td>{{ a.duration_minutes }} min</td>
-    <td>{{ a.n_questions }}</td><td>{{ a.n_attempts }}</td><td>{{ a.get_status_display }}</td>
-    <td class="text-end"><a href="{% url 'assessments:questions' a.pk %}">Questions</a> · <a href="{% url 'assessments:admin_edit' a.pk %}">Edit</a>
-      <form method="post" action="{% url 'assessments:admin_toggle' a.pk %}" class="d-inline">{% csrf_token %}
-        <button class="btn btn-link btn-sm" type="submit">{% if a.status == "ACTIVE" %}Deactivate{% else %}Activate{% endif %}</button></form></td></tr>
-  {% empty %}<tr><td colspan="7">No assessments yet. Create one, add MCQs, then activate it.</td></tr>
+  <tr><td>{{ a.assessment_name }}</td><td>{{ a.qualification }}{% if a.specialization %}<span class="cell-sub">{{ a.specialization }}</span>{% endif %}</td>
+    <td class="num">{{ a.duration_minutes }} min</td><td class="num">{{ a.n_questions }}</td><td class="num">{{ a.n_attempts }}</td>
+    <td><span class="badge-status {% if a.status == 'ACTIVE' %}badge-status--ok{% else %}badge-status--muted{% endif %}">{{ a.get_status_display }}</span></td>
+    <td class="text-end"><span class="row-actions"><a href="{% url 'assessments:questions' a.pk %}">Questions</a><a href="{% url 'assessments:admin_edit' a.pk %}">Edit</a>
+      <form method="post" action="{% url 'assessments:admin_toggle' a.pk %}">{% csrf_token %}
+        <button class="btn btn-link btn-sm" type="submit">{% if a.status == "ACTIVE" %}Deactivate{% else %}Activate{% endif %}</button></form></span></td></tr>
+  {% empty %}<tr><td colspan="7" class="text-muted">No assessments yet. Create one, add MCQs, then activate it.</td></tr>
   {% endfor %}
   </tbody>
-</table>
+</table></div>
 {% endblock %}

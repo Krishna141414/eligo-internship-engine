@@ -5,7 +5,7 @@ import json
 from pathlib import Path, PurePosixPath
 
 from django.conf import settings
-from django.db.models import Exists, OuterRef
+from django.db.models import Count, Exists, OuterRef
 
 from accounts.models import User
 from assessments.models import Assessment, Attempt
@@ -36,6 +36,34 @@ def dashboard_counts() -> dict:
         "recommendation_runs": InternshipRecommendation.objects.values("run_id").distinct().count(),
         "total_predictions": JobRolePrediction.objects.count(),
     }
+
+
+def student_outcomes(counts: dict) -> list[dict]:
+    """The qualified / not qualified / not attempted split as bar segments; widths are shares of all students."""
+    parts = [("qualified", "Qualified", counts["qualified_students"]),
+             ("not-qualified", "Not qualified", counts["not_qualified_students"]),
+             ("not-attempted", "Not attempted", counts["not_attempted_students"])]
+    total = sum(n for _, _, n in parts)
+    return [{"key": k, "label": label, "n": n, "width": f"{(n / total * 100) if total else 0:.2f}"}
+            for k, label, n in parts]
+
+
+def recommendations_per_internship(limit: int = 8) -> list[tuple[str, int]]:
+    """Internships that appear most often in stored recommendation rows: [(title, rows)], highest first."""
+    rows = (InternshipRecommendation.objects.values("internship_id", "internship__internship_title")
+            .annotate(n=Count("id")).order_by("-n", "internship__internship_title")[:limit])
+    return [(r["internship__internship_title"], r["n"]) for r in rows]
+
+
+def model_comparison(metrics: dict | None) -> dict | None:
+    """Accuracy and macro F1 per saved model, as percentages, straight from metrics.json."""
+    models = (metrics or {}).get("models") or {}
+    if not models:
+        return None
+    names = list(models)
+    return {"labels": names,
+            "accuracy": [round(models[n]["accuracy"] * 100, 1) for n in names],
+            "f1_macro": [round(models[n]["f1_macro"] * 100, 1) for n in names]}
 
 
 def artifacts_dir() -> Path:

@@ -1,19 +1,27 @@
 {% extends "base.html" %}
 {% block title %}Questions: {{ assessment.assessment_name }}{% endblock %}
+{% block crumb %}Assessments{% endblock %}
 {% block content %}
-<a class="small" href="{% url 'assessments:admin_list' %}">&larr; All assessments</a>
-<div class="d-flex justify-content-between align-items-center mt-2">
-  <h1 class="h3">{{ assessment.assessment_name }}: questions</h1>
+<a class="back-link" href="{% url 'assessments:admin_list' %}"><i class="bi bi-arrow-left" aria-hidden="true"></i>All assessments</a>
+<div class="page-header">
+  <div><h1>{{ assessment.assessment_name }}: questions</h1>
+    <ul class="meta-list mt-1"><li>{{ questions|length }} question{{ questions|length|pluralize }}</li><li>Total {{ assessment.total_marks|floatformat }} marks</li><li>{{ assessment.get_status_display }}</li></ul></div>
   <a class="btn btn-primary" href="{% url 'assessments:question_add' assessment.pk %}">Add question</a>
 </div>
-<p class="text-muted">{{ questions|length }} question{{ questions|length|pluralize }} · total {{ assessment.total_marks|floatformat }} marks · {{ assessment.get_status_display }}</p>
-<ol>
+{% if questions %}
+<ol class="q-list">
 {% for q in questions %}
-<li class="mb-2">{{ q.question_text }} <span class="small text-muted">(answer {{ q.correct_option }}, {{ q.marks|floatformat }} mark{{ q.marks|pluralize }}{% if q.n_answers %}, {{ q.n_answers }} student answer{{ q.n_answers|pluralize }}{% endif %})</span>
-  <a class="small" href="{% url 'assessments:question_edit' q.pk %}">Edit</a>
-  <form method="post" action="{% url 'assessments:question_delete' q.pk %}" class="d-inline">{% csrf_token %}<button class="btn btn-link btn-sm text-danger" type="submit">Delete</button></form>
+<li>
+  <div><p class="q-list__text">{{ forloop.counter }}. {{ q.question_text }}</p>
+    <ul class="meta-list"><li>Answer {{ q.correct_option }}</li><li>{{ q.marks|floatformat }} mark{{ q.marks|pluralize }}</li>
+      {% if q.n_answers %}<li>{{ q.n_answers }} student answer{{ q.n_answers|pluralize }}</li>{% endif %}</ul></div>
+  <span class="row-actions"><a href="{% url 'assessments:question_edit' q.pk %}">Edit</a>
+    <form method="post" action="{% url 'assessments:question_delete' q.pk %}">{% csrf_token %}<button class="btn btn-link btn-sm btn-danger-link" type="submit">Delete</button></form></span>
 </li>
-{% empty %}<li class="list-unstyled">No questions yet. Add at least one before activating.</li>
 {% endfor %}
 </ol>
+{% else %}
+<div class="empty"><i class="bi bi-question-circle" aria-hidden="true"></i><h2>No questions yet</h2><p>Add at least one before activating this assessment.</p>
+  <a class="btn btn-outline-secondary" href="{% url 'assessments:question_add' assessment.pk %}">Add a question</a></div>
+{% endif %}
 {% endblock %}
