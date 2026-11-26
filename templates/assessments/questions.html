@@ -16,7 +16,7 @@
     <ul class="meta-list"><li>Answer {{ q.correct_option }}</li><li>{{ q.marks|floatformat }} mark{{ q.marks|pluralize }}</li>
       {% if q.n_answers %}<li>{{ q.n_answers }} student answer{{ q.n_answers|pluralize }}</li>{% endif %}</ul></div>
   <span class="row-actions"><a href="{% url 'assessments:question_edit' q.pk %}">Edit</a>
-    <form method="post" action="{% url 'assessments:question_delete' q.pk %}">{% csrf_token %}<button class="btn btn-link btn-sm btn-danger-link" type="submit">Delete</button></form></span>
+    <form method="post" action="{% url 'assessments:question_delete' q.pk %}" data-confirm="Delete this question? This can’t be undone.">{% csrf_token %}<button class="btn btn-link btn-sm btn-danger-link" type="submit">Delete</button></form></span>
 </li>
 {% endfor %}
 </ol>

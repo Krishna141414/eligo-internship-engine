@@ -35,6 +35,28 @@
     });
   }
 
+  // After a failed submit, focus the first invalid field (Django marks it aria-invalid="true").
+  var firstInvalid = document.querySelector('form [aria-invalid="true"]');
+  if (firstInvalid) firstInvalid.focus();
+
+  // Destructive actions ask first.
+  document.querySelectorAll("form[data-confirm]").forEach(function (form) {
+    form.addEventListener("submit", function (e) {
+      if (!window.confirm(form.dataset.confirm)) e.preventDefault();
+    });
+  });
+
+  // Long forms warn before leaving with unsaved changes.
+  document.querySelectorAll("form[data-warn-unsaved]").forEach(function (form) {
+    var dirty = false;
+    form.addEventListener("input", function () { dirty = true; });
+    form.addEventListener("change", function () { dirty = true; });
+    form.addEventListener("submit", function () { dirty = false; });
+    window.addEventListener("beforeunload", function (e) {
+      if (dirty) { e.preventDefault(); e.returnValue = ""; }
+    });
+  });
+
   // Forms marked data-busy show their status message and disable the button while the server works.
   document.querySelectorAll("form[data-busy]").forEach(function (form) {
     form.addEventListener("submit", function () {

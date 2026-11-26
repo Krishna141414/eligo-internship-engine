@@ -4,7 +4,7 @@
 {% block content %}
 <div class="page-header">
   <div><h1>Job-role prediction</h1>
-    <p>Uses only your career skills ("Skills the job-role model understands" in your <a href="{% url 'students:profile_edit' %}">profile</a>).</p></div>
+    <p>Uses only your career skills (“Skills the job-role model understands” in your <a href="{% url 'students:profile_edit' %}">profile</a>).</p></div>
   <form method="post">{% csrf_token %}<button class="btn btn-primary" type="submit">{% if pred %}Predict again{% else %}Predict my job role{% endif %}</button></form>
 </div>
 
@@ -12,7 +12,7 @@
 <div class="empty">
   <i class="bi bi-diagram-3" aria-hidden="true"></i>
   <h2>No prediction yet</h2>
-  <p>Pick at least 3 career skills in your profile, then select "Predict my job role".</p>
+  <p>Pick at least 3 career skills in your profile, then select “Predict my job role”.</p>
   <a class="btn btn-outline-secondary" href="{% url 'students:profile_edit' %}">Edit career skills</a>
 </div>
 {% else %}
@@ -26,7 +26,7 @@
     </section>
     {% else %}
     <section class="role-scope" aria-labelledby="scope-h">
-      <h2 id="scope-h">{% if x.scope_status == "low_confidence" %}Low confidence{% else %}Outside the model's scope{% endif %}</h2>
+      <h2 id="scope-h">{% if x.scope_status == "low_confidence" %}Low confidence{% else %}Outside the model’s scope{% endif %}</h2>
       <p>{{ x.scope_message }}</p>
       {% if x.label %}<p class="mb-0">Closest field (tentative): <strong>{{ x.label }}</strong>, model confidence {{ x.confidence_pct }}%</p>{% endif %}
     </section>
@@ -65,7 +65,7 @@
         <table class="table table-sm xai-table mt-2"><thead><tr><th scope="col">Skill</th><th scope="col">Importance</th></tr></thead><tbody>
         {% for f in x.top_features %}<tr><td>{{ f.feature }}</td><td class="num">{{ f.importance|floatformat:3 }}</td></tr>{% endfor %}
         </tbody></table></details>
-      <p class="small-note">Importance is the model's overall (global) feature importance for each of your skills.</p>
+      <p class="small-note">Importance is the model’s overall (global) feature importance for each of your skills.</p>
     </section>
     {% endif %}
   </div>

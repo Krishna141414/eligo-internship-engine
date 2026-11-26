@@ -86,7 +86,8 @@ def figure_entries() -> list[dict]:
     out = []
     for name in listed_figures():
         size = _png_size(artifacts_dir() / "figures" / name)
-        out.append({"name": name, "wide": bool(size and size[1] and size[0] / size[1] > 1.6)})
+        out.append({"name": name, "wide": bool(size and size[1] and size[0] / size[1] > 1.6),
+                    "width": size[0] if size else None, "height": size[1] if size else None})
     return out
 
 

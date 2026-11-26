@@ -4,7 +4,7 @@
 {% block content %}
 <div class="page-header">
   <div><h1>Your internship recommendations</h1>
-    <p>Only internships you're eligible for are ranked. The match score shows how well your profile fits the listed requirements. It doesn't predict selection.</p></div>
+    <p>Only internships you’re eligible for are ranked. The match score shows how well your profile fits the listed requirements. It doesn’t predict selection.</p></div>
   <form method="post" data-busy="busy-generate">{% csrf_token %}
     <button class="btn btn-primary" type="submit">{% if rows %}Generate again{% else %}Generate recommendations{% endif %}</button></form>
 </div>
@@ -104,15 +104,15 @@
 <div class="empty">
   <i class="bi bi-stars" aria-hidden="true"></i>
   <h2>No recommendations yet</h2>
-  <p>Complete your profile and score above 60% on an assessment, then select "Generate recommendations".</p>
+  <p>Complete your profile and score above 60% on an assessment, then select “Generate recommendations”.</p>
   <a class="btn btn-outline-secondary" href="{% url 'assessments:list' %}">Go to assessments</a>
 </div>
 {% endif %}
 
 <section class="panel mt-4" aria-labelledby="blocked-h">
-  <h2 class="panel__title" id="blocked-h">Why you can't apply yet</h2>
+  <h2 class="panel__title" id="blocked-h">Why you can’t apply yet</h2>
   {% if preview %}
-  <p class="text-muted">{{ not_eligible_count|intcomma }} active internship{{ not_eligible_count|pluralize }} aren't open to you right now. These ones share skills with you:</p>
+  <p class="text-muted">{{ not_eligible_count|intcomma }} active internship{{ not_eligible_count|pluralize }} aren’t open to you right now. These ones share skills with you:</p>
   <ul class="blocked-list">
     {% for i, reasons in preview %}
     <li><a href="{% url 'internships:detail' i.pk %}">{{ i.internship_title }}</a> <span class="text-muted">at {{ i.company_name }}{% if i.similar_listings > 1 %} ({{ i.similar_listings }} listings){% endif %}</span>

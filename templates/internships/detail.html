@@ -28,7 +28,7 @@
     {% else %}<p class="text-muted">None listed.</p>{% endif %}
     <h3 class="section-title mt-4">Description</h3>
     <p class="mb-0">{{ internship.description }}</p>
-    {% if internship.description_derived %}<p class="small-note">Description composed from the public listing's fields (the source dataset has no full description).</p>{% endif %}
+    {% if internship.description_derived %}<p class="small-note">Description composed from the public listing’s fields (the source dataset has no full description).</p>{% endif %}
   </section>
 
   <section class="panel" aria-labelledby="elig-h">
@@ -43,8 +43,8 @@
         <span><span class="visually-hidden">{% if g.passed %}Passed:{% else %}Not met:{% endif %} </span>{{ g.reason }}</span></li>
       {% endfor %}
     </ul>
-    {% if gates.eligible %}<p class="verdict verdict--ok">You're eligible for this internship.</p>
-    {% else %}<p class="verdict verdict--no">You can't apply yet.</p>{% endif %}
+    {% if gates.eligible %}<p class="verdict verdict--ok">You’re eligible for this internship.</p>
+    {% else %}<p class="verdict verdict--no">You can’t apply yet.</p>{% endif %}
     {% endif %}
   </section>
 </div>

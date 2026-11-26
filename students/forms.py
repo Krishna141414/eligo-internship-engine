@@ -36,6 +36,11 @@ class StudentProfileForm(forms.ModelForm):
         super().__init__(*args, **kwargs)
         self.fields["qualification"].required = True
         self.fields["academic_percentage"].required = True
+        # autocomplete: meaningful tokens where the browser can help, "off" elsewhere (non-auth fields)
+        for name, token in (("college_name", "organization"), ("preferred_location", "address-level2"),
+                            ("academic_percentage", "off"), ("career_interests", "off"),
+                            ("preferred_job_role", "off")):
+            self.fields[name].widget.attrs["autocomplete"] = token
         vocab = career_skill_vocab()
         self.fields["career_skills"].choices = [(s, s) for s in vocab]
         self.suggested_career_skills: list[str] = []

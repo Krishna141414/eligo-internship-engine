@@ -19,6 +19,23 @@ def test_register_creates_student_with_hashed_password(client):
     assert user.password != PASSWORD and user.check_password(PASSWORD)
 
 
+def test_register_fields_have_autocomplete_tokens(client):
+    """Phase 7 (noted in the Phase 6 E2E run): browsers can fill and save the right values."""
+    import re
+    html = client.get(reverse("accounts:register")).content.decode()
+    tokens = dict(re.findall(r'<input[^>]*name="(\w+)"[^>]*autocomplete="([\w-]+)"', html))
+    tokens.update({n: a for a, n in re.findall(r'<input[^>]*autocomplete="([\w-]+)"[^>]*name="(\w+)"', html)})
+    assert tokens == {"name": "name", "email": "email", "mobile_number": "tel", "password1": "new-password",
+                      "password2": "new-password"}
+    login = client.get(reverse("accounts:login")).content.decode()
+    assert re.search(r'name="password"[^>]*autocomplete="current-password"|autocomplete="current-password"[^>]*name="password"', login)
+
+
+def test_favicon_ico_serves_the_svg_icon(client):
+    resp = client.get("/favicon.ico")
+    assert resp.status_code == 301 and resp["Location"].endswith("img/favicon.svg")
+
+
 def test_register_rejects_duplicate_email_case_insensitive(client, student):
     resp = client.post(reverse("accounts:register"), {
         "name": "Dup", "email": "STUDENT@example.com", "mobile_number": "9123456789",

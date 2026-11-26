@@ -5,7 +5,7 @@
 <a class="back-link" href="{% url 'assessments:admin_list' %}"><i class="bi bi-arrow-left" aria-hidden="true"></i>All assessments</a>
 <div class="page-header"><div><h1>{{ title }}</h1><p>Add questions after saving, then activate the assessment.</p></div></div>
 <div class="panel panel--form">
-  <form method="post" novalidate>{% csrf_token %}
+  <form method="post" novalidate data-warn-unsaved>{% csrf_token %}
     {% include "partials/form.html" %}
     <button class="btn btn-primary" type="submit">Save assessment</button>
     <a class="btn btn-link" href="{% url 'assessments:admin_list' %}">Cancel</a>

@@ -10,7 +10,8 @@ INACTIVE_MESSAGE = "Your account is inactive. Contact the admin."
 class EmailAuthenticationForm(AuthenticationForm):
     """Login by email. Inactive users get a clear message instead of the generic error."""
 
-    username = forms.EmailField(label="Email", widget=forms.EmailInput(attrs={"autofocus": True, "autocomplete": "email"}))
+    username = forms.EmailField(label="Email", widget=forms.EmailInput(attrs={"autofocus": True, "autocomplete": "email",
+                                                                         "spellcheck": "false"}))
 
     def clean(self):
         email = (self.cleaned_data.get("username") or "").lower()
@@ -36,6 +37,10 @@ class StudentRegistrationForm(UserCreationForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.fields["mobile_number"].required = True
+        for name, token in (("name", "name"), ("email", "email"), ("mobile_number", "tel")):
+            self.fields[name].widget.attrs["autocomplete"] = token
+        self.fields["mobile_number"].widget.attrs["inputmode"] = "numeric"
+        self.fields["email"].widget.attrs["spellcheck"] = "false"
 
     def clean_email(self):
         email = self.cleaned_data["email"].lower()

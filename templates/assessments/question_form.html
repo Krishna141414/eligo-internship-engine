@@ -5,7 +5,7 @@
 <a class="back-link" href="{% url 'assessments:questions' assessment.pk %}"><i class="bi bi-arrow-left" aria-hidden="true"></i>{{ assessment.assessment_name }}</a>
 <div class="page-header"><div><h1>{{ title }}</h1><p>Four options, one correct answer. Students never see the answer key.</p></div></div>
 <div class="panel panel--form">
-  <form method="post" novalidate>{% csrf_token %}
+  <form method="post" novalidate data-warn-unsaved>{% csrf_token %}
     {% include "partials/form.html" %}
     <button class="btn btn-primary" type="submit">Save question</button>
     <a class="btn btn-link" href="{% url 'assessments:questions' assessment.pk %}">Cancel</a>

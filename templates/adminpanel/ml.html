@@ -48,7 +48,7 @@
 <h2 class="section-title mt-4">Figures from the notebook</h2>
 <p class="small-note mt-0">Select a figure to see it full size.</p>
 <div class="figure-grid">{% for f in figures %}<figure class="{% if f.wide %}figure--wide{% endif %}">
-  <a href="{% url 'adminpanel:figure' f.name %}" data-enlarge data-caption="{{ f.name }}"><img src="{% url 'adminpanel:figure' f.name %}" alt="Notebook figure: {{ f.name }}" loading="lazy"></a>
+  <a href="{% url 'adminpanel:figure' f.name %}" data-enlarge data-caption="{{ f.name }}"><img src="{% url 'adminpanel:figure' f.name %}" alt="Notebook figure: {{ f.name }}" loading="lazy"{% if f.width %} width="{{ f.width }}" height="{{ f.height }}"{% endif %}></a>
   <figcaption>{{ f.name }}</figcaption></figure>{% endfor %}</div>
 <div class="modal figure-modal" id="figure-modal" tabindex="-1" aria-labelledby="figure-modal-h" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered"><div class="modal-content">

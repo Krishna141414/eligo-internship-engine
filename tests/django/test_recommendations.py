@@ -116,7 +116,7 @@ def test_list_view_shows_latest_run_and_method(student_client, student, ai_bundl
     _qualify(student)
     student_client.post(reverse("recommendations:list"))
     page = html.unescape(student_client.get(reverse("recommendations:list")).content.decode())
-    assert "Data Science" in page and "Rule-based" in page and "Why you can't apply yet" in page
+    assert "Data Science" in page and "Rule-based" in page and "Why you can’t apply yet" in page   # curly apostrophe (Phase 7 copy pass)
 
 
 def test_other_students_recommendation_is_404(client, student, other_student, ai_bundle):

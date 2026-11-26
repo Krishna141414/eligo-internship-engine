@@ -9,6 +9,7 @@
 
 /* ---------------------------------------------------------------------------------------- tokens */
 :root {
+  color-scheme: light;
   --navy-900: #0B1F3A;
   --navy-800: #13294A;
   --navy-600: #1E3A6E;
@@ -78,7 +79,8 @@
 
 /* ------------------------------------------------------------------------------------------ base */
 html, body { overflow-x: clip; }
-html { scrollbar-gutter: stable; }   /* a page with a scrollbar keeps the same container position */
+html { scrollbar-gutter: stable;   /* a page with a scrollbar keeps the same container position */
+       scroll-padding-top: 88px; } /* the sticky top bar never covers a focused element or an anchor target */
 body { background: var(--page-bg); color: var(--text); font-family: var(--font-body); font-size: var(--text-md);
        line-height: 1.6; font-synthesis: none; text-rendering: optimizeLegibility; }
 h1, h2, h3, h4, .h1, .h2, .h3, .h4, .h5, .h6 { font-family: var(--font-head); font-weight: 700; color: var(--text);
@@ -377,7 +379,7 @@ a:hover { color: var(--navy-900); }
 .question { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-card); padding: var(--space-lg); }
 .question + .question { margin-top: var(--space-md); }
 .js .question[hidden] { display: none; }
-.question { border: 1px solid var(--border); }
+.question { border: 1px solid var(--border); scroll-margin-top: 168px; }   /* below the top bar + sticky exam bar */
 .question legend { font-size: var(--text-sm); color: var(--muted); font-weight: 600; float: left; width: 100%; margin-bottom: var(--space-xs); }
 .question legend + * { clear: left; }
 .question__text { font-family: var(--font-head); font-weight: 600; font-size: var(--text-lg); margin-bottom: var(--space-md); }
@@ -622,6 +624,15 @@ a.palette__btn[data-answered="true"]:hover { color: var(--on-navy); }
                                     min-width: 24px; min-height: 24px; }
 .skill-picker__empty { font-size: var(--text-sm); color: var(--muted); }
 .js .skill-picker__list .form-check.is-selected { display: none; }
+
+/* touch, overscroll, long content, native selects (Web Interface Guidelines audit, docs/AUDIT.md) */
+a, button, .btn, summary, label, input, select, textarea { touch-action: manipulation; }
+html { -webkit-tap-highlight-color: transparent; }   /* every control has its own :active / :focus-visible state */
+.app-sidebar { overscroll-behavior: contain; }
+.modal, .modal-body { overscroll-behavior: contain; }
+.chip { max-width: 100%; overflow-wrap: anywhere; }
+.rec-card__title, .listing__title, .match-rows a { overflow-wrap: anywhere; min-width: 0; }
+.form-select { background-color: var(--surface); color: var(--text); }
 
 /* ------------------------------------------------------------------------------- reduced motion */
 @media (prefers-reduced-motion: reduce) {
